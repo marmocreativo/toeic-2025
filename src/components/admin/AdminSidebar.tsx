@@ -5,7 +5,8 @@ import {
   FileText, 
   MapPin, 
   Building, 
-  BookOpen 
+  BookOpen,
+  Download
 } from 'lucide-react';
 
 export default function AdminSidebar() {
@@ -16,6 +17,7 @@ export default function AdminSidebar() {
     { path: '/admin/sliders', icon: Image, label: 'Sliders' },
     { path: '/admin/examenes', icon: BookOpen, label: 'Exámenes' },
     { path: '/admin/paginas', icon: FileText, label: 'Páginas' },
+    { path: '/admin/newsletters', icon: Download, label: 'Newsletters' },
     { path: '/admin/centros', icon: Building, label: 'Centros' },
     { path: '/admin/centros-estados', icon: MapPin, label: 'Estados' },
   ];

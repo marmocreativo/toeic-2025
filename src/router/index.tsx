@@ -9,7 +9,6 @@ import Home from '../pages/public/Home';
 import Examenes from '../pages/public/Examenes';
 import ExamenDetalle from '../pages/public/ExamenDetalle';
 import Centros from '../pages/public/Centros';
-import Paginas from '../pages/public/Paginas';
 import PaginaDetalle from '../pages/public/PaginaDetalle';
 import Login from '../pages/auth/Login';
 import ForgotPassword from '../pages/auth/ForgotPassword';
@@ -18,12 +17,14 @@ import NotFound from '../pages/NotFound';
 // Páginas de administrador
 import AdminDashboard from '../pages/admin/Dashboard';
 import AdminSliders from '../pages/admin/Sliders';
+import SliderForm from '../pages/admin/SliderForm';
 import AdminExamenes from '../pages/admin/Examenes';
-import AdminExamenForm from '../pages/admin/ExamenForm';
-import AdminCentros from '../pages/admin/Centros';
-import AdminCentrosEstados from '../pages/admin/CentrosEstados';
+import ExamenForm from '../pages/admin/ExamenForm';
+import AdminCentros from '../pages/admin/Centros'; // ✅ Corregido
+import AdminCentrosEstados from '../pages/admin/CentrosEstados'; // ✅ Corregido
+import AdminNewsletters from '../pages/admin/AdminNewsletters'; // ✅ Nuevos
 import AdminPaginas from '../pages/admin/Paginas';
-import AdminPaginaForm from '../pages/admin/PaginaForm';
+import PaginaForm from '../pages/admin/PaginaForm';
 
 export const router = createBrowserRouter([
   // Rutas públicas
@@ -84,24 +85,36 @@ export const router = createBrowserRouter([
         element: <AdminSliders />,
       },
       {
+        path: 'sliders/nuevo',
+        element: <SliderForm />,
+      },
+      {
+        path: 'sliders/:id/editar',
+        element: <SliderForm />,
+      },
+      {
         path: 'examenes',
         element: <AdminExamenes />,
       },
       {
         path: 'examenes/nuevo',
-        element: <AdminExamenForm />,
+        element: <ExamenForm />,
       },
       {
         path: 'examenes/:id/editar',
-        element: <AdminExamenForm />,
+        element: <ExamenForm />,
       },
       {
         path: 'centros',
         element: <AdminCentros />,
       },
       {
-        path: 'centros-estados',
+        path: 'centros-estados', // ✅ Ruta para gestión de estados
         element: <AdminCentrosEstados />,
+      },
+      {
+        path: 'newsletters', // ✅ Nueva ruta para newsletters
+        element: <AdminNewsletters />,
       },
       {
         path: 'paginas',
@@ -109,11 +122,11 @@ export const router = createBrowserRouter([
       },
       {
         path: 'paginas/nueva',
-        element: <AdminPaginaForm />,
+        element: <PaginaForm />,
       },
       {
         path: 'paginas/:id/editar',
-        element: <AdminPaginaForm />,
+        element: <PaginaForm />,
       },
     ],
   },
