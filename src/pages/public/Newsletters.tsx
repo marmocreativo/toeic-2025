@@ -1,26 +1,27 @@
-// src/pages/public/Examenes.tsx
+// src/pages/public/Newsletters.tsx
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../../hooks/useLanguage';
 import { generateLocalizedPath } from '../../utils/languageUtils';
-import { examenService } from '../../services/examenService';
-import type { Examen } from '../../types/examen';
+import { getNewsletters } from '../../services/newsletterService';
+import type { Newsletter } from '../../types/newsletter';
 import { 
-  Clock, 
-  Users, 
-  Award, 
-  ArrowRight, 
-  Search,
-  Filter,
+  FileText, 
+  Search, 
+  Download,
   Calendar,
+  Eye,
   Building2,
   BookOpen,
-  Target
+  RefreshCw,
+  Clock,
+  ArrowRight
 } from 'lucide-react';
+import { Button } from '../../components/ui/button';
 
-export default function Examenes() {
-  const [examenes, setExamenes] = useState<Examen[]>([]);
-  const [filteredExamenes, setFilteredExamenes] = useState<Examen[]>([]);
+export default function Newsletters() {
+  const [newsletters, setNewsletters] = useState<Newsletter[]>([]);
+  const [filteredNewsletters, setFilteredNewsletters] = useState<Newsletter[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const { language } = useLanguage();
@@ -28,83 +29,90 @@ export default function Examenes() {
   // Textos según el idioma
   const texts = {
     es: {
-      title: 'Exámenes TOEIC',
-      subtitle: 'Encuentra el examen TOEIC perfecto para tus necesidades profesionales',
-      searchPlaceholder: 'Buscar exámenes...',
-      noResults: 'No se encontraron exámenes',
+      title: 'Boletines TOEIC',
+      subtitle: 'Mantente actualizado con las últimas noticias y recursos de TOEIC',
+      searchPlaceholder: 'Buscar boletines...',
+      noResults: 'No se encontraron boletines',
       noResultsDesc: 'Intenta con otros términos de búsqueda',
-      learnMore: 'Conoce Más',
+      download: 'Descargar PDF',
       viewDetails: 'Ver Detalles',
-      ctaTitle: '¿Listo para Comenzar tu Evaluación TOEIC?',
-      ctaDescription: 'Programa tu examen en uno de nuestros centros autorizados y da el siguiente paso en tu carrera profesional.',
-      ctaButton: 'Encontrar Centros',
-      ctaSecondary: 'Ver Horarios',
+      publishedOn: 'Publicado el',
+      ctaTitle: '¿Buscas Más Recursos?',
+      ctaDescription: 'Explora nuestros exámenes disponibles o encuentra un centro autorizado cerca de ti.',
+      ctaButton: 'Ver Exámenes',
+      ctaSecondary: 'Encontrar Centros',
       features: {
-        global: 'Reconocimiento Global',
-        fast: 'Resultados Rápidos',
-        reliable: 'Evaluación Confiable'
+        updated: 'Contenido Actualizado',
+        official: 'Información Oficial',
+        free: 'Descarga Gratuita'
       }
     },
     en: {
-      title: 'TOEIC Tests',
-      subtitle: 'Find the perfect TOEIC test for your professional needs',
-      searchPlaceholder: 'Search tests...',
-      noResults: 'No tests found',
+      title: 'TOEIC Newsletters',
+      subtitle: 'Stay updated with the latest TOEIC news and resources',
+      searchPlaceholder: 'Search newsletters...',
+      noResults: 'No newsletters found',
       noResultsDesc: 'Try different search terms',
-      learnMore: 'Learn More',
+      download: 'Download PDF',
       viewDetails: 'View Details',
-      ctaTitle: 'Ready to Start Your TOEIC Assessment?',
-      ctaDescription: 'Schedule your test at one of our authorized centers and take the next step in your professional career.',
-      ctaButton: 'Find Centers',
-      ctaSecondary: 'View Schedules',
+      publishedOn: 'Published on',
+      ctaTitle: 'Looking for More Resources?',
+      ctaDescription: 'Explore our available tests or find an authorized center near you.',
+      ctaButton: 'View Tests',
+      ctaSecondary: 'Find Centers',
       features: {
-        global: 'Global Recognition',
-        fast: 'Fast Results',
-        reliable: 'Reliable Assessment'
+        updated: 'Updated Content',
+        official: 'Official Information',
+        free: 'Free Download'
       }
     }
   };
 
   const currentTexts = texts[language];
 
-  // Cargar exámenes
+  // Cargar newsletters
   useEffect(() => {
-    const loadExamenes = async () => {
+    const loadNewsletters = async () => {
       try {
         setLoading(true);
-        const data = await examenService.getExamenes();
-        const publicExamenes = data.filter(examen => examen.publicado);
-        setExamenes(publicExamenes);
-        setFilteredExamenes(publicExamenes);
+        const data = await getNewsletters();
+        const publicNewsletters = data.filter(newsletter => newsletter.publicado);
+        setNewsletters(publicNewsletters);
+        setFilteredNewsletters(publicNewsletters);
       } catch (error) {
-        console.error('Error loading examenes:', error);
+        console.error('Error loading newsletters:', error);
       } finally {
         setLoading(false);
       }
     };
-    loadExamenes();
+    loadNewsletters();
   }, []);
 
-  // Filtrar exámenes por término de búsqueda
+  // Filtrar newsletters por término de búsqueda
   useEffect(() => {
     if (!searchTerm.trim()) {
-      setFilteredExamenes(examenes);
+      setFilteredNewsletters(newsletters);
     } else {
-      const filtered = examenes.filter(examen => {
-        const titulo = language === 'es' ? examen.titulo : examen.en_titulo;
-        const resumen = language === 'es' ? examen.resumen : examen.en_resumen;
-        const contenido = language === 'es' ? examen.contenido : examen.en_contenido;
-        
+      const filtered = newsletters.filter(newsletter => {
         const searchText = searchTerm.toLowerCase();
         return (
-          (titulo && titulo.toLowerCase().includes(searchText)) ||
-          (resumen && resumen.toLowerCase().includes(searchText)) ||
-          (contenido && contenido.toLowerCase().includes(searchText))
+          newsletter.titulo.toLowerCase().includes(searchText) ||
+          (newsletter.descripcion && newsletter.descripcion.toLowerCase().includes(searchText))
         );
       });
-      setFilteredExamenes(filtered);
+      setFilteredNewsletters(filtered);
     }
-  }, [searchTerm, examenes, language]);
+  }, [searchTerm, newsletters]);
+
+  // Formato de fecha
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString(language === 'es' ? 'es-ES' : 'en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
 
   // Componente de carga
   if (loading) {
@@ -167,91 +175,110 @@ export default function Examenes() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
             <div className="flex items-center justify-center space-x-3">
-              <Award className="w-8 h-8 text-blue-600" />
+              <RefreshCw className="w-8 h-8 text-blue-600" />
               <span className="text-lg font-semibold text-gray-700">
-                {currentTexts.features.global}
+                {currentTexts.features.updated}
               </span>
             </div>
             <div className="flex items-center justify-center space-x-3">
-              <Clock className="w-8 h-8 text-green-600" />
+              <FileText className="w-8 h-8 text-green-600" />
               <span className="text-lg font-semibold text-gray-700">
-                {currentTexts.features.fast}
+                {currentTexts.features.official}
               </span>
             </div>
             <div className="flex items-center justify-center space-x-3">
-              <Target className="w-8 h-8 text-purple-600" />
+              <Download className="w-8 h-8 text-purple-600" />
               <span className="text-lg font-semibold text-gray-700">
-                {currentTexts.features.reliable}
+                {currentTexts.features.free}
               </span>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Exámenes Grid */}
+      {/* Newsletters Grid */}
       <section className="py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Results Count */}
           <div className="mb-8">
             <p className="text-gray-600">
-              {filteredExamenes.length} {filteredExamenes.length === 1 ? 'examen encontrado' : 'exámenes encontrados'}
+              {filteredNewsletters.length} {filteredNewsletters.length === 1 ? 'boletín encontrado' : 'boletines encontrados'}
             </p>
           </div>
 
-          {/* Grid de Exámenes */}
-          {filteredExamenes.length > 0 ? (
+          {/* Grid de Newsletters */}
+          {filteredNewsletters.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {filteredExamenes.map((examen) => (
+              {filteredNewsletters.map((newsletter) => (
                 <div 
-                  key={examen.id} 
+                  key={newsletter.id} 
                   className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300 group"
                 >
-                  {/* Imagen */}
-                  {examen.imagen ? (
-                    <div className="relative h-48 overflow-hidden">
-                      <img
-                        src={examen.imagen}
-                        alt={language === 'es' ? (examen.titulo || '') : (examen.en_titulo || '')}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  {/* Header con icono PDF */}
+                  <div className="h-48 bg-gradient-to-br from-red-400 to-red-600 flex items-center justify-center relative">
+                    <FileText className="w-20 h-20 text-white" />
+                    <div className="absolute top-4 right-4 bg-white bg-opacity-20 backdrop-blur-sm rounded-full p-2">
+                      <Download className="w-5 h-5 text-white" />
                     </div>
-                  ) : (
-                    <div className="h-48 bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center">
-                      <BookOpen className="w-16 h-16 text-white" />
+                    <div className="absolute bottom-4 left-4 bg-white bg-opacity-90 backdrop-blur-sm rounded-lg px-3 py-1">
+                      <span className="text-sm font-medium text-red-600">PDF</span>
                     </div>
-                  )}
+                  </div>
 
                   {/* Contenido */}
                   <div className="p-6">
                     <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-blue-600 transition-colors">
-                      {language === 'es' ? (examen.titulo || '') : (examen.en_titulo || '')}
+                      {newsletter.titulo}
                     </h3>
                     
-                    <p className="text-gray-600 text-sm mb-4 line-clamp-3 leading-relaxed">
-                      {language === 'es' ? (examen.resumen || '') : (examen.en_resumen || '')}
-                    </p>
+                    {newsletter.descripcion && (
+                      <p className="text-gray-600 text-sm mb-4 line-clamp-3 leading-relaxed">
+                        {newsletter.descripcion}
+                      </p>
+                    )}
 
                     {/* Metadatos */}
                     <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
                       <div className="flex items-center space-x-1">
-                        <Users className="w-4 h-4" />
-                        <span>Profesional</span>
+                        <Calendar className="w-4 h-4" />
+                        <span>{currentTexts.publishedOn}</span>
                       </div>
                       <div className="flex items-center space-x-1">
                         <Clock className="w-4 h-4" />
-                        <span>2-4 horas</span>
+                        <span>{formatDate(newsletter.fecha_publicacion)}</span>
                       </div>
                     </div>
 
-                    {/* Botón */}
-                    <Link
-                      to={generateLocalizedPath('examen_detalle', language, { url: examen.url })}
-                      className="inline-flex items-center justify-center w-full px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors group"
-                    >
-                      {currentTexts.viewDetails}
-                      <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                    </Link>
+                    {/* Botones */}
+                    <div className="space-y-2">
+                      {newsletter.archivo && (
+                        <Button 
+                          className="w-full bg-red-600 hover:bg-red-700" 
+                          asChild
+                        >
+                          <a 
+                            href={newsletter.archivo} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center justify-center gap-2"
+                          >
+                            <Download className="w-4 h-4" />
+                            {currentTexts.download}
+                          </a>
+                        </Button>
+                      )}
+                      
+                      <Button 
+                        variant="outline" 
+                        className="w-full"
+                        asChild
+                      >
+                        <Link to={generateLocalizedPath('newsletter_detalle', language, { id: newsletter.id.toString() })}>
+                          {currentTexts.viewDetails}
+                          <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                        </Link>
+                      </Button>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -259,7 +286,7 @@ export default function Examenes() {
           ) : (
             /* Estado vacío */
             <div className="text-center py-16">
-              <BookOpen className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+              <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
               <h3 className="text-xl font-semibold text-gray-900 mb-2">
                 {currentTexts.noResults}
               </h3>
@@ -270,8 +297,8 @@ export default function Examenes() {
                 onClick={() => setSearchTerm('')}
                 className="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
               >
-                <Filter className="w-4 h-4 mr-2" />
-                Limpiar Filtros
+                <Search className="w-4 h-4 mr-2" />
+                Limpiar Búsqueda
               </button>
             </div>
           )}
@@ -289,20 +316,27 @@ export default function Examenes() {
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link
-              to={generateLocalizedPath('centros', language)}
-              className="inline-flex items-center px-8 py-4 bg-white text-blue-600 font-semibold rounded-lg hover:bg-gray-100 transition-colors shadow-lg"
+            <Button 
+              size="lg" 
+              className="bg-white text-blue-600 hover:bg-gray-100"
+              asChild
             >
-              <Building2 className="mr-2 w-5 h-5" />
-              {currentTexts.ctaButton}
-            </Link>
-            <Link
-              to={generateLocalizedPath('examenes', language)}
-              className="inline-flex items-center px-8 py-4 border-2 border-white text-white font-semibold rounded-lg hover:bg-white hover:text-blue-600 transition-colors"
+              <Link to={generateLocalizedPath('examenes', language)}>
+                <BookOpen className="w-5 h-5 mr-2" />
+                {currentTexts.ctaButton}
+              </Link>
+            </Button>
+            <Button 
+              size="lg" 
+              variant="outline" 
+              className="border-white text-white hover:bg-white hover:text-blue-600"
+              asChild
             >
-              <Calendar className="mr-2 w-5 h-5" />
-              {currentTexts.ctaSecondary}
-            </Link>
+              <Link to={generateLocalizedPath('centros', language)}>
+                <Building2 className="w-5 h-5 mr-2" />
+                {currentTexts.ctaSecondary}
+              </Link>
+            </Button>
           </div>
         </div>
       </section>

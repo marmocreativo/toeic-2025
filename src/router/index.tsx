@@ -1,5 +1,6 @@
-// src/router/index.tsx
-import { createBrowserRouter } from 'react-router-dom';
+// src/router/index.tsx - Versión actualizada con contacto
+
+import { createBrowserRouter, Navigate } from 'react-router-dom';
 import PublicLayout from '../layouts/PublicLayout';
 import AdminLayout from '../layouts/AdminLayout';
 import ProtectedRoute from '../components/auth/ProtectedRoute';
@@ -10,6 +11,10 @@ import Examenes from '../pages/public/Examenes';
 import ExamenDetalle from '../pages/public/ExamenDetalle';
 import Centros from '../pages/public/Centros';
 import PaginaDetalle from '../pages/public/PaginaDetalle';
+import Newsletters from '../pages/public/Newsletters';
+import NewsletterDetalle from '../pages/public/NewsletterDetalle';
+import Paginas from '../pages/public/Paginas';
+import Contacto from '../pages/public/Contacto'; // ✅ Nueva importación
 import Login from '../pages/auth/Login';
 import ForgotPassword from '../pages/auth/ForgotPassword';
 import NotFound from '../pages/NotFound';
@@ -20,14 +25,14 @@ import AdminSliders from '../pages/admin/Sliders';
 import SliderForm from '../pages/admin/SliderForm';
 import AdminExamenes from '../pages/admin/Examenes';
 import ExamenForm from '../pages/admin/ExamenForm';
-import AdminCentros from '../pages/admin/Centros'; // ✅ Corregido
-import AdminCentrosEstados from '../pages/admin/CentrosEstados'; // ✅ Corregido
-import AdminNewsletters from '../pages/admin/AdminNewsletters'; // ✅ Nuevos
+import AdminCentros from '../pages/admin/Centros';
+import AdminCentrosEstados from '../pages/admin/CentrosEstados';
+import AdminNewsletters from '../pages/admin/AdminNewsletters';
 import AdminPaginas from '../pages/admin/Paginas';
 import PaginaForm from '../pages/admin/PaginaForm';
 
 export const router = createBrowserRouter([
-  // Rutas públicas
+  // Rutas públicas en español (por defecto)
   {
     path: '/',
     element: <PublicLayout />,
@@ -41,20 +46,32 @@ export const router = createBrowserRouter([
         element: <Examenes />,
       },
       {
-        path: 'examenes/:url',
+        path: 'examen/:url',
         element: <ExamenDetalle />,
       },
       {
-        path: 'centros',
-        element: <Centros />,
+        path: 'paginas',
+        element: <Paginas />,
       },
       {
-        path: 'centros/:estado',
-        element: <Centros />,
-      },
-      {
-        path: 'paginas/:url',
+        path: 'pagina/:url',
         element: <PaginaDetalle />,
+      },
+      {
+        path: 'newsletters',
+        element: <Newsletters />,
+      },
+      {
+        path: 'newsletter/:id',
+        element: <NewsletterDetalle />,
+      },
+      {
+        path: 'centros-autorizados',
+        element: <Centros />,
+      },
+      {
+        path: 'contacto', // ✅ Nueva ruta en español
+        element: <Contacto />,
       },
       {
         path: 'login',
@@ -67,7 +84,69 @@ export const router = createBrowserRouter([
     ],
   },
   
-  // Rutas de administrador (protegidas)
+  // Rutas públicas en inglés (prefijo /en)
+  {
+    path: '/en',
+    element: <PublicLayout />,
+    children: [
+      {
+        index: true,
+        element: <Home />,
+      },
+      {
+        path: 'tests',
+        element: <Examenes />,
+      },
+      {
+        path: 'test/:url',
+        element: <ExamenDetalle />,
+      },
+      {
+        path: 'pages',
+        element: <Paginas />,
+      },
+      {
+        path: 'page/:url',
+        element: <PaginaDetalle />,
+      },
+      {
+        path: 'newsletters',
+        element: <Newsletters />,
+      },
+      {
+        path: 'newsletter/:id',
+        element: <NewsletterDetalle />,
+      },
+      {
+        path: 'authorized-centers',
+        element: <Centros />,
+      },
+      {
+        path: 'contact', // ✅ Nueva ruta en inglés
+        element: <Contacto />,
+      },
+      {
+        path: 'login',
+        element: <Login />,
+      },
+      {
+        path: 'forgot-password',
+        element: <ForgotPassword />,
+      },
+    ],
+  },
+  
+  // Redirects para mantener compatibilidad
+  {
+    path: '/centros',
+    element: <Navigate to="/centros-autorizados" replace />,
+  },
+  {
+    path: '/centros/:estado',
+    element: <Navigate to="/centros-autorizados" replace />,
+  },
+  
+  // Rutas de administrador (protegidas) - Solo en español
   {
     path: '/admin',
     element: (
@@ -109,11 +188,11 @@ export const router = createBrowserRouter([
         element: <AdminCentros />,
       },
       {
-        path: 'centros-estados', // ✅ Ruta para gestión de estados
+        path: 'centros-estados',
         element: <AdminCentrosEstados />,
       },
       {
-        path: 'newsletters', // ✅ Nueva ruta para newsletters
+        path: 'newsletters',
         element: <AdminNewsletters />,
       },
       {
