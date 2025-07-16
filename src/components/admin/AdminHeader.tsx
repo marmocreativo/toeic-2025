@@ -135,7 +135,7 @@ export default function AdminHeader() {
                 <Link to="/admin" className="hover:text-blue-600 transition-colors">
                   <Home className="w-3 h-3" />
                 </Link>
-                {breadcrumbs.map((crumb, index) => (
+                {breadcrumbs.map((crumb, _index) => (
                   <div key={crumb.path} className="flex items-center">
                     <span className="mx-1">/</span>
                     {crumb.isLast ? (
