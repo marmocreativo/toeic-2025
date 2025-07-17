@@ -1,5 +1,5 @@
 // src/pages/admin/ExamenForm.tsx
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { examenService } from '../../services/examenService';
 import { StorageService, STORAGE_BUCKETS } from '../../services/storageService';

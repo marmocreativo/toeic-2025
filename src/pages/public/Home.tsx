@@ -11,8 +11,7 @@ import {
   ChevronLeft, 
   ChevronRight, 
   Building2, 
-  ArrowRight,
-  BookOpen
+  ArrowRight
 } from 'lucide-react';
 
 // Componente de Slider Principal

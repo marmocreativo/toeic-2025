@@ -14,7 +14,6 @@ import {
   BookOpen,
   MessageSquare,
   Globe,
-  Users,
   HeadphonesIcon
 } from 'lucide-react';
 

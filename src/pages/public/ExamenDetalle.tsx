@@ -21,17 +21,6 @@ import {
 const ExamenHero = ({ examen }: { examen: ExamenCompleto }) => {
   const { language } = useLanguage();
 
-  const texts = {
-    es: {
-      backToExams: 'Volver a Exámenes'
-    },
-    en: {
-      backToExams: 'Back to Tests'
-    }
-  };
-
-  const currentTexts = texts[language];
-
   return (
     <section className="gradient-hero text-white py-4 -mt-16 pt-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

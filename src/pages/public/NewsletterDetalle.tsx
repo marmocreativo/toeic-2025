@@ -13,8 +13,7 @@ import {
   Download,
   Building2,
   BookOpen,
-  ExternalLink,
-  Clock
+  ExternalLink
 } from 'lucide-react';
 
 export default function NewsletterDetalle() {

@@ -1,7 +1,7 @@
 // src/hooks/useAuth.ts
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import type { User, AuthError } from '@supabase/supabase-js';
+import type { User } from '@supabase/supabase-js';
 
 export function useAuth() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
