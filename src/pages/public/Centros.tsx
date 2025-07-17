@@ -1,5 +1,6 @@
 // src/pages/public/Centros.tsx
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { useLanguage } from '../../hooks/useLanguage';
 import { generateLocalizedPath } from '../../utils/languageUtils';
 import { getCentros, getCentrosEstados } from '../../services/centroService';
@@ -16,8 +17,6 @@ import {
   Globe,
   CheckCircle
 } from 'lucide-react';
-import { Button } from '../../components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 
 export default function Centros() {
   const [centros, setCentros] = useState<CentroConEstado[]>([]);
@@ -42,7 +41,14 @@ export default function Centros() {
       phone: 'Teléfono',
       email: 'Correo electrónico',
       address: 'Dirección',
-      ctaTitle: '¿Listo para tu Examen TOEIC?',
+      clearSearch: 'Limpiar Búsqueda',
+      clearFilters: 'Limpiar Filtros',
+      resultsCount: 'centros encontrados',
+      resultsSingle: 'centro encontrado',
+      in: 'en',
+      centers: 'centros',
+      center: 'centro',
+      ctaTitle: '¡No lo pienses más!',
       ctaDescription: 'Explora nuestros exámenes disponibles y programa tu evaluación.',
       ctaButton: 'Ver Exámenes',
       ctaSecondary: 'Ver Horarios',
@@ -64,6 +70,13 @@ export default function Centros() {
       phone: 'Phone',
       email: 'Email',
       address: 'Address',
+      clearSearch: 'Clear Search',
+      clearFilters: 'Clear Filters',
+      resultsCount: 'centers found',
+      resultsSingle: 'center found',
+      in: 'in',
+      centers: 'centers',
+      center: 'center',
       ctaTitle: 'Ready for Your TOEIC Exam?',
       ctaDescription: 'Explore our available tests and schedule your assessment.',
       ctaButton: 'View Tests',
@@ -144,17 +157,17 @@ export default function Centros() {
   // Componente de carga
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-bg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="animate-pulse">
-            <div className="h-8 bg-gray-300 rounded w-1/3 mb-4"></div>
-            <div className="h-4 bg-gray-300 rounded w-2/3 mb-8"></div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[...Array(6)].map((_, i) => (
-                <div key={i} className="bg-white rounded-lg shadow-md p-6">
-                  <div className="h-6 bg-gray-300 rounded mb-2"></div>
-                  <div className="h-4 bg-gray-300 rounded mb-4"></div>
-                  <div className="h-4 bg-gray-300 rounded w-1/2"></div>
+            <div className="h-8 bg-border rounded w-1/3 mb-4"></div>
+            <div className="h-4 bg-border rounded w-2/3 mb-8"></div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {[...Array(8)].map((_, i) => (
+                <div key={i} className="bg-bg-light rounded-lg shadow-md p-4">
+                  <div className="h-5 bg-border rounded mb-2"></div>
+                  <div className="h-3 bg-border rounded mb-2"></div>
+                  <div className="h-3 bg-border rounded w-1/2"></div>
                 </div>
               ))}
             </div>
@@ -165,15 +178,15 @@ export default function Centros() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-bg">
       {/* Hero Section */}
-      <section className="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-16">
+      <section className="gradient-hero text-primary py-16 -mt-16 pt-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-medium text-primary mb-4">
               {currentTexts.title}
             </h1>
-            <p className="text-xl md:text-2xl text-blue-100 mb-8 max-w-3xl mx-auto">
+            <p className="text-xl md:text-2xl text-primary/90 mb-8 max-w-3xl mx-auto">
               {currentTexts.subtitle}
             </p>
             
@@ -182,23 +195,23 @@ export default function Centros() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {/* Search Bar */}
                 <div className="md:col-span-2 relative">
-                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-text-muted w-5 h-5" />
                   <input
                     type="text"
                     placeholder={currentTexts.searchPlaceholder}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-12 pr-4 py-4 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
+                    className="w-full pl-12 pr-4 py-4 rounded-lg text-text placeholder-text-muted focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-bg-light border border-border"
                   />
                 </div>
                 
                 {/* Estado Filter */}
                 <div className="relative">
-                  <Filter className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  <Filter className="absolute left-4 top-1/2 transform -translate-y-1/2 text-text-muted w-5 h-5" />
                   <select
                     value={selectedEstado}
                     onChange={(e) => setSelectedEstado(e.target.value)}
-                    className="w-full pl-12 pr-4 py-4 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent appearance-none bg-white"
+                    className="w-full pl-12 pr-4 py-4 rounded-lg text-text focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent appearance-none bg-bg-light border border-border"
                   >
                     <option value="">{currentTexts.allStates}</option>
                     {estados.map(estado => (
@@ -215,24 +228,24 @@ export default function Centros() {
       </section>
 
       {/* Features Bar */}
-      <section className="bg-white border-b border-gray-200 py-8">
+      <section className="bg-primary text-white py-4">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center divide-x-1 divide-solid divide-white">
             <div className="flex items-center justify-center space-x-3">
-              <CheckCircle className="w-8 h-8 text-blue-600" />
-              <span className="text-lg font-semibold text-gray-700">
+              <CheckCircle className="w-8 h-8 text-accent" />
+              <span className="text-lg font-medium text-white">
                 {currentTexts.features.authorized}
               </span>
             </div>
             <div className="flex items-center justify-center space-x-3">
-              <Globe className="w-8 h-8 text-green-600" />
-              <span className="text-lg font-semibold text-gray-700">
+              <Globe className="w-8 h-8 text-accent" />
+              <span className="text-lg font-medium text-white">
                 {currentTexts.features.nationwide}
               </span>
             </div>
             <div className="flex items-center justify-center space-x-3">
-              <Users className="w-8 h-8 text-purple-600" />
-              <span className="text-lg font-semibold text-gray-700">
+              <Users className="w-8 h-8 text-accent" />
+              <span className="text-lg font-medium text-white">
                 {currentTexts.features.support}
               </span>
             </div>
@@ -241,15 +254,15 @@ export default function Centros() {
       </section>
 
       {/* Centros Section */}
-      <section className="py-12">
+      <section className="py-16 bg-bg-light">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Results Count */}
           <div className="mb-8">
-            <p className="text-gray-600">
-              {filteredCentros.length} {filteredCentros.length === 1 ? 'centro encontrado' : 'centros encontrados'}
+            <p className="text-secondary">
+              {filteredCentros.length} {filteredCentros.length === 1 ? currentTexts.resultsSingle : currentTexts.resultsCount}
               {selectedEstado && (
-                <span className="ml-2 text-blue-600">
-                  en {estados.find(e => e.id.toString() === selectedEstado)?.nombre}
+                <span className="ml-2 text-primary">
+                  {currentTexts.in} {estados.find(e => e.id.toString() === selectedEstado)?.nombre}
                 </span>
               )}
             </p>
@@ -257,54 +270,56 @@ export default function Centros() {
 
           {/* Centros agrupados por estado */}
           {Object.keys(centrosPorEstado).length > 0 ? (
-            <div className="space-y-12">
+            <div className="space-y-8">
               {Object.entries(centrosPorEstado).map(([estadoNombre, centrosEstado]) => (
                 <div key={estadoNombre}>
-                  <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
-                    <MapPin className="w-6 h-6 text-blue-600 mr-2" />
+                  <h2 className="text-2xl font-medium text-primary mb-6 flex items-center">
+                    <MapPin className="w-6 h-6 text-accent mr-2" />
                     {estadoNombre}
-                    <span className="ml-2 text-sm font-normal text-gray-500">
-                      ({centrosEstado.length} {centrosEstado.length === 1 ? 'centro' : 'centros'})
+                    <span className="ml-2 text-sm font-normal text-text-muted">
+                      ({centrosEstado.length} {centrosEstado.length === 1 ? currentTexts.center : currentTexts.centers})
                     </span>
                   </h2>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {/* Grid compacto - 4 columnas en desktop */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                     {centrosEstado.map((centro) => (
-                      <Card key={centro.id} className="hover:shadow-lg transition-shadow duration-300 group">
-                        <CardHeader>
-                          <CardTitle className="flex items-start justify-between">
-                            <div className="flex items-start gap-3">
-                              <div className="bg-blue-100 rounded-lg p-2 flex-shrink-0">
-                                <Building2 className="w-5 h-5 text-blue-600" />
-                              </div>
-                              <div className="min-w-0 flex-1">
-                                <h3 className="font-semibold text-gray-900 group-hover:text-blue-600 transition-colors leading-tight">
-                                  {centro.nombre}
-                                </h3>
-                                <p className="text-sm text-gray-500 mt-1">
-                                  Centro Autorizado TOEIC
-                                </p>
-                              </div>
-                            </div>
-                          </CardTitle>
-                        </CardHeader>
-                        
-                        <CardContent className="space-y-4">
+                      <div 
+                        key={centro.id} 
+                        className="bg-bg-light rounded-lg shadow-md border border-border hover:shadow-lg hover:border-primary/30 transition-all duration-300 group p-4"
+                      >
+                        {/* Header compacto */}
+                        <div className="flex items-start gap-3 mb-3">
+                          <div className="bg-primary/10 rounded-lg p-2 flex-shrink-0">
+                            <Building2 className="w-4 h-4 text-primary" />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <h3 className="font-semibold text-text group-hover:text-primary transition-colors leading-tight text-sm">
+                              {centro.nombre}
+                            </h3>
+                            <p className="text-xs text-text-muted mt-1">
+                              Centro Autorizado TOEIC
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Información compacta */}
+                        <div className="space-y-2 mb-3">
                           {/* Dirección */}
-                          <div className="flex items-start gap-3">
-                            <MapPin className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
-                            <p className="text-sm text-gray-600 leading-relaxed">
+                          <div className="flex items-start gap-2">
+                            <MapPin className="w-3 h-3 text-text-muted mt-0.5 flex-shrink-0" />
+                            <p className="text-xs text-text-muted leading-relaxed line-clamp-2">
                               {centro.direccion}
                             </p>
                           </div>
 
                           {/* Teléfono */}
                           {centro.telefono && (
-                            <div className="flex items-center gap-3">
-                              <Phone className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                            <div className="flex items-center gap-2">
+                              <Phone className="w-3 h-3 text-text-muted flex-shrink-0" />
                               <a 
                                 href={`tel:${centro.telefono}`}
-                                className="text-sm text-blue-600 hover:text-blue-700 transition-colors"
+                                className="text-xs text-primary hover:text-primary-dark transition-colors"
                               >
                                 {centro.telefono}
                               </a>
@@ -313,35 +328,32 @@ export default function Centros() {
 
                           {/* Email */}
                           {centro.correo && (
-                            <div className="flex items-center gap-3">
-                              <Mail className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                            <div className="flex items-center gap-2">
+                              <Mail className="w-3 h-3 text-text-muted flex-shrink-0" />
                               <a 
                                 href={`mailto:${centro.correo}`}
-                                className="text-sm text-blue-600 hover:text-blue-700 transition-colors truncate"
+                                className="text-xs text-primary hover:text-primary-dark transition-colors truncate"
                               >
                                 {centro.correo}
                               </a>
                             </div>
                           )}
+                        </div>
 
-                          {/* Botón de contacto */}
-                          <div className="pt-2">
-                            <Button 
-                              size="sm" 
-                              className="w-full"
-                              onClick={() => {
-                                if (centro.telefono) {
-                                  window.open(`tel:${centro.telefono}`);
-                                } else if (centro.correo) {
-                                  window.open(`mailto:${centro.correo}`);
-                                }
-                              }}
-                            >
-                              {currentTexts.contact}
-                            </Button>
-                          </div>
-                        </CardContent>
-                      </Card>
+                        {/* Botón compacto */}
+                        <button 
+                          className="w-full px-3 py-2 bg-primary hover:bg-primary-dark text-white text-xs font-medium rounded-lg transition-colors"
+                          onClick={() => {
+                            if (centro.telefono) {
+                              window.open(`tel:${centro.telefono}`);
+                            } else if (centro.correo) {
+                              window.open(`mailto:${centro.correo}`);
+                            }
+                          }}
+                        >
+                          {currentTexts.contact}
+                        </button>
+                      </div>
                     ))}
                   </div>
                 </div>
@@ -350,27 +362,27 @@ export default function Centros() {
           ) : (
             /* Estado vacío */
             <div className="text-center py-16">
-              <Building2 className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+              <Building2 className="w-16 h-16 text-border mx-auto mb-4" />
+              <h3 className="text-xl font-semibold text-text mb-2">
                 {currentTexts.noResults}
               </h3>
-              <p className="text-gray-600 mb-6">
+              <p className="text-text-muted mb-6">
                 {currentTexts.noResultsDesc}
               </p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
                 <button
                   onClick={() => setSearchTerm('')}
-                  className="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+                  className="btn-primary"
                 >
                   <Search className="w-4 h-4 mr-2" />
-                  Limpiar Búsqueda
+                  {currentTexts.clearSearch}
                 </button>
                 <button
                   onClick={() => setSelectedEstado('')}
-                  className="inline-flex items-center px-4 py-2 border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-lg transition-colors"
+                  className="btn-outline-primary"
                 >
                   <Filter className="w-4 h-4 mr-2" />
-                  Limpiar Filtros
+                  {currentTexts.clearFilters}
                 </button>
               </div>
             </div>
@@ -379,37 +391,35 @@ export default function Centros() {
       </section>
 
       {/* Call to Action */}
-      <section className="bg-gradient-to-r from-blue-600 to-blue-800 py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-            {currentTexts.ctaTitle}
-          </h2>
-          <p className="text-xl text-blue-100 mb-8 max-w-3xl mx-auto">
-            {currentTexts.ctaDescription}
-          </p>
-          
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button 
-              size="lg" 
-              className="bg-white text-blue-600 hover:bg-gray-100"
-              asChild
-            >
-              <a href={generateLocalizedPath('examenes', language)}>
-                <BookOpen className="w-5 h-5 mr-2" />
-                {currentTexts.ctaButton}
-              </a>
-            </Button>
-            <Button 
-              size="lg" 
-              variant="outline" 
-              className="border-white text-white hover:bg-white hover:text-blue-600"
-              asChild
-            >
-              <a href={generateLocalizedPath('examenes', language)}>
-                <Building2 className="w-5 h-5 mr-2" />
-                {currentTexts.ctaSecondary}
-              </a>
-            </Button>
+      <section className="py-16 gradient-primary">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-3 gap-8 divide-x-1 divide-solid divide-white">
+            <div>
+              <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+                {currentTexts.ctaTitle}
+              </h2>
+            </div>
+            <div className="col-span-2">
+              <p className="text-xl text-white/90 mb-8 max-w-2xl">
+                {currentTexts.ctaDescription}
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4">
+                <Link
+                  to={generateLocalizedPath('examenes', language)}
+                  className="inline-flex items-center px-8 py-3 bg-accent hover:bg-accent-dark text-black font-semibold rounded-lg transition-colors"
+                >
+                  <BookOpen className="mr-2 w-5 h-5" />
+                  {currentTexts.ctaButton}
+                </Link>
+                <Link
+                  to={generateLocalizedPath('examenes', language)}
+                  className="inline-flex items-center px-8 py-4 border-2 border-white text-white font-semibold rounded-lg hover:bg-white hover:text-primary transition-colors"
+                >
+                  <Building2 className="mr-2 w-5 h-5" />
+                  {currentTexts.ctaSecondary}
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
       </section>

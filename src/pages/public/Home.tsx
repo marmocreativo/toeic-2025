@@ -10,13 +10,8 @@ import type { Examen } from '../../types/examen';
 import { 
   ChevronLeft, 
   ChevronRight, 
-  Users, 
-  Award, 
   Building2, 
   ArrowRight,
-  Clock,
-  Globe,
-  Target,
   BookOpen
 } from 'lucide-react';
 
@@ -26,7 +21,7 @@ const HeroSlider = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const { language } = useLanguage();
 
-        useEffect(() => {
+  useEffect(() => {
     const loadSliders = async () => {
       try {
         const data = await sliderService.getPublishedSliders();
@@ -57,55 +52,105 @@ const HeroSlider = () => {
 
   if (sliders.length === 0) {
     return (
-      <div className="relative h-96 bg-gradient-to-r from-blue-600 to-blue-800 flex items-center justify-center">
-        <div className="text-center text-white">
-          <h1 className="text-4xl md:text-6xl font-bold mb-4">TOEIC 2025</h1>
-          <p className="text-xl">Tu camino hacia el éxito profesional</p>
+      <section className="relative h-96 md:h-[500px] lg:h-[600px] overflow-hidden -mt-16">
+        {/* Background con gradiente radial */}
+        <div className="absolute inset-0 bg-gradient-radial from-bg-light from-40% to-bg-dark to-90%" />
+        
+        {/* Contenido por defecto */}
+        <div className="relative h-full flex items-center z-10">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center h-full min-h-[400px]">
+              <div className="space-y-6">
+                <div className="mb-8">
+                  <img 
+                    src="./images/logo.png" 
+                    alt="TOEIC Logo" 
+                    className="h-12 md:h-16 w-auto"
+                  />
+                </div>
+                <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-text leading-tight">
+                  TOEIC 2025
+                </h1>
+                <p className="text-lg md:text-xl text-text-muted leading-relaxed">
+                  Tu camino hacia el éxito profesional
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
+      </section>
     );
   }
 
   const currentSlider = sliders[currentSlide];
 
   return (
-    <section className="relative h-96 md:h-[500px] lg:h-[600px] overflow-hidden">
-      {/* Slider Content */}
-      <div className="relative h-full">
-        {currentSlider.imagen && (
-          <img
-            src={currentSlider.imagen}
-            alt={language === 'es' ? (currentSlider.titulo || '') : (currentSlider.en_titulo || '')}
-            className="absolute inset-0 w-full h-full object-cover"
-          />
-        )}
-        <div className="absolute inset-0 bg-black bg-opacity-40" />
-        
-        {/* Content */}
-        <div className="relative h-full flex items-center">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-            <div className="max-w-2xl text-white">
-              <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold mb-4">
+    <section className="relative h-96 md:h-[500px] lg:h-[600px] overflow-hidden -mt-16">
+      {/* Background con gradiente radial */}
+      <div className="absolute inset-0 gradient-hero" />
+      
+      {/* Texto extra como fondo - Posición absoluta centrada */}
+      {currentSlider.extra && (
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none -mt-64">
+          <h2 className="font-open-sans text-6xl md:text-8xl lg:text-9xl font-black text-white/60 select-none text-center leading-none">
+            {language === 'es' ? (currentSlider.extra || '') : (currentSlider.en_extra || '')}
+          </h2>
+        </div>
+      )}
+      
+      {/* Contenido principal en dos columnas */}
+      <div className="relative h-full flex items-end z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-end h-full min-h-[400px]">
+            
+            {/* Columna Izquierda - Contenido */}
+            <div className="space-y-6 pb-16">
+              {/* Logo */}
+              {currentSlider.logo && (
+              <div className="mb-8">
+                <img 
+                  src={currentSlider.logo}
+                  alt="TOEIC Logo" 
+                  className="h-12 md:h-16 w-auto"
+                />
+              </div>
+              )}
+              
+              {/* Título */}
+              <h1 className="font-open-sans font-light text-3xl md:text-4xl lg:text-5xl font-bold text-primary leading-tight">
                 {language === 'es' ? (currentSlider.titulo || '') : (currentSlider.en_titulo || '')}
               </h1>
-              <p className="text-lg md:text-xl mb-6 opacity-90">
+              
+              {/* Subtítulo */}
+              <p className="text-lg md:text-xl text-text-primary leading-relaxed">
                 {language === 'es' ? (currentSlider.subtitulo || '') : (currentSlider.en_subtitulo || '')}
               </p>
-              {currentSlider.extra && (
-                <p className="text-base md:text-lg mb-8 opacity-80">
-                  {language === 'es' ? (currentSlider.extra || '') : (currentSlider.en_extra || '')}
-                </p>
-              )}
+              
+              {/* Botón */}
               {currentSlider.boton_texto && currentSlider.boton_enlace && (
                 <Link
                   to={currentSlider.boton_enlace}
-                  className="inline-flex items-center px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors"
+                  className="inline-flex items-center px-8 py-4 bg-accent hover:bg-accent-dark text-black font-semibold rounded-lg transition-colors shadow-lg hover:shadow-xl transform hover:-translate-y-1 duration-200"
                 >
                   {language === 'es' ? (currentSlider.boton_texto || '') : (currentSlider.en_boton_texto || '')}
-                  <ArrowRight className="ml-2 w-5 h-5" />
+                  <ArrowRight className="ml-3 w-5 h-5" />
                 </Link>
               )}
             </div>
+            
+            {/* Columna Derecha - Imagen */}
+            <div className="flex justify-center lg:justify-end">
+              {currentSlider.imagen && (
+                <div className="relative">
+                  <img
+                    src={currentSlider.imagen}
+                    alt={language === 'es' ? (currentSlider.titulo || '') : (currentSlider.en_titulo || '')}
+                    className="w-full max-w-md lg:max-w-lg h-auto object-contain drop-shadow-2xl"
+                  />
+                </div>
+              )}
+            </div>
+            
           </div>
         </div>
       </div>
@@ -115,25 +160,27 @@ const HeroSlider = () => {
         <>
           <button
             onClick={prevSlide}
-            className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-20 hover:bg-opacity-30 text-white p-2 rounded-full transition-all"
+            className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-bg-light/20 hover:bg-bg-light/40 backdrop-blur-sm text-text p-3 rounded-full transition-all border border-border/30 shadow-lg z-20"
           >
             <ChevronLeft className="w-6 h-6" />
           </button>
           <button
             onClick={nextSlide}
-            className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-20 hover:bg-opacity-30 text-white p-2 rounded-full transition-all"
+            className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-bg-light/20 hover:bg-bg-light/40 backdrop-blur-sm text-text p-3 rounded-full transition-all border border-border/30 shadow-lg z-20"
           >
             <ChevronRight className="w-6 h-6" />
           </button>
 
           {/* Dots */}
-          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
+          <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex space-x-3 z-20">
             {sliders.map((_, index) => (
               <button
                 key={index}
                 onClick={() => setCurrentSlide(index)}
-                className={`w-3 h-3 rounded-full transition-all ${
-                  index === currentSlide ? 'bg-white' : 'bg-white bg-opacity-50'
+                className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                  index === currentSlide 
+                    ? 'bg-primary scale-125 shadow-lg' 
+                    : 'bg-text-muted/50 hover:bg-text-muted/80'
                 }`}
               />
             ))}
@@ -150,56 +197,60 @@ const StatsSection = () => {
 
   const texts = {
     es: {
-      title: 'TOEIC en Números',
-      students: 'Estudiantes Anuales',
-      countries: 'Países',
-      centers: 'Centros Autorizados',
+      block_1: 'Aceptado en',
+      block_2: 'Reputación',
+      block_3: 'Usado por',
     },
     en: {
-      title: 'TOEIC in Numbers',
-      students: 'Annual Students',
-      countries: 'Countries',
-      centers: 'Authorized Centers',
+      block_1: 'Accepted',
+      block_2: 'Reputation',
+      block_3: 'Used by',
+    }
+  };
+
+  const sub_texts = {
+    es: {
+      block_1: 'Paises',
+      block_2: 'Años',
+      block_3: 'Organizaciones',
+    },
+    en: {
+      block_1: 'Contries',
+      block_2: 'Years',
+      block_3: 'Organitations',
     }
   };
 
   const currentTexts = texts[language];
+  const currentSubTexts = sub_texts[language];
 
   const stats = [
     {
-      icon: Users,
-      number: '7M+',
-      label: currentTexts.students,
-      color: 'text-blue-600'
+      number: '+160',
+      label: currentTexts.block_1,
+      sublabel: currentSubTexts.block_1,
     },
     {
-      icon: Globe,
-      number: '160+',
-      label: currentTexts.countries,
-      color: 'text-green-600'
+      number: '+45',
+      label: currentTexts.block_2,
+      sublabel: currentSubTexts.block_2,
     },
     {
-      icon: Building2,
-      number: '14,000+',
-      label: currentTexts.centers,
-      color: 'text-purple-600'
+      number: '+14K',
+      label: currentTexts.block_3,
+      sublabel: currentSubTexts.block_3,
     }
   ];
 
   return (
-    <section className="py-16 bg-gray-50">
+    <section className="py-4 bg-primary text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">
-          {currentTexts.title}
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 divide-x-1 divide-solid divide-white">
           {stats.map((stat, index) => (
             <div key={index} className="text-center">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-white rounded-full shadow-lg mb-4">
-                <stat.icon className={`w-8 h-8 ${stat.color}`} />
-              </div>
-              <h3 className="text-4xl font-bold text-gray-900 mb-2">{stat.number}</h3>
-              <p className="text-lg text-gray-600">{stat.label}</p>
+              <p className="text-lg text-white-muted">{stat.label}</p>
+              <h3 className="text-6xl font-light text-white mb-2">{stat.number}</h3>
+              <p className="text-lg text-white-muted">{stat.sublabel}</p>
             </div>
           ))}
         </div>
@@ -215,81 +266,49 @@ const AboutToeicSection = () => {
   const texts = {
     es: {
       title: '¿Qué es TOEIC?',
-      subtitle: 'El estándar mundial para evaluar el inglés en el trabajo',
-      description: 'TOEIC (Test of English for International Communication) es la evaluación líder mundial de habilidades en inglés utilizada en el lugar de trabajo. Más de 14,000 organizaciones en 160 países confían en las puntuaciones TOEIC.',
-      features: [
-        {
-          icon: Target,
-          title: 'Evaluación Precisa',
-          description: 'Mide con precisión las habilidades de inglés necesarias en entornos profesionales internacionales.'
-        },
-        {
-          icon: Award,
-          title: 'Reconocimiento Global',
-          description: 'Aceptado por empresas, universidades y organizaciones gubernamentales en todo el mundo.'
-        },
-        {
-          icon: Clock,
-          title: 'Resultados Rápidos',
-          description: 'Obtén tus resultados en línea en un plazo de 13 días hábiles después del examen.'
-        }
-      ]
+      paragraph_1: 'TOEIC® (Test of English for International Communication) es una certificación internacional que evalúa tu dominio del inglés en situaciones reales de trabajo. Es aceptada por más de 14,000 organizaciones en todo el mundo.',
+      subtitle: 'Ventajas del exámen',
+      paragraph_2: 'Evalúa inglés real en contextos laborales. No se reprueba: se mide tu nivel (escala de 10 a 990 puntos). Certificación válida por 2 años. Resultados rápidos y confiables. Alineado al Marco Común Europeo de Referencia (MCER).'
     },
     en: {
-      title: 'What is TOEIC?',
-      subtitle: 'The global standard for assessing English-language communication skills used in the workplace',
-      description: 'TOEIC (Test of English for International Communication) is the world\'s leading assessment of English-language skills used in the workplace. More than 14,000 organizations in 160 countries trust TOEIC scores.',
-      features: [
-        {
-          icon: Target,
-          title: 'Accurate Assessment',
-          description: 'Precisely measures English skills needed in international professional environments.'
-        },
-        {
-          icon: Award,
-          title: 'Global Recognition',
-          description: 'Accepted by companies, universities, and government organizations worldwide.'
-        },
-        {
-          icon: Clock,
-          title: 'Fast Results',
-          description: 'Get your results online within 13 business days after the test.'
-        }
-      ]
+      title: '¿Qué es TOEIC?',
+      paragraph_1: 'TOEIC® (Test of English for International Communication) es una certificación internacional que evalúa tu dominio del inglés en situaciones reales de trabajo. Es aceptada por más de 14,000 organizaciones en todo el mundo.',
+      subtitle: 'Ventajas del exámen',
+      paragraph_2: 'Evalúa inglés real en contextos laborales. No se reprueba: se mide tu nivel (escala de 10 a 990 puntos). Certificación válida por 2 años. Resultados rápidos y confiables. Alineado al Marco Común Europeo de Referencia (MCER).'
     }
   };
 
   const currentTexts = texts[language];
 
   return (
-    <section className="py-16 bg-white">
+    <section className="py-16 bg-bg-light">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">
+        <div className="grid grid-cols-2 gap-8">
+          <div>
+            <iframe 
+              width="100%" 
+              height="315" 
+              src="https://www.youtube.com/embed/dEuxSF1Ylgs?si=dxa3KVGOdz4-Luhg" 
+              title="YouTube video player" 
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+              referrerPolicy="strict-origin-when-cross-origin" 
+              allowFullScreen
+            />
+          </div>
+          <div>
+          <h2 className="text-4xl font-medium text-primary mb-4">
             {currentTexts.title}
           </h2>
-          <p className="text-xl text-blue-600 mb-6">
+          <p className="text-secondary mb-6">
+            {currentTexts.paragraph_1}
+          </p>
+          <h3 className="text-4xl font-medium text-primary mb-4">
             {currentTexts.subtitle}
-          </p>
-          <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-            {currentTexts.description}
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {currentTexts.features.map((feature, index) => (
-            <div key={index} className="text-center p-6 rounded-lg hover:shadow-lg transition-shadow">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-4">
-                <feature.icon className="w-8 h-8 text-blue-600" />
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-3">
-                {feature.title}
-              </h3>
-              <p className="text-gray-600">
-                {feature.description}
-              </p>
-            </div>
-          ))}
+          </h3>
+          <p className="text-secondary">
+            {currentTexts.paragraph_2}
+          </p></div>
         </div>
       </div>
     </section>
@@ -303,14 +322,16 @@ const ExamsSection = () => {
 
   const texts = {
     es: {
-      title: 'Exámenes Disponibles',
-      viewMore: 'Ver Todos los Exámenes',
-      learnMore: 'Conoce Más'
+      title: 'Tipos de examen disponibles',
+      description: 'Ofrecemos distintas opciones, puedes elegir la que más se ajuste a lo que requieres de tus empleados o que te exija tu área laboral.',
+      cta: 'Puedes elegir uno o varios exámenes para probar tus habilidades. Tenemos mas opciones para que se adapten a tus necesidades.',
+      viewMore: 'Ver más',
     },
     en: {
-      title: 'Available Tests',
-      viewMore: 'View All Tests',
-      learnMore: 'Learn More'
+      title: 'Tipos de examen disponibles',
+      description: 'Ofrecemos distintas opciones, puedes elegir la que más se ajuste a lo que requieres de tus empleados o que te exija tu área laboral.',
+      cta: 'Puedes elegir uno o varios exámenes para probar tus habilidades. Tenemos mas opciones para que se adapten a tus necesidades.',
+      viewMore: 'Ver más',
     }
   };
 
@@ -332,51 +353,70 @@ const ExamsSection = () => {
   const examenesLink = generateLocalizedPath('examenes', language);
 
   return (
-    <section className="py-16 bg-gray-50">
+    <section className="py-16 bg-bg">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">
+          <h2 className="text-4xl font-medium text-primary mb-4">
             {currentTexts.title}
           </h2>
+           <p className="text-secondary mb-6">
+            {currentTexts.description}
+          </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-12">
           {examenes.map((examen) => (
-            <div key={examen.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
-              {examen.imagen && (
-                <img
-                  src={examen.imagen}
-                  alt={language === 'es' ? (examen.titulo || '') : (examen.en_titulo || '')}
-                  className="w-full h-48 object-cover"
-                />
-              )}
-              <div className="p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  {language === 'es' ? (examen.titulo || '') : (examen.en_titulo || '')}
-                </h3>
-                <p className="text-gray-600 text-sm mb-4 line-clamp-3">
-                  {language === 'es' ? (examen.resumen || '') : (examen.en_resumen || '')}
-                </p>
-                <Link
-                  to={generateLocalizedPath('examen_detalle', language, { url: examen.url })}
-                  className="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium"
-                >
-                  {currentTexts.learnMore}
-                  <ArrowRight className="ml-1 w-4 h-4" />
-                </Link>
+            <Link
+              key={examen.id}
+              to={generateLocalizedPath('examen_detalle', language, { url: examen.url })}
+              className="exam-card hover:shadow-lg transform hover:-translate-y-1 transition-all duration-200 cursor-pointer block"
+            >
+              <div className="grid grid-cols-12 gap-4 h-full">
+                {/* Columna Izquierda - Imagen */}
+                <div className="col-span-5">
+                  {examen.imagen ? (
+                    <img
+                      src={examen.imagen}
+                      alt={language === 'es' ? (examen.titulo || '') : (examen.en_titulo || '')}
+                      className="w-full h-full object-cover rounded-lg"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-bg rounded-lg flex items-center justify-center">
+                      <div className="text-text-muted text-4xl font-bold">
+                        {(language === 'es' ? (examen.titulo || '') : (examen.en_titulo || '')).charAt(0)}
+                      </div>
+                    </div>
+                  )}
+                </div>
+                
+                {/* Columna Derecha - Contenido */}
+                <div className="col-span-7 flex flex-col justify-center p-4">
+                  <h3 className="text-lg font-semibold text-text mb-3 leading-tight">
+                    {language === 'es' ? (examen.titulo || '') : (examen.en_titulo || '')}
+                  </h3>
+                  <p className="text-text-muted text-sm mb-4 line-clamp-3 leading-relaxed">
+                    {language === 'es' ? (examen.resumen || '') : (examen.en_resumen || '')}
+                  </p>
+                </div>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
 
-        <div className="text-center">
-          <Link
-            to={examenesLink}
-            className="inline-flex items-center px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors"
-          >
-            {currentTexts.viewMore}
-            <ArrowRight className="ml-2 w-5 h-5" />
-          </Link>
+        <div className="flex items-center gap-8">
+          <div className="flex-1">
+            <h3 className="text-3xl font-light text-primary mb-0">
+              {currentTexts.cta}
+            </h3>
+          </div>
+          <div className="flex-shrink-0">
+            <Link
+              to={examenesLink}
+              className="btn-accent px-8 py-4 whitespace-nowrap"
+            >
+              {currentTexts.viewMore}
+            </Link>
+          </div>
         </div>
       </div>
     </section>
@@ -390,10 +430,10 @@ const PartnersCarousel = () => {
 
   const texts = {
     es: {
-      title: 'Organizaciones que Confían en TOEIC'
+      title: '¿Qué industrias utilizan TOEIC®?'
     },
     en: {
-      title: 'Organizations that Trust TOEIC'
+      title: 'Wich industries use TOEIC®'
     }
   };
 
@@ -403,7 +443,7 @@ const PartnersCarousel = () => {
   const logos = Array.from({ length: 10 }, (_, i) => ({
     id: i + 1,
     name: `Partner ${i + 1}`,
-    image: `https://via.placeholder.com/300x300/4F46E5/FFFFFF?text=Logo+${i + 1}`
+    image: `https://via.placeholder.com/300x300/0F5132/FFFFFF?text=Logo+${i + 1}` // Usando color primary
   }));
 
   const itemsToShow = 5;
@@ -423,9 +463,9 @@ const PartnersCarousel = () => {
   }, [maxIndex]);
 
   return (
-    <section className="py-16 bg-white">
+    <section className="py-16 bg-bg-light">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">
+        <h2 className="text-4xl font-medium text-center text-primary mb-12">
           {currentTexts.title}
         </h2>
         
@@ -441,7 +481,7 @@ const PartnersCarousel = () => {
                   className="flex-shrink-0 px-4"
                   style={{ width: `${100 / itemsToShow}%` }}
                 >
-                  <div className="bg-gray-50 rounded-lg p-6 flex items-center justify-center h-32 hover:shadow-md transition-shadow">
+                  <div className="bg-bg rounded-lg p-6 flex items-center justify-center h-32 hover:shadow-md transition-shadow border border-border">
                     <img
                       src={logo.image}
                       alt={logo.name}
@@ -456,15 +496,15 @@ const PartnersCarousel = () => {
           {/* Navigation Buttons */}
           <button
             onClick={prevSlide}
-            className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-4 bg-white shadow-lg rounded-full p-2 hover:bg-gray-50 transition-colors"
+            className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-4 bg-bg-light shadow-lg rounded-full p-2 hover:bg-bg transition-colors border border-border"
           >
-            <ChevronLeft className="w-6 h-6 text-gray-600" />
+            <ChevronLeft className="w-6 h-6 text-text-muted" />
           </button>
           <button
             onClick={nextSlide}
-            className="absolute right-0 top-1/2 transform -translate-y-1/2 translate-x-4 bg-white shadow-lg rounded-full p-2 hover:bg-gray-50 transition-colors"
+            className="absolute right-0 top-1/2 transform -translate-y-1/2 translate-x-4 bg-bg-light shadow-lg rounded-full p-2 hover:bg-bg transition-colors border border-border"
           >
-            <ChevronRight className="w-6 h-6 text-gray-600" />
+            <ChevronRight className="w-6 h-6 text-text-muted" />
           </button>
         </div>
       </div>
@@ -478,46 +518,45 @@ const CallToActionSection = () => {
 
   const texts = {
     es: {
-      title: '¿Listo para Comenzar tu Evaluación TOEIC?',
-      description: 'Encuentra tu centro de examen más cercano y programa tu prueba TOEIC hoy mismo.',
-      primaryButton: 'Encontrar Centros',
-      secondaryButton: 'Ver Exámenes'
+      title: '¡No lo pienses más!',
+      description: 'Contáctanos, certifícate o certifica a tus empleados.',
+      primaryButton: 'Contáctanos'
     },
     en: {
       title: 'Ready to Start Your TOEIC Assessment?',
       description: 'Find your nearest test center and schedule your TOEIC test today.',
-      primaryButton: 'Find Centers',
-      secondaryButton: 'View Tests'
+      primaryButton: 'Contact Us',
     }
   };
 
   const currentTexts = texts[language];
 
   return (
-    <section className="py-16 bg-gradient-to-r from-blue-600 to-blue-800">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-          {currentTexts.title}
-        </h2>
-        <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
-          {currentTexts.description}
-        </p>
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Link
-            to={generateLocalizedPath('centros', language)}
-            className="inline-flex items-center px-8 py-3 bg-white text-blue-600 font-semibold rounded-lg hover:bg-gray-100 transition-colors"
-          >
-            <Building2 className="mr-2 w-5 h-5" />
-            {currentTexts.primaryButton}
-          </Link>
-          <Link
-            to={generateLocalizedPath('examenes', language)}
-            className="inline-flex items-center px-8 py-3 border-2 border-white text-white font-semibold rounded-lg hover:bg-white hover:text-blue-600 transition-colors"
-          >
-            <BookOpen className="mr-2 w-5 h-5" />
-            {currentTexts.secondaryButton}
-          </Link>
+    <section className="py-16 gradient-primary">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className='grid grid-cols-3 gap-8 divide-x-1 divide-solid divide-white'>
+          <div>
+              <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+                {currentTexts.title}
+              </h2>
+          </div>
+          <div className='col-span-2'>
+            <p className="text-xl text-white/90 mb-8 max-w-2xl">
+              {currentTexts.description}
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4">
+              <Link
+                to={generateLocalizedPath('centros', language)}
+                className="inline-flex items-center px-8 py-3 bg-accent hover:bg-accent-dark text-black font-semibold rounded-lg transition-colors"
+              >
+                <Building2 className="mr-2 w-5 h-5" />
+                {currentTexts.primaryButton}
+              </Link>
+            </div>
+          </div>
         </div>
+        
+        
       </div>
     </section>
   );

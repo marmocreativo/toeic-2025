@@ -1,5 +1,6 @@
 // src/pages/public/Contacto.tsx
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useLanguage } from '../../hooks/useLanguage';
 import { generateLocalizedPath } from '../../utils/languageUtils';
 import { 
@@ -16,11 +17,6 @@ import {
   Users,
   HeadphonesIcon
 } from 'lucide-react';
-import { Button } from '../../components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
-import { Input } from '../../components/ui/input';
-import { Textarea } from '../../components/ui/textarea';
-import { Label } from '../../components/ui/label';
 
 export default function Contacto() {
   const [formData, setFormData] = useState({
@@ -39,24 +35,24 @@ export default function Contacto() {
       title: 'Contáctanos',
       subtitle: 'Estamos aquí para ayudarte con todas tus dudas sobre TOEIC',
       formTitle: 'Envíanos un Mensaje',
-      formSubtitle: 'Completa el formulario y te responderemos a la brevedad',
-      name: 'Nombre completo',
-      email: 'Correo electrónico',
-      phone: 'Teléfono (opcional)',
+      name: 'Nombre',
+      email: 'Email',
+      phone: 'Teléfono',
       subject: 'Asunto',
       message: 'Mensaje',
-      send: 'Enviar Mensaje',
+      send: 'Enviar',
       sending: 'Enviando...',
       successTitle: '¡Mensaje Enviado!',
-      successMessage: 'Gracias por contactarnos. Te responderemos dentro de 24 horas.',
+      successMessage: 'Te responderemos dentro de 24 horas.',
       contactInfo: 'Información de Contacto',
       address: 'Dirección',
       addressText: 'Ciudad de México, México',
-      hours: 'Horarios de Atención',
-      hoursText: 'Lunes a Viernes: 9:00 AM - 6:00 PM',
+      hours: 'Horarios',
+      hoursText: 'Lun-Vie: 9:00 AM - 6:00 PM',
       phoneText: '+52 55 1234 5678',
       emailText: 'info@toeic2025.mx',
-      ctaTitle: '¿Necesitas Información Inmediata?',
+      newMessage: 'Nuevo mensaje',
+      ctaTitle: '¡No lo pienses más!',
       ctaDescription: 'Explora nuestros exámenes o encuentra un centro autorizado.',
       ctaButton: 'Ver Exámenes',
       ctaSecondary: 'Encontrar Centros',
@@ -66,34 +62,34 @@ export default function Contacto() {
         multilingual: 'Atención Bilingüe'
       },
       placeholders: {
-        name: 'Tu nombre completo',
-        email: 'tucorreo@ejemplo.com',
-        phone: '+52 55 1234 5678',
-        subject: 'Información sobre exámenes TOEIC',
-        message: 'Escribe tu mensaje aquí...'
+        name: 'Tu nombre',
+        email: 'tu@email.com',
+        phone: '55 1234 5678',
+        subject: 'Información TOEIC',
+        message: 'Escribe tu mensaje...'
       }
     },
     en: {
       title: 'Contact Us',
       subtitle: 'We\'re here to help you with all your TOEIC questions',
       formTitle: 'Send us a Message',
-      formSubtitle: 'Fill out the form and we\'ll get back to you shortly',
-      name: 'Full name',
-      email: 'Email address',
-      phone: 'Phone (optional)',
+      name: 'Name',
+      email: 'Email',
+      phone: 'Phone',
       subject: 'Subject',
       message: 'Message',
-      send: 'Send Message',
+      send: 'Send',
       sending: 'Sending...',
       successTitle: 'Message Sent!',
-      successMessage: 'Thank you for contacting us. We\'ll respond within 24 hours.',
+      successMessage: 'We\'ll respond within 24 hours.',
       contactInfo: 'Contact Information',
       address: 'Address',
       addressText: 'Mexico City, Mexico',
-      hours: 'Business Hours',
-      hoursText: 'Monday to Friday: 9:00 AM - 6:00 PM',
+      hours: 'Hours',
+      hoursText: 'Mon-Fri: 9:00 AM - 6:00 PM',
       phoneText: '+52 55 1234 5678',
       emailText: 'info@toeic2025.mx',
+      newMessage: 'New message',
       ctaTitle: 'Need Immediate Information?',
       ctaDescription: 'Explore our tests or find an authorized center.',
       ctaButton: 'View Tests',
@@ -104,11 +100,11 @@ export default function Contacto() {
         multilingual: 'Bilingual Service'
       },
       placeholders: {
-        name: 'Your full name',
-        email: 'your.email@example.com',
-        phone: '+52 55 1234 5678',
-        subject: 'TOEIC exam information',
-        message: 'Write your message here...'
+        name: 'Your name',
+        email: 'your@email.com',
+        phone: '55 1234 5678',
+        subject: 'TOEIC information',
+        message: 'Write your message...'
       }
     }
   };
@@ -123,10 +119,8 @@ export default function Contacto() {
     e.preventDefault();
     setIsSubmitting(true);
 
-    // Simular envío del formulario
-    // En producción, aquí enviarías los datos a tu API
     try {
-      await new Promise(resolve => setTimeout(resolve, 2000)); // Simular delay
+      await new Promise(resolve => setTimeout(resolve, 1500));
       setIsSubmitted(true);
       setFormData({
         nombre: '',
@@ -144,74 +138,70 @@ export default function Contacto() {
 
   const contactMethods = [
     {
-      icon: MapPin,
-      title: currentTexts.address,
-      content: currentTexts.addressText,
-      color: 'text-blue-600',
-      bgColor: 'bg-blue-100',
-      action: () => window.open('https://maps.google.com', '_blank')
-    },
-    {
       icon: Phone,
       title: currentTexts.phoneText,
-      content: language === 'es' ? 'Llamar ahora' : 'Call now',
-      color: 'text-green-600',
-      bgColor: 'bg-green-100',
+      color: 'text-primary',
+      bgColor: 'bg-primary/10',
       action: () => window.open(`tel:${currentTexts.phoneText}`)
     },
     {
       icon: Mail,
       title: currentTexts.emailText,
-      content: language === 'es' ? 'Enviar email' : 'Send email',
-      color: 'text-purple-600',
-      bgColor: 'bg-purple-100',
+      color: 'text-secondary',
+      bgColor: 'bg-secondary/10',
       action: () => window.open(`mailto:${currentTexts.emailText}`)
     },
     {
       icon: Clock,
-      title: currentTexts.hours,
-      content: currentTexts.hoursText,
-      color: 'text-orange-600',
-      bgColor: 'bg-orange-100',
+      title: currentTexts.hoursText,
+      color: 'text-accent-dark',
+      bgColor: 'bg-accent/10',
       action: null
+    },
+    {
+      icon: MapPin,
+      title: currentTexts.addressText,
+      color: 'text-primary',
+      bgColor: 'bg-primary/10',
+      action: () => window.open('https://maps.google.com', '_blank')
     }
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Hero Section */}
-      <section className="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-16">
+    <div className="min-h-screen bg-bg">
+      {/* Hero Section Compacto */}
+      <section className="gradient-hero text-primary py-12 -mt-16 pt-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4">
+            <h1 className="text-4xl md:text-5xl font-medium text-primary mb-3">
               {currentTexts.title}
             </h1>
-            <p className="text-xl md:text-2xl text-blue-100 mb-8 max-w-3xl mx-auto">
+            <p className="text-lg md:text-xl text-primary/90 mb-6 max-w-2xl mx-auto">
               {currentTexts.subtitle}
             </p>
           </div>
         </div>
       </section>
 
-      {/* Features Bar */}
-      <section className="bg-white border-b border-gray-200 py-8">
+      {/* Features Bar Compacto */}
+      <section className="bg-primary text-white py-3">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-            <div className="flex items-center justify-center space-x-3">
-              <HeadphonesIcon className="w-8 h-8 text-blue-600" />
-              <span className="text-lg font-semibold text-gray-700">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center divide-x-1 divide-solid divide-white">
+            <div className="flex items-center justify-center space-x-2">
+              <HeadphonesIcon className="w-5 h-5 text-accent" />
+              <span className="text-sm font-medium text-white">
                 {currentTexts.features.support}
               </span>
             </div>
-            <div className="flex items-center justify-center space-x-3">
-              <MessageSquare className="w-8 h-8 text-green-600" />
-              <span className="text-lg font-semibold text-gray-700">
+            <div className="flex items-center justify-center space-x-2">
+              <MessageSquare className="w-5 h-5 text-accent" />
+              <span className="text-sm font-medium text-white">
                 {currentTexts.features.response}
               </span>
             </div>
-            <div className="flex items-center justify-center space-x-3">
-              <Globe className="w-8 h-8 text-purple-600" />
-              <span className="text-lg font-semibold text-gray-700">
+            <div className="flex items-center justify-center space-x-2">
+              <Globe className="w-5 h-5 text-accent" />
+              <span className="text-sm font-medium text-white">
                 {currentTexts.features.multilingual}
               </span>
             </div>
@@ -219,228 +209,215 @@ export default function Contacto() {
         </div>
       </section>
 
-      {/* Main Content */}
-      <section className="py-16">
+      {/* Main Content - Muy Compacto */}
+      <section className="py-8 bg-bg-light">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-            {/* Contact Form */}
-            <div>
-              <Card className="shadow-lg">
-                <CardHeader>
-                  <CardTitle className="text-2xl font-bold text-gray-900">
-                    {currentTexts.formTitle}
-                  </CardTitle>
-                  <p className="text-gray-600">
-                    {currentTexts.formSubtitle}
-                  </p>
-                </CardHeader>
-                <CardContent>
-                  {isSubmitted ? (
-                    <div className="text-center py-8">
-                      <CheckCircle className="w-16 h-16 text-green-600 mx-auto mb-4" />
-                      <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                        {currentTexts.successTitle}
-                      </h3>
-                      <p className="text-gray-600 mb-6">
-                        {currentTexts.successMessage}
-                      </p>
-                      <Button 
-                        onClick={() => setIsSubmitted(false)}
-                        variant="outline"
-                      >
-                        Enviar otro mensaje
-                      </Button>
-                    </div>
-                  ) : (
-                    <form onSubmit={handleSubmit} className="space-y-6">
-                      {/* Nombre */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            {/* Contact Form - 2 columnas */}
+            <div className="lg:col-span-2">
+              <div className="bg-bg-light rounded-lg shadow-md border border-border p-6">
+                <h2 className="text-2xl font-medium text-primary mb-4">
+                  {currentTexts.formTitle}
+                </h2>
+                
+                {isSubmitted ? (
+                  <div className="text-center py-6">
+                    <CheckCircle className="w-12 h-12 text-accent mx-auto mb-3" />
+                    <h3 className="text-lg font-semibold text-text mb-2">
+                      {currentTexts.successTitle}
+                    </h3>
+                    <p className="text-text-muted mb-4">
+                      {currentTexts.successMessage}
+                    </p>
+                    <button 
+                      onClick={() => setIsSubmitted(false)}
+                      className="btn-outline-primary px-4 py-2"
+                    >
+                      {currentTexts.newMessage}
+                    </button>
+                  </div>
+                ) : (
+                  <form onSubmit={handleSubmit} className="space-y-4">
+                    {/* Grid compacto 2x2 para los primeros campos */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <Label htmlFor="nombre">{currentTexts.name} *</Label>
-                        <Input
-                          id="nombre"
+                        <label className="block text-sm font-medium text-text mb-1">
+                          {currentTexts.name} *
+                        </label>
+                        <input
+                          type="text"
                           value={formData.nombre}
                           onChange={(e) => handleInputChange('nombre', e.target.value)}
                           placeholder={currentTexts.placeholders.name}
+                          className="input text-sm h-10"
                           required
                         />
                       </div>
-
-                      {/* Email */}
                       <div>
-                        <Label htmlFor="email">{currentTexts.email} *</Label>
-                        <Input
-                          id="email"
+                        <label className="block text-sm font-medium text-text mb-1">
+                          {currentTexts.email} *
+                        </label>
+                        <input
                           type="email"
                           value={formData.email}
                           onChange={(e) => handleInputChange('email', e.target.value)}
                           placeholder={currentTexts.placeholders.email}
+                          className="input text-sm h-10"
                           required
                         />
                       </div>
-
-                      {/* Teléfono */}
                       <div>
-                        <Label htmlFor="telefono">{currentTexts.phone}</Label>
-                        <Input
-                          id="telefono"
+                        <label className="block text-sm font-medium text-text mb-1">
+                          {currentTexts.phone}
+                        </label>
+                        <input
                           type="tel"
                           value={formData.telefono}
                           onChange={(e) => handleInputChange('telefono', e.target.value)}
                           placeholder={currentTexts.placeholders.phone}
+                          className="input text-sm h-10"
                         />
                       </div>
-
-                      {/* Asunto */}
                       <div>
-                        <Label htmlFor="asunto">{currentTexts.subject} *</Label>
-                        <Input
-                          id="asunto"
+                        <label className="block text-sm font-medium text-text mb-1">
+                          {currentTexts.subject} *
+                        </label>
+                        <input
+                          type="text"
                           value={formData.asunto}
                           onChange={(e) => handleInputChange('asunto', e.target.value)}
                           placeholder={currentTexts.placeholders.subject}
+                          className="input text-sm h-10"
                           required
                         />
                       </div>
+                    </div>
 
-                      {/* Mensaje */}
-                      <div>
-                        <Label htmlFor="mensaje">{currentTexts.message} *</Label>
-                        <Textarea
-                          id="mensaje"
-                          rows={5}
-                          value={formData.mensaje}
-                          onChange={(e) => handleInputChange('mensaje', e.target.value)}
-                          placeholder={currentTexts.placeholders.message}
-                          required
-                        />
-                      </div>
+                    {/* Mensaje */}
+                    <div>
+                      <label className="block text-sm font-medium text-text mb-1">
+                        {currentTexts.message} *
+                      </label>
+                      <textarea
+                        rows={4}
+                        value={formData.mensaje}
+                        onChange={(e) => handleInputChange('mensaje', e.target.value)}
+                        placeholder={currentTexts.placeholders.message}
+                        className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-bg-light text-text text-sm resize-none"
+                        required
+                      />
+                    </div>
 
-                      {/* Submit Button */}
-                      <Button 
-                        type="submit" 
-                        size="lg" 
-                        className="w-full"
-                        disabled={isSubmitting}
-                      >
-                        {isSubmitting ? (
-                          <>
-                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                            {currentTexts.sending}
-                          </>
-                        ) : (
-                          <>
-                            <Send className="w-4 h-4 mr-2" />
-                            {currentTexts.send}
-                          </>
-                        )}
-                      </Button>
-                    </form>
-                  )}
-                </CardContent>
-              </Card>
+                    {/* Submit Button */}
+                    <button 
+                      type="submit" 
+                      className="btn-primary w-full h-10"
+                      disabled={isSubmitting}
+                    >
+                      {isSubmitting ? (
+                        <>
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                          {currentTexts.sending}
+                        </>
+                      ) : (
+                        <>
+                          <Send className="w-4 h-4 mr-2" />
+                          {currentTexts.send}
+                        </>
+                      )}
+                    </button>
+                  </form>
+                )}
+              </div>
             </div>
 
-            {/* Contact Information */}
-            <div className="space-y-6">
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">
-                  {currentTexts.contactInfo}
-                </h2>
-              </div>
+            {/* Contact Information - 1 columna */}
+            <div className="space-y-4">
+              <h2 className="text-xl font-medium text-primary mb-4">
+                {currentTexts.contactInfo}
+              </h2>
 
-              <div className="space-y-4">
+              {/* Contact Methods - Compactos */}
+              <div className="space-y-3">
                 {contactMethods.map((method, index) => (
-                  <Card 
+                  <div 
                     key={index} 
-                    className={`hover:shadow-md transition-shadow ${method.action ? 'cursor-pointer' : ''}`}
+                    className={`bg-bg-light rounded-lg border border-border p-3 hover:shadow-md transition-shadow ${method.action ? 'cursor-pointer hover:border-primary/30' : ''}`}
                     onClick={method.action || undefined}
                   >
-                    <CardContent className="p-6">
-                      <div className="flex items-center space-x-4">
-                        <div className={`${method.bgColor} rounded-lg p-3`}>
-                          <method.icon className={`w-6 h-6 ${method.color}`} />
-                        </div>
-                        <div className="flex-1">
-                          <h3 className="font-semibold text-gray-900 mb-1">
-                            {method.title}
-                          </h3>
-                          <p className="text-gray-600">
-                            {method.content}
-                          </p>
-                        </div>
-                        {method.action && (
-                          <div className="text-gray-400">
-                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
-                            </svg>
-                          </div>
-                        )}
+                    <div className="flex items-center space-x-3">
+                      <div className={`${method.bgColor} rounded-lg p-2 flex-shrink-0`}>
+                        <method.icon className={`w-4 h-4 ${method.color}`} />
                       </div>
-                    </CardContent>
-                  </Card>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-text truncate">
+                          {method.title}
+                        </p>
+                      </div>
+                      {method.action && (
+                        <div className="text-text-muted">
+                          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 ))}
               </div>
 
-              {/* Map Placeholder */}
-              <Card>
-                <CardContent className="p-0">
-                  <div className="h-64 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center">
-                    <div className="text-center">
-                      <MapPin className="w-12 h-12 text-blue-600 mx-auto mb-3" />
-                      <h3 className="font-semibold text-gray-900 mb-1">
-                        {language === 'es' ? 'Ubicación' : 'Location'}
-                      </h3>
-                      <p className="text-gray-600 text-sm">
-                        {currentTexts.addressText}
-                      </p>
-                      <Button 
-                        size="sm" 
-                        className="mt-3"
-                        onClick={() => window.open('https://maps.google.com', '_blank')}
-                      >
-                        {language === 'es' ? 'Ver en Mapa' : 'View on Map'}
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+              {/* Map Placeholder Compacto */}
+              <div className="bg-accent/10 rounded-lg p-4 text-center border border-accent/20">
+                <MapPin className="w-8 h-8 text-accent-dark mx-auto mb-2" />
+                <h3 className="font-medium text-text mb-1 text-sm">
+                  {currentTexts.address}
+                </h3>
+                <p className="text-text-muted text-xs mb-3">
+                  {currentTexts.addressText}
+                </p>
+                <button 
+                  className="inline-flex items-center px-3 py-1 bg-accent hover:bg-accent-dark text-black text-xs font-medium rounded transition-colors"
+                  onClick={() => window.open('https://maps.google.com', '_blank')}
+                >
+                  {language === 'es' ? 'Ver Mapa' : 'View Map'}
+                </button>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Call to Action */}
-      <section className="bg-gradient-to-r from-blue-600 to-blue-800 py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-            {currentTexts.ctaTitle}
-          </h2>
-          <p className="text-xl text-blue-100 mb-8 max-w-3xl mx-auto">
-            {currentTexts.ctaDescription}
-          </p>
-          
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button 
-              size="lg" 
-              className="bg-white text-blue-600 hover:bg-gray-100"
-              asChild
-            >
-              <a href={generateLocalizedPath('examenes', language)}>
-                <BookOpen className="w-5 h-5 mr-2" />
-                {currentTexts.ctaButton}
-              </a>
-            </Button>
-            <Button 
-              size="lg" 
-              variant="outline" 
-              className="border-white text-white hover:bg-white hover:text-blue-600"
-              asChild
-            >
-              <a href={generateLocalizedPath('centros', language)}>
-                <Building2 className="w-5 h-5 mr-2" />
-                {currentTexts.ctaSecondary}
-              </a>
-            </Button>
+      {/* Call to Action Compacto */}
+      <section className="py-8 gradient-primary">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 divide-x-1 divide-solid divide-white">
+            <div className="md:flex md:items-center">
+              <h2 className="text-2xl font-bold text-white mb-3 md:mb-0">
+                {currentTexts.ctaTitle}
+              </h2>
+            </div>
+            <div className="md:col-span-2 md:pl-6">
+              <p className="text-lg text-white/90 mb-4">
+                {currentTexts.ctaDescription}
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Link
+                  to={generateLocalizedPath('examenes', language)}
+                  className="inline-flex items-center px-6 py-2 bg-accent hover:bg-accent-dark text-black font-semibold rounded-lg transition-colors text-sm"
+                >
+                  <BookOpen className="mr-2 w-4 h-4" />
+                  {currentTexts.ctaButton}
+                </Link>
+                <Link
+                  to={generateLocalizedPath('centros', language)}
+                  className="inline-flex items-center px-6 py-2 border-2 border-white text-white font-semibold rounded-lg hover:bg-white hover:text-primary transition-colors text-sm"
+                >
+                  <Building2 className="mr-2 w-4 h-4" />
+                  {currentTexts.ctaSecondary}
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
       </section>

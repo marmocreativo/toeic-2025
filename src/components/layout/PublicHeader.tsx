@@ -1,14 +1,15 @@
-// src/components/layout/PublicHeader.tsx - Versión completa actualizada
+// src/components/layout/PublicHeader.tsx - Con efecto de scroll
 
 import { Link } from 'react-router-dom';
-import { Menu, X } from 'lucide-react';
-import { useState } from 'react';
+import { Menu, X, Phone, Mail, Facebook } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import { useLanguage } from '../../hooks/useLanguage';
 import LanguageSwitcher from '../common/LanguageSwitcher';
 import { generateLocalizedPath } from '../../utils/languageUtils';
 
 export default function PublicHeader() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
   const { language } = useLanguage();
 
   // Textos según el idioma
@@ -43,69 +44,80 @@ export default function PublicHeader() {
     contacto: generateLocalizedPath('contacto', language),
   };
 
+  // Detectar scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollPosition = window.scrollY;
+      setIsScrolled(scrollPosition > 50); // Cambia después de 50px de scroll
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   const closeMenu = () => setIsMenuOpen(false);
 
   return (
-    <header className="bg-white shadow-sm border-b border-gray-200">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <header className="sticky top-0 z-50 bg-transparent">
+      {/* Top Contact Bar - Siempre sólida */}
+      <div className='max-w-full bg-primary text-white p-2 flex flex-row justify-between'>
+        <div className='flex flex-row text-xs items-center'>
+          <Phone size={18} className='text-xs mx-2'/> 
+          (55) 5540 3555 - (55) 5540 3959 
+          <Mail size={18} className='text-xs mx-2'/> 
+          recepcion@toeic.mx
+        </div>
+        <div>
+          <Facebook/>
+        </div>
+      </div>
+      
+      {/* Main Navbar - Con efecto de scroll */}
+      <div className={`max-w-full mx-auto px-4 sm:px-6 lg:px-8 transition-all duration-300 ${
+        isScrolled 
+          ? 'bg-bg-light shadow-md border-b border-border' 
+          : 'bg-transparent'
+      }`}>
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link 
             to={links.home} 
-            className="text-xl font-bold text-blue-600 hover:text-blue-700 transition-colors"
+            className="flex items-center space-x-3 text-xl font-bold text-primary hover:text-primary-dark transition-colors group"
           >
-            TOEIC 2025
+            <img src='./images/logo.png' className='h-8' alt="TOEIC Logo" />
           </Link>
           
           {/* Desktop Menu */}
-          <nav className="hidden lg:flex items-center space-x-8">
-            <Link 
-              to={links.home} 
-              className="text-gray-700 hover:text-blue-600 transition-colors font-medium"
-            >
+          <nav className="hidden lg:flex items-center space-x-1">
+            <Link to={links.home} className="nav-item">
               {currentTexts.home}
             </Link>
-            <Link 
-              to={links.examenes} 
-              className="text-gray-700 hover:text-blue-600 transition-colors font-medium"
-            >
+            <Link to={links.examenes} className="nav-item">
               {currentTexts.exams}
             </Link>
-            <Link 
-              to={links.paginas} 
-              className="text-gray-700 hover:text-blue-600 transition-colors font-medium"
-            >
+            <Link to={links.paginas} className="nav-item">
               {currentTexts.pages}
             </Link>
-            <Link 
-              to={links.newsletters} 
-              className="text-gray-700 hover:text-blue-600 transition-colors font-medium"
-            >
+            <Link to={links.newsletters} className="nav-item">
               {currentTexts.newsletters}
             </Link>
-            <Link 
-              to={links.centros} 
-              className="text-gray-700 hover:text-blue-600 transition-colors font-medium"
-            >
+            <Link to={links.centros} className="nav-item">
               {currentTexts.centers}
             </Link>
-            <Link 
-              to={links.contacto} 
-              className="text-gray-700 hover:text-blue-600 transition-colors font-medium"
-            >
+            <Link to={links.contacto} className="nav-item">
               {currentTexts.contact}
             </Link>
           </nav>
 
-          {/* Desktop Language Switcher & Mobile Menu Button */}
+          {/* Desktop Controls */}
           <div className="flex items-center space-x-4">
-            {/* Language Switcher - Always visible */}
+            {/* Language Switcher */}
             <LanguageSwitcher />
             
             {/* Mobile Menu Button */}
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="lg:hidden p-2 rounded-md text-gray-700 hover:text-blue-600 hover:bg-gray-100 transition-colors"
+              className="lg:hidden p-2 rounded-lg text-text-muted hover:text-primary hover:bg-bg transition-colors"
               aria-label="Toggle menu"
             >
               {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
@@ -115,46 +127,48 @@ export default function PublicHeader() {
 
         {/* Mobile Menu */}
         {isMenuOpen && (
-          <div className="lg:hidden border-t border-gray-200">
+          <div className={`lg:hidden border-t animate-fade-in ${
+            isScrolled ? 'border-border bg-bg-light' : 'border-white/20 bg-white/90 backdrop-blur-md'
+          }`}>
             <nav className="py-4 space-y-1">
               <Link 
                 to={links.home} 
-                className="block px-4 py-3 text-gray-700 hover:text-blue-600 hover:bg-blue-50 transition-colors font-medium rounded-md"
+                className="block px-4 py-3 text-text-muted hover:text-primary hover:bg-bg transition-colors font-medium rounded-lg mx-2"
                 onClick={closeMenu}
               >
                 {currentTexts.home}
               </Link>
               <Link 
                 to={links.examenes} 
-                className="block px-4 py-3 text-gray-700 hover:text-blue-600 hover:bg-blue-50 transition-colors font-medium rounded-md"
+                className="block px-4 py-3 text-text-muted hover:text-primary hover:bg-bg transition-colors font-medium rounded-lg mx-2"
                 onClick={closeMenu}
               >
                 {currentTexts.exams}
               </Link>
               <Link 
                 to={links.paginas} 
-                className="block px-4 py-3 text-gray-700 hover:text-blue-600 hover:bg-blue-50 transition-colors font-medium rounded-md"
+                className="block px-4 py-3 text-text-muted hover:text-primary hover:bg-bg transition-colors font-medium rounded-lg mx-2"
                 onClick={closeMenu}
               >
                 {currentTexts.pages}
               </Link>
               <Link 
                 to={links.newsletters} 
-                className="block px-4 py-3 text-gray-700 hover:text-blue-600 hover:bg-blue-50 transition-colors font-medium rounded-md"
+                className="block px-4 py-3 text-text-muted hover:text-primary hover:bg-bg transition-colors font-medium rounded-lg mx-2"
                 onClick={closeMenu}
               >
                 {currentTexts.newsletters}
               </Link>
               <Link 
                 to={links.centros} 
-                className="block px-4 py-3 text-gray-700 hover:text-blue-600 hover:bg-blue-50 transition-colors font-medium rounded-md"
+                className="block px-4 py-3 text-text-muted hover:text-primary hover:bg-bg transition-colors font-medium rounded-lg mx-2"
                 onClick={closeMenu}
               >
                 {currentTexts.centers}
               </Link>
               <Link 
                 to={links.contacto} 
-                className="block px-4 py-3 text-gray-700 hover:text-blue-600 hover:bg-blue-50 transition-colors font-medium rounded-md"
+                className="block px-4 py-3 text-text-muted hover:text-primary hover:bg-bg transition-colors font-medium rounded-lg mx-2"
                 onClick={closeMenu}
               >
                 {currentTexts.contact}

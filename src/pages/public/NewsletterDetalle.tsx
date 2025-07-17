@@ -16,8 +16,6 @@ import {
   ExternalLink,
   Clock
 } from 'lucide-react';
-import { Button } from '../../components/ui/button';
-import { Card, CardContent } from '../../components/ui/card';
 
 export default function NewsletterDetalle() {
   const { id } = useParams<{ id: string }>();
@@ -38,7 +36,11 @@ export default function NewsletterDetalle() {
       fileSize: 'Tamaño del archivo',
       otherNewsletters: 'Otros Boletines',
       viewDetails: 'Ver Detalles',
-      ctaTitle: '¿Necesitas Más Información?',
+      loading: 'Cargando boletín...',
+      pdfAvailable: 'Documento PDF disponible para descarga',
+      download: 'Descargar',
+      open: 'Abrir',
+      ctaTitle: '¡No lo pienses más!',
       ctaDescription: 'Explora nuestros exámenes o encuentra un centro autorizado.',
       ctaButton: 'Ver Exámenes',
       ctaSecondary: 'Encontrar Centros'
@@ -53,6 +55,10 @@ export default function NewsletterDetalle() {
       fileSize: 'File size',
       otherNewsletters: 'Other Newsletters',
       viewDetails: 'View Details',
+      loading: 'Loading newsletter...',
+      pdfAvailable: 'PDF document available for download',
+      download: 'Download',
+      open: 'Open',
       ctaTitle: 'Need More Information?',
       ctaDescription: 'Explore our tests or find an authorized center.',
       ctaButton: 'View Tests',
@@ -110,10 +116,10 @@ export default function NewsletterDetalle() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-bg">
         <div className="text-center">
-          <RefreshCw className="w-8 h-8 animate-spin mx-auto mb-4 text-blue-600" />
-          <p className="text-gray-600">Cargando boletín...</p>
+          <RefreshCw className="w-8 h-8 animate-spin mx-auto mb-4 text-primary" />
+          <p className="text-text-muted">{currentTexts.loading}</p>
         </div>
       </div>
     );
@@ -121,36 +127,37 @@ export default function NewsletterDetalle() {
 
   if (error || !newsletter) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-bg">
         <div className="text-center max-w-md mx-auto px-4">
-          <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">
+          <FileText className="w-16 h-16 text-border mx-auto mb-4" />
+          <h1 className="text-2xl font-medium text-text mb-2">
             {currentTexts.notFound}
           </h1>
-          <p className="text-gray-600 mb-6">
+          <p className="text-text-muted mb-6">
             {currentTexts.notFoundDesc}
           </p>
-          <Button asChild>
-            <Link to={generateLocalizedPath('newsletters', language)}>
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              {currentTexts.backToNewsletters}
-            </Link>
-          </Button>
+          <Link
+            to={generateLocalizedPath('newsletters', language)}
+            className="btn-primary"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            {currentTexts.backToNewsletters}
+          </Link>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-bg">
       {/* Header */}
-      <section className="bg-white border-b border-gray-200">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <section className="bg-bg-light border-b border-border -mt-16 pt-24 pb-8">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Breadcrumb */}
           <div className="mb-6">
             <Link
               to={generateLocalizedPath('newsletters', language)}
-              className="inline-flex items-center text-blue-600 hover:text-blue-700 transition-colors"
+              className="inline-flex items-center text-primary hover:text-primary-dark transition-colors"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
               {currentTexts.backToNewsletters}
@@ -159,18 +166,18 @@ export default function NewsletterDetalle() {
 
           {/* Título y metadatos */}
           <div className="mb-8">
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4 leading-tight">
+            <h1 className="text-4xl md:text-5xl font-medium text-primary mb-4 leading-tight">
               {newsletter.titulo}
             </h1>
             
             {newsletter.descripcion && (
-              <p className="text-xl text-gray-600 mb-6 leading-relaxed">
+              <p className="text-xl text-secondary mb-6 leading-relaxed">
                 {newsletter.descripcion}
               </p>
             )}
 
             {/* Metadatos */}
-            <div className="flex flex-wrap items-center gap-6 text-sm text-gray-500 mb-6">
+            <div className="flex flex-wrap items-center gap-6 text-sm text-text-muted mb-6">
               <div className="flex items-center gap-2">
                 <Calendar className="w-4 h-4" />
                 <span>
@@ -186,65 +193,56 @@ export default function NewsletterDetalle() {
             {/* Botones de acción */}
             {newsletter.archivo && (
               <div className="flex flex-col sm:flex-row gap-4">
-                <Button 
-                  size="lg" 
-                  className="bg-red-600 hover:bg-red-700"
-                  asChild
+                <a 
+                  href={newsletter.archivo} 
+                  download
+                  className="btn-accent px-8 py-4 inline-flex items-center justify-center gap-2"
                 >
-                  <a 
-                    href={newsletter.archivo} 
-                    download
-                    className="inline-flex items-center justify-center gap-2"
-                  >
-                    <Download className="w-5 h-5" />
-                    {currentTexts.downloadPdf}
-                  </a>
-                </Button>
+                  <Download className="w-5 h-5" />
+                  {currentTexts.downloadPdf}
+                </a>
                 
-                <Button 
-                  size="lg" 
-                  variant="outline"
-                  asChild
+                <a 
+                  href={newsletter.archivo} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="btn-outline-primary px-8 py-4 inline-flex items-center justify-center gap-2"
                 >
-                  <a 
-                    href={newsletter.archivo} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center justify-center gap-2"
-                  >
-                    <ExternalLink className="w-5 h-5" />
-                    {currentTexts.openPdf}
-                  </a>
-                </Button>
+                  <ExternalLink className="w-5 h-5" />
+                  {currentTexts.openPdf}
+                </a>
               </div>
             )}
           </div>
 
           {/* Preview del PDF */}
-          <div className="bg-gradient-to-br from-red-50 to-red-100 rounded-lg p-8 text-center border border-red-200">
-            <FileText className="w-20 h-20 text-red-600 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+          <div className="bg-accent/10 rounded-lg p-8 text-center border border-accent/20">
+            <FileText className="w-20 h-20 text-accent-dark mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-text mb-2">
               {newsletter.titulo}
             </h3>
-            <p className="text-gray-600 mb-4">
-              {language === 'es' 
-                ? 'Documento PDF disponible para descarga' 
-                : 'PDF document available for download'}
+            <p className="text-text-muted mb-4">
+              {currentTexts.pdfAvailable}
             </p>
             {newsletter.archivo && (
               <div className="flex justify-center gap-3">
-                <Button size="sm" className="bg-red-600 hover:bg-red-700" asChild>
-                  <a href={newsletter.archivo} download>
-                    <Download className="w-4 h-4 mr-2" />
-                    Descargar
-                  </a>
-                </Button>
-                <Button size="sm" variant="outline" asChild>
-                  <a href={newsletter.archivo} target="_blank" rel="noopener noreferrer">
-                    <ExternalLink className="w-4 h-4 mr-2" />
-                    Abrir
-                  </a>
-                </Button>
+                <a 
+                  href={newsletter.archivo} 
+                  download
+                  className="inline-flex items-center px-4 py-2 bg-accent hover:bg-accent-dark text-black font-medium rounded-lg transition-colors"
+                >
+                  <Download className="w-4 h-4 mr-2" />
+                  {currentTexts.download}
+                </a>
+                <a 
+                  href={newsletter.archivo} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center px-4 py-2 border-2 border-primary text-primary hover:bg-primary hover:text-white font-medium rounded-lg transition-colors"
+                >
+                  <ExternalLink className="w-4 h-4 mr-2" />
+                  {currentTexts.open}
+                </a>
               </div>
             )}
           </div>
@@ -253,46 +251,47 @@ export default function NewsletterDetalle() {
 
       {/* Otros Newsletters */}
       {otrosNewsletters.length > 0 && (
-        <section className="py-16 bg-gray-50">
+        <section className="py-16 bg-bg-light">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">
+            <h2 className="text-4xl font-medium text-center text-primary mb-12">
               {currentTexts.otherNewsletters}
             </h2>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {otrosNewsletters.map((otroNewsletter) => (
-                <Card key={otroNewsletter.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                <div key={otroNewsletter.id} className="bg-bg-light rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow border border-border">
                   {/* Header con icono PDF */}
-                  <div className="h-32 bg-gradient-to-br from-red-400 to-red-600 flex items-center justify-center relative">
-                    <FileText className="w-12 h-12 text-white" />
-                    <div className="absolute top-2 right-2 bg-white bg-opacity-20 backdrop-blur-sm rounded-full p-1">
-                      <Download className="w-3 h-3 text-white" />
+                  <div className="h-32 gradient-accent flex items-center justify-center relative">
+                    <FileText className="w-12 h-12 text-black opacity-80" />
+                    <div className="absolute top-2 right-2 bg-black/20 backdrop-blur-sm rounded-full p-1">
+                      <Download className="w-3 h-3 text-black" />
                     </div>
                   </div>
 
-                  <CardContent className="p-6">
-                    <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-2">
+                  <div className="p-6">
+                    <h3 className="text-lg font-semibold text-text mb-2 line-clamp-2">
                       {otroNewsletter.titulo}
                     </h3>
                     
                     {otroNewsletter.descripcion && (
-                      <p className="text-gray-600 text-sm mb-3 line-clamp-2">
+                      <p className="text-text-muted text-sm mb-3 line-clamp-2">
                         {otroNewsletter.descripcion}
                       </p>
                     )}
 
-                    <div className="flex items-center text-xs text-gray-500 mb-4">
+                    <div className="flex items-center text-xs text-text-muted mb-4">
                       <Calendar className="w-3 h-3 mr-1" />
                       <span>{formatDate(otroNewsletter.fecha_publicacion)}</span>
                     </div>
 
-                    <Button className="w-full" size="sm" asChild>
-                      <Link to={generateLocalizedPath('newsletter_detalle', language, { id: otroNewsletter.id.toString() })}>
-                        {currentTexts.viewDetails}
-                      </Link>
-                    </Button>
-                  </CardContent>
-                </Card>
+                    <Link 
+                      to={generateLocalizedPath('newsletter_detalle', language, { id: otroNewsletter.id.toString() })}
+                      className="inline-flex items-center justify-center w-full px-4 py-2 bg-primary hover:bg-primary-dark text-white font-medium rounded-lg transition-colors"
+                    >
+                      {currentTexts.viewDetails}
+                    </Link>
+                  </div>
+                </div>
               ))}
             </div>
           </div>
@@ -300,37 +299,35 @@ export default function NewsletterDetalle() {
       )}
 
       {/* Call to Action */}
-      <section className="bg-gradient-to-r from-blue-600 to-blue-800 py-16">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-            {currentTexts.ctaTitle}
-          </h2>
-          <p className="text-xl text-blue-100 mb-8">
-            {currentTexts.ctaDescription}
-          </p>
-          
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button 
-              size="lg" 
-              className="bg-white text-blue-600 hover:bg-gray-100"
-              asChild
-            >
-              <Link to={generateLocalizedPath('examenes', language)}>
-                <BookOpen className="w-5 h-5 mr-2" />
-                {currentTexts.ctaButton}
-              </Link>
-            </Button>
-            <Button 
-              size="lg" 
-              variant="outline" 
-              className="border-white text-white hover:bg-white hover:text-blue-600"
-              asChild
-            >
-              <Link to={generateLocalizedPath('centros', language)}>
-                <Building2 className="w-5 h-5 mr-2" />
-                {currentTexts.ctaSecondary}
-              </Link>
-            </Button>
+      <section className="py-16 gradient-primary">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-3 gap-8 divide-x-1 divide-solid divide-white">
+            <div>
+              <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+                {currentTexts.ctaTitle}
+              </h2>
+            </div>
+            <div className="col-span-2">
+              <p className="text-xl text-white/90 mb-8 max-w-2xl">
+                {currentTexts.ctaDescription}
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4">
+                <Link
+                  to={generateLocalizedPath('examenes', language)}
+                  className="inline-flex items-center px-8 py-3 bg-accent hover:bg-accent-dark text-black font-semibold rounded-lg transition-colors"
+                >
+                  <BookOpen className="mr-2 w-5 h-5" />
+                  {currentTexts.ctaButton}
+                </Link>
+                <Link
+                  to={generateLocalizedPath('centros', language)}
+                  className="inline-flex items-center px-8 py-4 border-2 border-white text-white font-semibold rounded-lg hover:bg-white hover:text-primary transition-colors"
+                >
+                  <Building2 className="mr-2 w-5 h-5" />
+                  {currentTexts.ctaSecondary}
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
       </section>

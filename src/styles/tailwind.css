@@ -1,0 +1,212 @@
+/* Archivo: src/styles/tailwind.css */
+@import "tailwindcss";
+
+/* Configuración de tema para Tailwind 4 - Solo Light Mode */
+@theme {
+--font-family-open-sans: 'Open Sans', sans-serif;
+  /* Colores principales */
+  --color-primary-dark: hsl(150 77% 7%);
+  --color-primary: hsl(150 77% 17%);
+  --color-primary-light: hsl(150 77% 27%);
+  --color-primary-50: hsl(150 77% 95%);
+  --color-primary-100: hsl(150 77% 90%);
+  --color-primary-200: hsl(150 77% 80%);
+  --color-primary-300: hsl(150 77% 70%);
+  --color-primary-400: hsl(150 77% 60%);
+  --color-primary-500: hsl(150 77% 50%);
+  --color-primary-600: hsl(150 77% 40%);
+  --color-primary-700: hsl(150 77% 30%);
+  --color-primary-800: hsl(150 77% 20%);
+  --color-primary-900: hsl(150 77% 10%);
+
+  --color-secondary-dark: hsl(194 65% 8%);
+  --color-secondary: hsl(194 65% 18%);
+  --color-secondary-light: hsl(194 65% 28%);
+  --color-secondary-50: hsl(194 65% 95%);
+  --color-secondary-100: hsl(194 65% 90%);
+  --color-secondary-200: hsl(194 65% 80%);
+  --color-secondary-300: hsl(194 65% 70%);
+  --color-secondary-400: hsl(194 65% 60%);
+  --color-secondary-500: hsl(194 65% 50%);
+  --color-secondary-600: hsl(194 65% 40%);
+  --color-secondary-700: hsl(194 65% 30%);
+  --color-secondary-800: hsl(194 65% 20%);
+  --color-secondary-900: hsl(194 65% 10%);
+
+  --color-accent-dark: hsl(63 85% 30%);
+  --color-accent: hsl(63 85% 40%);
+  --color-accent-light: hsl(63 85% 50%);
+  --color-accent-50: hsl(63 85% 95%);
+  --color-accent-100: hsl(63 85% 90%);
+  --color-accent-200: hsl(63 85% 80%);
+  --color-accent-300: hsl(63 85% 70%);
+  --color-accent-400: hsl(63 85% 60%);
+  --color-accent-500: hsl(63 85% 50%);
+  --color-accent-600: hsl(63 85% 40%);
+  --color-accent-700: hsl(63 85% 30%);
+  --color-accent-800: hsl(63 85% 20%);
+  --color-accent-900: hsl(63 85% 10%);
+
+  /* Colores de fondo y texto para light mode */
+  --color-bg-dark: hsl(0 0% 90%);
+  --color-bg: hsl(0 0% 95%);
+  --color-bg-light: hsl(0 0% 100%);
+  --color-text: hsl(0 0% 5%);
+  --color-text-muted: hsl(0 0% 30%);
+  --color-border: hsl(0 0% 90%);
+  --color-border-light: hsl(0 0% 100%);
+
+  /* Grises estándar */
+  --color-gray-50: hsl(0 0% 98%);
+  --color-gray-100: hsl(0 0% 96%);
+  --color-gray-200: hsl(0 0% 90%);
+  --color-gray-300: hsl(0 0% 83%);
+  --color-gray-400: hsl(0 0% 64%);
+  --color-gray-500: hsl(0 0% 45%);
+  --color-gray-600: hsl(0 0% 32%);
+  --color-gray-700: hsl(0 0% 25%);
+  --color-gray-800: hsl(0 0% 15%);
+  --color-gray-900: hsl(0 0% 9%);
+
+  /* Radius por defecto */
+  --radius: 0.5rem;
+
+  /* Tipografía */
+  --font-family-sans: system-ui, -apple-system, sans-serif;
+  --font-family-mono: ui-monospace, monospace;
+
+  /* Espaciado adicional */
+  --spacing-18: 4.5rem;
+  --spacing-88: 22rem;
+}
+
+/* Utilidades personalizadas */
+@layer utilities {
+.font-open-sans {
+    font-family: var(--font-family-open-sans);
+  }
+  /* Gradientes */
+  .gradient-hero {
+    
+    background: radial-gradient(ellipse at center, #f4f4f5, #d4d4d4 );
+  }
+  .gradient-primary {
+    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  }
+
+  .gradient-secondary {
+    background: linear-gradient(135deg, var(--color-secondary) 0%, var(--color-secondary-dark) 100%);
+  }
+
+  .gradient-accent {
+    background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-dark) 100%);
+  }
+
+  /* Efectos hover */
+  .hover-primary:hover {
+    background-color: var(--color-primary-dark);
+  }
+
+  .hover-secondary:hover {
+    background-color: var(--color-secondary-dark);
+  }
+
+  .hover-accent:hover {
+    background-color: var(--color-accent-dark);
+  }
+
+  /* Transiciones suaves */
+  .transition-colors {
+    transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
+  }
+
+  .transition-shadow {
+    transition: box-shadow 0.2s ease;
+  }
+
+  /* Sombras personalizadas */
+  .shadow-primary {
+    box-shadow: 0 4px 6px -1px hsl(150 77% 17% / 0.1), 0 2px 4px -1px hsl(150 77% 17% / 0.06);
+  }
+
+  .shadow-secondary {
+    box-shadow: 0 4px 6px -1px hsl(194 65% 18% / 0.1), 0 2px 4px -1px hsl(194 65% 18% / 0.06);
+  }
+
+  .shadow-accent {
+    box-shadow: 0 4px 6px -1px hsl(63 85% 40% / 0.1), 0 2px 4px -1px hsl(63 85% 40% / 0.06);
+  }
+
+  /* Animaciones */
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+  }
+
+  .animate-slide-up {
+    animation: slideUp 0.3s ease-out;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes slideUp {
+    from {
+      transform: translateY(10px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+}
+
+/* Componentes base */
+@layer components {
+  /* Botones */
+  .btn-primary {
+    @apply bg-primary hover:bg-primary-dark text-white font-medium px-6 py-3 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-light;
+  }
+
+  .btn-secondary {
+    @apply bg-secondary hover:bg-secondary-dark text-white font-medium px-6 py-3 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-secondary-light;
+  }
+
+  .btn-accent {
+    @apply bg-accent hover:bg-accent-dark text-black font-medium px-6 py-3 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-accent-light;
+  }
+
+  .btn-outline-primary {
+    @apply border-2 border-primary text-primary hover:bg-primary hover:text-white px-6 py-3 rounded-lg transition-colors duration-200;
+  }
+
+  /* Cards */
+  .card {
+    @apply bg-bg-light border border-border rounded-lg shadow-md hover:shadow-lg transition-shadow p-6;
+  }
+
+  /* Inputs */
+  .input {
+    @apply w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-bg-light text-text;
+  }
+
+  /* Headers */
+  .header {
+    @apply shadow-sm border-b border-border;
+  }
+
+  /* Navigation */
+  .nav-link {
+    @apply text-text-muted hover:text-primary transition-colors duration-200;
+  }
+
+  .nav-link-active {
+    @apply text-primary font-medium;
+  }
+}

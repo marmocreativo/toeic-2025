@@ -14,7 +14,6 @@ import {
   Building2,
   BookOpen
 } from 'lucide-react';
-import { Button } from '../../components/ui/button';
 
 export default function PaginaDetalle() {
   const { url } = useParams<{ url: string }>();
@@ -29,7 +28,10 @@ export default function PaginaDetalle() {
       notFound: 'Página no encontrada',
       notFoundDesc: 'La página que buscas no existe o no está disponible.',
       lastUpdated: 'Última actualización',
-      ctaTitle: '¿Necesitas Más Información?',
+      readingTime: 'min de lectura',
+      contentNotAvailable: 'Contenido no disponible',
+      loading: 'Cargando página...',
+      ctaTitle: '¡No lo pienses más!',
       ctaDescription: 'Explora nuestros exámenes o encuentra un centro autorizado.',
       ctaButton: 'Ver Exámenes',
       ctaSecondary: 'Encontrar Centros'
@@ -39,6 +41,9 @@ export default function PaginaDetalle() {
       notFound: 'Page not found',
       notFoundDesc: 'The page you are looking for does not exist or is not available.',
       lastUpdated: 'Last updated',
+      readingTime: 'min read',
+      contentNotAvailable: 'Content not available',
+      loading: 'Loading page...',
       ctaTitle: 'Need More Information?',
       ctaDescription: 'Explore our tests or find an authorized center.',
       ctaButton: 'View Tests',
@@ -98,10 +103,10 @@ export default function PaginaDetalle() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-bg">
         <div className="text-center">
-          <RefreshCw className="w-8 h-8 animate-spin mx-auto mb-4 text-blue-600" />
-          <p className="text-gray-600">Cargando página...</p>
+          <RefreshCw className="w-8 h-8 animate-spin mx-auto mb-4 text-primary" />
+          <p className="text-text-muted">{currentTexts.loading}</p>
         </div>
       </div>
     );
@@ -109,21 +114,22 @@ export default function PaginaDetalle() {
 
   if (error || !pagina) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-bg">
         <div className="text-center max-w-md mx-auto px-4">
-          <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">
+          <FileText className="w-16 h-16 text-border mx-auto mb-4" />
+          <h1 className="text-2xl font-medium text-text mb-2">
             {currentTexts.notFound}
           </h1>
-          <p className="text-gray-600 mb-6">
+          <p className="text-text-muted mb-6">
             {currentTexts.notFoundDesc}
           </p>
-          <Button asChild>
-            <Link to={generateLocalizedPath('paginas', language)}>
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              {currentTexts.backToPages}
-            </Link>
-          </Button>
+          <Link
+            to={generateLocalizedPath('paginas', language)}
+            className="btn-primary"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            {currentTexts.backToPages}
+          </Link>
         </div>
       </div>
     );
@@ -134,15 +140,15 @@ export default function PaginaDetalle() {
   const resumen = language === 'es' ? (pagina.resumen || '') : (pagina.en_resumen || pagina.resumen || '');
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-bg">
       {/* Header */}
-      <section className="bg-white border-b border-gray-200">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <section className="bg-bg-light border-b border-border -mt-16 pt-24 pb-8">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Breadcrumb */}
           <div className="mb-6">
             <Link
               to={generateLocalizedPath('paginas', language)}
-              className="inline-flex items-center text-blue-600 hover:text-blue-700 transition-colors"
+              className="inline-flex items-center text-primary hover:text-primary-dark transition-colors"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
               {currentTexts.backToPages}
@@ -151,18 +157,18 @@ export default function PaginaDetalle() {
 
           {/* Título y metadatos */}
           <div className="mb-6">
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4 leading-tight">
+            <h1 className="text-4xl md:text-5xl font-medium text-primary mb-4 leading-tight">
               {titulo}
             </h1>
             
             {resumen && (
-              <p className="text-xl text-gray-600 mb-6 leading-relaxed">
+              <p className="text-xl text-secondary mb-6 leading-relaxed">
                 {resumen}
               </p>
             )}
 
             {/* Metadatos */}
-            <div className="flex flex-wrap items-center gap-6 text-sm text-gray-500">
+            <div className="flex flex-wrap items-center gap-6 text-sm text-text-muted">
               <div className="flex items-center gap-2">
                 <Calendar className="w-4 h-4" />
                 <span>
@@ -172,7 +178,7 @@ export default function PaginaDetalle() {
               <div className="flex items-center gap-2">
                 <Clock className="w-4 h-4" />
                 <span>
-                  {Math.ceil((contenido?.length || 0) / 1000)} min de lectura
+                  {Math.ceil((contenido?.length || 0) / 1000)} {currentTexts.readingTime}
                 </span>
               </div>
             </div>
@@ -192,12 +198,12 @@ export default function PaginaDetalle() {
       </section>
 
       {/* Contenido */}
-      <section className="py-12">
+      <section className="py-16 bg-bg-light">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <article className="prose prose-lg prose-blue max-w-none">
+          <article className="prose prose-lg max-w-none">
             {contenido ? (
               <div 
-                className="whitespace-pre-wrap leading-relaxed text-gray-700"
+                className="whitespace-pre-wrap leading-relaxed text-text"
                 style={{
                   lineHeight: '1.8',
                   fontSize: '1.125rem'
@@ -208,7 +214,7 @@ export default function PaginaDetalle() {
                     return <br key={index} />;
                   }
                   return (
-                    <p key={index} className="mb-6">
+                    <p key={index} className="mb-6 text-text">
                       {paragraph}
                     </p>
                   );
@@ -216,9 +222,9 @@ export default function PaginaDetalle() {
               </div>
             ) : (
               <div className="text-center py-12">
-                <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                <p className="text-gray-500 text-lg">
-                  {language === 'es' ? 'Contenido no disponible' : 'Content not available'}
+                <FileText className="w-16 h-16 text-border mx-auto mb-4" />
+                <p className="text-text-muted text-lg">
+                  {currentTexts.contentNotAvailable}
                 </p>
               </div>
             )}
@@ -227,37 +233,35 @@ export default function PaginaDetalle() {
       </section>
 
       {/* Call to Action */}
-      <section className="bg-gradient-to-r from-blue-600 to-blue-800 py-16">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-            {currentTexts.ctaTitle}
-          </h2>
-          <p className="text-xl text-blue-100 mb-8">
-            {currentTexts.ctaDescription}
-          </p>
-          
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button 
-              size="lg" 
-              className="bg-white text-blue-600 hover:bg-gray-100"
-              asChild
-            >
-              <Link to={generateLocalizedPath('examenes', language)}>
-                <BookOpen className="w-5 h-5 mr-2" />
-                {currentTexts.ctaButton}
-              </Link>
-            </Button>
-            <Button 
-              size="lg" 
-              variant="outline" 
-              className="border-white text-white hover:bg-white hover:text-blue-600"
-              asChild
-            >
-              <Link to={generateLocalizedPath('centros', language)}>
-                <Building2 className="w-5 h-5 mr-2" />
-                {currentTexts.ctaSecondary}
-              </Link>
-            </Button>
+      <section className="py-16 gradient-primary">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-3 gap-8 divide-x-1 divide-solid divide-white">
+            <div>
+              <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+                {currentTexts.ctaTitle}
+              </h2>
+            </div>
+            <div className="col-span-2">
+              <p className="text-xl text-white/90 mb-8 max-w-2xl">
+                {currentTexts.ctaDescription}
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4">
+                <Link
+                  to={generateLocalizedPath('examenes', language)}
+                  className="inline-flex items-center px-8 py-3 bg-accent hover:bg-accent-dark text-black font-semibold rounded-lg transition-colors"
+                >
+                  <BookOpen className="mr-2 w-5 h-5" />
+                  {currentTexts.ctaButton}
+                </Link>
+                <Link
+                  to={generateLocalizedPath('centros', language)}
+                  className="inline-flex items-center px-8 py-4 border-2 border-white text-white font-semibold rounded-lg hover:bg-white hover:text-primary transition-colors"
+                >
+                  <Building2 className="mr-2 w-5 h-5" />
+                  {currentTexts.ctaSecondary}
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
       </section>
