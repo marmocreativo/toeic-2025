@@ -1,11 +1,9 @@
 // src/components/admin/DashboardCards.tsx
 import { 
-  Users, 
   BookOpen, 
   FileText, 
   Building, 
   TrendingUp,
-  Eye,
   Download,
   Calendar
 } from 'lucide-react';

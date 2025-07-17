@@ -512,6 +512,7 @@ export const publicarTodosCentros = async (): Promise<void> => {
       .from('centros')
       .update({ publicado: true })
       .eq('publicado', false);
+      console.log(data);
 
     if (error) {
       console.error('Error al publicar todos los centros:', error);
@@ -532,6 +533,7 @@ export const despublicarTodosCentros = async (): Promise<void> => {
       .from('centros')
       .update({ publicado: false })
       .eq('publicado', true);
+      console.log(data);
 
     if (error) {
       console.error('Error al despublicar todos los centros:', error);

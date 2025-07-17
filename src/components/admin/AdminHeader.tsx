@@ -14,9 +14,6 @@ import {
 } from '../../components/ui/dropdown-menu';
 import { 
   LogOut, 
-  User, 
-  Settings, 
-  Bell, 
   ChevronDown,
   Home,
   Clock,

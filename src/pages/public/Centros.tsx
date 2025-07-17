@@ -16,7 +16,6 @@ import {
   Users,
   Globe,
   CheckCircle,
-  ImageIcon
 } from 'lucide-react';
 
 export default function Centros() {

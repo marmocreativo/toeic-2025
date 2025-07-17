@@ -88,8 +88,9 @@ export const decodeHtmlEntities = (text: string): string => {
   }
   
   // Reemplazar entidades numéricas &#xxx;
-  result = result.replace(/&#(\d+);/g, (match, num) => {
+  result = result.replace(/&#(\d+);/g, (_match, num) => {
     return String.fromCharCode(parseInt(num, 10));
+
   });
   
   return result;

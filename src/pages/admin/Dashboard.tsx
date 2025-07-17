@@ -7,7 +7,6 @@ import {
   FileText,
   Image,
   Globe,
-  TrendingUp,
   Clock,
   AlertCircle,
   Plus,

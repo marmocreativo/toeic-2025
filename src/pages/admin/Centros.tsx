@@ -1,7 +1,7 @@
 // src/pages/admin/AdminCentros.tsx
 
 import { useState, useEffect } from 'react';
-import { Plus, Edit, Trash2, Search, MapPin, Phone, Mail, Globe, Building2, Upload, Image, Eye, EyeOff } from 'lucide-react';
+import { Plus, Edit, Trash2, Search, MapPin, Phone, Mail, Building2,  Image, Eye } from 'lucide-react';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Textarea } from '../../components/ui/textarea';
