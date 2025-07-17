@@ -1,5 +1,4 @@
 // src/pages/admin/Dashboard.tsx
-
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
@@ -15,13 +14,10 @@ import {
   ArrowRight,
   Calendar,
   HelpCircle,
-  List
+  List,
+  Building,
+  Download
 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
-import { Button } from '../../components/ui/button';
-import { Badge } from '../../components/ui/badge';
-import { Progress } from '../../components/ui/progress';
-import { Alert, AlertDescription } from '../../components/ui/alert';
 import { getDashboardStats, getQuickActions } from '../../services/dashboardService';
 import type { DashboardStats } from '../../services/dashboardService';
 
@@ -30,6 +26,8 @@ const iconMap = {
   MapPin,
   FileText,
   Image,
+  Building,
+  Download
 };
 
 export default function AdminDashboard() {
@@ -59,7 +57,7 @@ export default function AdminDashboard() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-lg text-gray-600">Cargando dashboard...</div>
+        <div className="text-lg text-text-muted">Cargando dashboard...</div>
       </div>
     );
   }
@@ -67,11 +65,13 @@ export default function AdminDashboard() {
   if (error || !stats) {
     return (
       <div className="space-y-6">
-        <h1 className="text-3xl font-bold text-gray-900">Dashboard de Administración</h1>
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>{error || 'No se pudieron cargar las estadísticas'}</AlertDescription>
-        </Alert>
+        <h1 className="text-3xl font-medium text-primary">Dashboard de Administración</h1>
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <div className="flex items-center">
+            <AlertCircle className="h-5 w-5 text-red-600 mr-2" />
+            <span className="text-red-700">{error || 'No se pudieron cargar las estadísticas'}</span>
+          </div>
+        </div>
       </div>
     );
   }
@@ -81,315 +81,234 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
+      {/* Header */}
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold text-gray-900">Dashboard de Administración</h1>
-        <Badge variant="outline" className="text-sm">
+        <h1 className="text-3xl font-medium text-primary">Dashboard de Administración</h1>
+        <div className="flex items-center px-3 py-1 bg-accent/10 text-accent-dark rounded-lg border border-accent/20">
           <Clock className="w-4 h-4 mr-2" />
-          Actualizado ahora
-        </Badge>
+          <span className="text-sm font-medium">Actualizado ahora</span>
+        </div>
+      </div>
+
+      {/* Acciones Rápidas - Compactas en la parte superior */}
+      <div className="bg-bg-light rounded-lg border border-border p-6">
+        <h2 className="text-lg font-semibold text-primary mb-4">Acciones Rápidas</h2>
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+          {quickActions.map((action, index) => {
+            const IconComponent = iconMap[action.icon as keyof typeof iconMap];
+            const colorClasses = {
+              blue: 'bg-primary hover:bg-primary-dark text-white',
+              green: 'bg-secondary hover:bg-secondary-dark text-white',
+              purple: 'bg-primary hover:bg-primary-dark text-white',
+              orange: 'bg-accent hover:bg-accent-dark text-black',
+              red: 'bg-secondary hover:bg-secondary-dark text-white'
+            };
+            
+            return (
+              <Link key={index} to={action.href}>
+                <div className={`p-4 rounded-lg transition-all duration-200 hover:shadow-md ${colorClasses[action.color as keyof typeof colorClasses] || colorClasses.blue}`}>
+                  <div className="flex flex-col items-center text-center space-y-2">
+                    <IconComponent className="w-6 h-6" />
+                    <span className="text-sm font-medium">{action.title}</span>
+                  </div>
+                </div>
+              </Link>
+            );
+          })}
+        </div>
       </div>
 
       {/* Estadísticas principales */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Exámenes</CardTitle>
-            <BookOpen className="h-4 w-4 text-blue-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-blue-600">{stats.examenes.total}</div>
-            <div className="text-xs text-muted-foreground">
-              {stats.examenes.publicados} publicados, {stats.examenes.borradores} borradores
+        <div className="bg-bg-light rounded-lg border border-border p-6 hover:shadow-lg transition-all duration-300 hover:border-primary/30">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-sm font-medium text-text-muted">Exámenes</h3>
+            <div className="p-2 bg-primary/10 rounded-lg">
+              <BookOpen className="h-5 w-5 text-primary" />
             </div>
-            <Progress 
-              value={getCompletionPercentage(stats.examenes.publicados, stats.examenes.total)} 
-              className="mt-2 h-2"
+          </div>
+          <div className="text-2xl font-bold text-primary mb-2">{stats.examenes.total}</div>
+          <div className="text-xs text-text-muted mb-3">
+            {stats.examenes.publicados} publicados, {stats.examenes.borradores} borradores
+          </div>
+          <div className="w-full bg-border rounded-full h-2">
+            <div 
+              className="bg-gradient-primary h-2 rounded-full transition-all duration-300"
+              style={{ width: `${getCompletionPercentage(stats.examenes.publicados, stats.examenes.total)}%` }}
             />
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Centros</CardTitle>
-            <MapPin className="h-4 w-4 text-green-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">{stats.centros.total}</div>
-            <div className="text-xs text-muted-foreground">
-              {stats.centros.publicados} publicados, {stats.centros.borradores} borradores
+        <div className="bg-bg-light rounded-lg border border-border p-6 hover:shadow-lg transition-all duration-300 hover:border-secondary/30">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-sm font-medium text-text-muted">Centros</h3>
+            <div className="p-2 bg-secondary/10 rounded-lg">
+              <MapPin className="h-5 w-5 text-secondary" />
             </div>
-            <Progress 
-              value={getCompletionPercentage(stats.centros.publicados, stats.centros.total)} 
-              className="mt-2 h-2"
+          </div>
+          <div className="text-2xl font-bold text-secondary mb-2">{stats.centros.total}</div>
+          <div className="text-xs text-text-muted mb-3">
+            {stats.centros.publicados} publicados, {stats.centros.borradores} borradores
+          </div>
+          <div className="w-full bg-border rounded-full h-2">
+            <div 
+              className="bg-gradient-secondary h-2 rounded-full transition-all duration-300"
+              style={{ width: `${getCompletionPercentage(stats.centros.publicados, stats.centros.total)}%` }}
             />
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Páginas</CardTitle>
-            <FileText className="h-4 w-4 text-purple-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-purple-600">{stats.paginas.total}</div>
-            <div className="text-xs text-muted-foreground">
-              {stats.paginas.publicadas} publicadas, {stats.paginas.borradores} borradores
+        <div className="bg-bg-light rounded-lg border border-border p-6 hover:shadow-lg transition-all duration-300 hover:border-primary/30">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-sm font-medium text-text-muted">Páginas</h3>
+            <div className="p-2 bg-primary/10 rounded-lg">
+              <FileText className="h-5 w-5 text-primary" />
             </div>
-            <Progress 
-              value={getCompletionPercentage(stats.paginas.publicadas, stats.paginas.total)} 
-              className="mt-2 h-2"
+          </div>
+          <div className="text-2xl font-bold text-primary mb-2">{stats.paginas.total}</div>
+          <div className="text-xs text-text-muted mb-3">
+            {stats.paginas.publicadas} publicadas, {stats.paginas.borradores} borradores
+          </div>
+          <div className="w-full bg-border rounded-full h-2">
+            <div 
+              className="bg-gradient-primary h-2 rounded-full transition-all duration-300"
+              style={{ width: `${getCompletionPercentage(stats.paginas.publicadas, stats.paginas.total)}%` }}
             />
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Sliders</CardTitle>
-            <Image className="h-4 w-4 text-orange-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-orange-600">{stats.sliders.total}</div>
-            <div className="text-xs text-muted-foreground">
-              {stats.sliders.publicados} publicados, {stats.sliders.borradores} borradores
+        <div className="bg-bg-light rounded-lg border border-border p-6 hover:shadow-lg transition-all duration-300 hover:border-accent/30">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-sm font-medium text-text-muted">Sliders</h3>
+            <div className="p-2 bg-accent/10 rounded-lg">
+              <Image className="h-5 w-5 text-accent-dark" />
             </div>
-            <Progress 
-              value={getCompletionPercentage(stats.sliders.publicados, stats.sliders.total)} 
-              className="mt-2 h-2"
+          </div>
+          <div className="text-2xl font-bold text-accent-dark mb-2">{stats.sliders.total}</div>
+          <div className="text-xs text-text-muted mb-3">
+            {stats.sliders.publicados} publicados, {stats.sliders.borradores} borradores
+          </div>
+          <div className="w-full bg-border rounded-full h-2">
+            <div 
+              className="bg-gradient-accent h-2 rounded-full transition-all duration-300"
+              style={{ width: `${getCompletionPercentage(stats.sliders.publicados, stats.sliders.total)}%` }}
             />
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Newsletters</CardTitle>
-            <FileText className="h-4 w-4 text-red-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-red-600">{stats.newsletters.total}</div>
-            <div className="text-xs text-muted-foreground">
-              {stats.newsletters.publicados} publicados, {stats.newsletters.borradores} borradores
+        <div className="bg-bg-light rounded-lg border border-border p-6 hover:shadow-lg transition-all duration-300 hover:border-secondary/30">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-sm font-medium text-text-muted">Newsletters</h3>
+            <div className="p-2 bg-secondary/10 rounded-lg">
+              <Download className="h-5 w-5 text-secondary" />
             </div>
-            <Progress 
-              value={getCompletionPercentage(stats.newsletters.publicados, stats.newsletters.total)} 
-              className="mt-2 h-2"
+          </div>
+          <div className="text-2xl font-bold text-secondary mb-2">{stats.newsletters.total}</div>
+          <div className="text-xs text-text-muted mb-3">
+            {stats.newsletters.publicados} publicados, {stats.newsletters.borradores} borradores
+          </div>
+          <div className="w-full bg-border rounded-full h-2">
+            <div 
+              className="bg-gradient-secondary h-2 rounded-full transition-all duration-300"
+              style={{ width: `${getCompletionPercentage(stats.newsletters.publicados, stats.newsletters.total)}%` }}
             />
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
 
       {/* Estadísticas detalladas */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Detalles de exámenes */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <BookOpen className="w-5 h-5 mr-2" />
-              Detalles de Exámenes
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
+        <div className="bg-bg-light rounded-lg border border-border p-6">
+          <h3 className="text-lg font-semibold text-primary mb-4 flex items-center">
+            <BookOpen className="w-5 h-5 mr-2" />
+            Detalles de Exámenes
+          </h3>
+          <div className="space-y-4">
             <div className="flex justify-between items-center">
-              <span className="text-sm flex items-center">
-                <Calendar className="w-4 h-4 mr-2 text-blue-500" />
+              <span className="text-sm flex items-center text-text">
+                <Calendar className="w-4 h-4 mr-2 text-primary" />
                 Con horarios
               </span>
-              <Badge variant="secondary">{stats.examenes.conHorarios}</Badge>
+              <span className="px-2 py-1 bg-primary/10 text-primary rounded-lg text-sm font-medium">
+                {stats.examenes.conHorarios}
+              </span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-sm flex items-center">
-                <HelpCircle className="w-4 h-4 mr-2 text-green-500" />
+              <span className="text-sm flex items-center text-text">
+                <HelpCircle className="w-4 h-4 mr-2 text-secondary" />
                 Con FAQs
               </span>
-              <Badge variant="secondary">{stats.examenes.conFAQs}</Badge>
+              <span className="px-2 py-1 bg-secondary/10 text-secondary rounded-lg text-sm font-medium">
+                {stats.examenes.conFAQs}
+              </span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-sm flex items-center">
-                <List className="w-4 h-4 mr-2 text-purple-500" />
+              <span className="text-sm flex items-center text-text">
+                <List className="w-4 h-4 mr-2 text-accent-dark" />
                 Con muestras
               </span>
-              <Badge variant="secondary">{stats.examenes.conMuestras}</Badge>
+              <span className="px-2 py-1 bg-accent/10 text-accent-dark rounded-lg text-sm font-medium">
+                {stats.examenes.conMuestras}
+              </span>
             </div>
-            <div className="pt-2">
+            <div className="pt-4 border-t border-border">
               <Link to="/admin/examenes">
-                <Button variant="outline" size="sm" className="w-full">
+                <button className="w-full px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg transition-colors duration-200 flex items-center justify-center">
                   Ver todos los exámenes
                   <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
+                </button>
               </Link>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Centros por estado */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <Globe className="w-5 h-5 mr-2" />
-              Centros por Estado
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {stats.centros.porEstado.length > 0 ? (
-              <div className="space-y-3">
-                {stats.centros.porEstado.slice(0, 5).map((item, index) => (
-                  <div key={index} className="flex justify-between items-center">
-                    <span className="text-sm">{item.estado}</span>
-                    <Badge variant="outline">{item.cantidad}</Badge>
-                  </div>
-                ))}
-                {stats.centros.porEstado.length > 5 && (
-                  <div className="text-xs text-muted-foreground text-center pt-2">
-                    +{stats.centros.porEstado.length - 5} estados más
-                  </div>
-                )}
-                <div className="pt-2">
-                  <Link to="/admin/centros">
-                    <Button variant="outline" size="sm" className="w-full">
-                      Ver todos los centros
-                      <ArrowRight className="w-4 h-4 ml-2" />
-                    </Button>
-                  </Link>
+        <div className="bg-bg-light rounded-lg border border-border p-6">
+          <h3 className="text-lg font-semibold text-primary mb-4 flex items-center">
+            <Globe className="w-5 h-5 mr-2" />
+            Centros por Estado
+          </h3>
+          {stats.centros.porEstado.length > 0 ? (
+            <div className="space-y-3">
+              {stats.centros.porEstado.slice(0, 5).map((item, index) => (
+                <div key={index} className="flex justify-between items-center">
+                  <span className="text-sm text-text">{item.estado}</span>
+                  <span className="px-2 py-1 bg-secondary/10 text-secondary rounded-lg text-sm font-medium">
+                    {item.cantidad}
+                  </span>
                 </div>
-              </div>
-            ) : (
-              <div className="text-center py-4">
-                <p className="text-sm text-muted-foreground mb-3">No hay centros registrados</p>
+              ))}
+              {stats.centros.porEstado.length > 5 && (
+                <div className="text-xs text-text-muted text-center pt-2">
+                  +{stats.centros.porEstado.length - 5} estados más
+                </div>
+              )}
+              <div className="pt-4 border-t border-border">
                 <Link to="/admin/centros">
-                  <Button size="sm">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Agregar primer centro
-                  </Button>
+                  <button className="w-full px-4 py-2 bg-secondary hover:bg-secondary-dark text-white rounded-lg transition-colors duration-200 flex items-center justify-center">
+                    Ver todos los centros
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </button>
                 </Link>
               </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Acciones rápidas */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center">
-            <TrendingUp className="w-5 h-5 mr-2" />
-            Acciones Rápidas
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {quickActions.map((action, index) => {
-              const IconComponent = iconMap[action.icon as keyof typeof iconMap];
-              return (
-                <Link key={index} to={action.href}>
-                  <Card className="hover:shadow-md transition-shadow cursor-pointer">
-                    <CardContent className="p-4">
-                      <div className="flex items-center space-x-3">
-                        <div className={`p-2 rounded-lg bg-${action.color}-100`}>
-                          <IconComponent className={`w-5 h-5 text-${action.color}-600`} />
-                        </div>
-                        <div className="flex-1">
-                          <h4 className="font-medium text-sm">{action.title}</h4>
-                          <p className="text-xs text-muted-foreground">{action.description}</p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </Link>
-              );
-            })}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Actividad reciente */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm">Exámenes Recientes</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {stats.actividad.examenesRecientes.length > 0 ? (
-              <div className="space-y-2">
-                {stats.actividad.examenesRecientes.map((examen) => (
-                  <div key={examen.id} className="flex items-center justify-between text-sm">
-                    <span className="truncate">{examen.titulo}</span>
-                    <Badge variant={examen.publicado ? "default" : "secondary"} className="text-xs">
-                      {examen.publicado ? 'Pub' : 'Borr'}
-                    </Badge>
-                  </div>
-                ))}
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <div className="w-16 h-16 bg-secondary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Building className="w-8 h-8 text-secondary" />
               </div>
-            ) : (
-              <p className="text-sm text-muted-foreground">No hay exámenes recientes</p>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm">Centros Recientes</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {stats.actividad.centrosRecientes.length > 0 ? (
-              <div className="space-y-2">
-                {stats.actividad.centrosRecientes.map((centro) => (
-                  <div key={centro.id} className="flex items-center justify-between text-sm">
-                    <span className="truncate">{centro.nombre}</span>
-                    <Badge variant={centro.publicado ? "default" : "secondary"} className="text-xs">
-                      {centro.publicado ? 'Pub' : 'Borr'}
-                    </Badge>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-sm text-muted-foreground">No hay centros recientes</p>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm">Páginas Recientes</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {stats.actividad.paginasRecientes.length > 0 ? (
-              <div className="space-y-2">
-                {stats.actividad.paginasRecientes.map((pagina) => (
-                  <div key={pagina.id} className="flex items-center justify-between text-sm">
-                    <span className="truncate">{pagina.titulo}</span>
-                    <Badge variant={pagina.publicado ? "default" : "secondary"} className="text-xs">
-                      {pagina.publicado ? 'Pub' : 'Borr'}
-                    </Badge>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-sm text-muted-foreground">No hay páginas recientes</p>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm">Newsletters Recientes</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {stats.actividad.newslettersRecientes.length > 0 ? (
-              <div className="space-y-2">
-                {stats.actividad.newslettersRecientes.map((newsletter) => (
-                  <div key={newsletter.id} className="flex items-center justify-between text-sm">
-                    <span className="truncate">{newsletter.titulo}</span>
-                    <Badge variant={newsletter.publicado ? "default" : "secondary"} className="text-xs">
-                      {newsletter.publicado ? 'Pub' : 'Borr'}
-                    </Badge>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-sm text-muted-foreground">No hay newsletters recientes</p>
-            )}
-          </CardContent>
-        </Card>
+              <p className="text-sm text-text-muted mb-4">No hay centros registrados</p>
+              <Link to="/admin/centros">
+                <button className="px-4 py-2 bg-secondary hover:bg-secondary-dark text-white rounded-lg transition-colors duration-200 flex items-center mx-auto">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Agregar primer centro
+                </button>
+              </Link>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

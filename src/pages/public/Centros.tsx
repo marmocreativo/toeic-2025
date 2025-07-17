@@ -15,7 +15,8 @@ import {
   Filter,
   Users,
   Globe,
-  CheckCircle
+  CheckCircle,
+  ImageIcon
 } from 'lucide-react';
 
 export default function Centros() {
@@ -25,6 +26,7 @@ export default function Centros() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedEstado, setSelectedEstado] = useState<string>('');
   const [loading, setLoading] = useState(true);
+  const [imageErrors, setImageErrors] = useState<Set<number>>(new Set());
   const { language } = useLanguage();
 
   // Textos según el idioma
@@ -143,6 +145,24 @@ export default function Centros() {
 
     setFilteredCentros(filtered);
   }, [searchTerm, selectedEstado, centros]);
+
+  // Manejar errores de imagen
+  const handleImageError = (centroId: number) => {
+    setImageErrors(prev => new Set(prev).add(centroId));
+  };
+
+  // Función para obtener la URL de la imagen
+  const getImageUrl = (centro: CentroConEstado): string => {
+    if (!centro.imagen) return '';
+    
+    // Si ya es una URL completa, devolverla tal como está
+    if (centro.imagen.startsWith('http') || centro.imagen.startsWith('/')) {
+      return centro.imagen;
+    }
+    
+    // Si es solo el nombre del archivo, construir la ruta
+    return `/images/centros/${centro.imagen}`;
+  };
 
   // Agrupar centros por estado
   const centrosPorEstado = filteredCentros.reduce((acc, centro) => {
@@ -286,73 +306,98 @@ export default function Centros() {
                     {centrosEstado.map((centro) => (
                       <div 
                         key={centro.id} 
-                        className="bg-bg-light rounded-lg shadow-md border border-border hover:shadow-lg hover:border-primary/30 transition-all duration-300 group p-4"
+                        className="bg-bg-light rounded-lg shadow-md border border-border hover:shadow-lg hover:border-primary/30 transition-all duration-300 group overflow-hidden"
                       >
-                        {/* Header compacto */}
-                        <div className="flex items-start gap-3 mb-3">
-                          <div className="bg-primary/10 rounded-lg p-2 flex-shrink-0">
-                            <Building2 className="w-4 h-4 text-primary" />
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <h3 className="font-semibold text-text group-hover:text-primary transition-colors leading-tight text-sm">
-                              {centro.nombre}
-                            </h3>
-                            <p className="text-xs text-text-muted mt-1">
-                              Centro Autorizado TOEIC
-                            </p>
-                          </div>
-                        </div>
-
-                        {/* Información compacta */}
-                        <div className="space-y-2 mb-3">
-                          {/* Dirección */}
-                          <div className="flex items-start gap-2">
-                            <MapPin className="w-3 h-3 text-text-muted mt-0.5 flex-shrink-0" />
-                            <p className="text-xs text-text-muted leading-relaxed line-clamp-2">
-                              {centro.direccion}
-                            </p>
-                          </div>
-
-                          {/* Teléfono */}
-                          {centro.telefono && (
-                            <div className="flex items-center gap-2">
-                              <Phone className="w-3 h-3 text-text-muted flex-shrink-0" />
-                              <a 
-                                href={`tel:${centro.telefono}`}
-                                className="text-xs text-primary hover:text-primary-dark transition-colors"
-                              >
-                                {centro.telefono}
-                              </a>
+                        {/* Imagen del centro */}
+                        <div className="h-32 bg-gray-100 relative overflow-hidden">
+                          {centro.imagen && !imageErrors.has(centro.id) ? (
+                            <img 
+                              src={getImageUrl(centro)}
+                              alt={centro.nombre}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                              onError={() => handleImageError(centro.id)}
+                            />
+                          ) : (
+                            <div className="w-full h-full bg-gradient-to-br from-primary/10 to-secondary/10 flex items-center justify-center">
+                              <div className="text-center">
+                                <Building2 className="w-8 h-8 text-primary/50 mx-auto mb-1" />
+                                <span className="text-xs text-text-muted">TOEIC</span>
+                              </div>
                             </div>
                           )}
-
-                          {/* Email */}
-                          {centro.correo && (
-                            <div className="flex items-center gap-2">
-                              <Mail className="w-3 h-3 text-text-muted flex-shrink-0" />
-                              <a 
-                                href={`mailto:${centro.correo}`}
-                                className="text-xs text-primary hover:text-primary-dark transition-colors truncate"
-                              >
-                                {centro.correo}
-                              </a>
-                            </div>
-                          )}
+                          
+                          {/* Overlay con degradado */}
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
                         </div>
 
-                        {/* Botón compacto */}
-                        <button 
-                          className="w-full px-3 py-2 bg-primary hover:bg-primary-dark text-white text-xs font-medium rounded-lg transition-colors"
-                          onClick={() => {
-                            if (centro.telefono) {
-                              window.open(`tel:${centro.telefono}`);
-                            } else if (centro.correo) {
-                              window.open(`mailto:${centro.correo}`);
-                            }
-                          }}
-                        >
-                          {currentTexts.contact}
-                        </button>
+                        {/* Contenido */}
+                        <div className="p-4">
+                          {/* Header compacto */}
+                          <div className="flex items-start gap-3 mb-3">
+                            <div className="bg-primary/10 rounded-lg p-2 flex-shrink-0">
+                              <Building2 className="w-4 h-4 text-primary" />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <h3 className="font-semibold text-text group-hover:text-primary transition-colors leading-tight text-sm">
+                                {centro.nombre}
+                              </h3>
+                              <p className="text-xs text-text-muted mt-1">
+                                Centro Autorizado TOEIC
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Información compacta */}
+                          <div className="space-y-2 mb-3">
+                            {/* Dirección */}
+                            <div className="flex items-start gap-2">
+                              <MapPin className="w-3 h-3 text-text-muted mt-0.5 flex-shrink-0" />
+                              <p className="text-xs text-text-muted leading-relaxed line-clamp-2">
+                                {centro.direccion}
+                              </p>
+                            </div>
+
+                            {/* Teléfono */}
+                            {centro.telefono && (
+                              <div className="flex items-center gap-2">
+                                <Phone className="w-3 h-3 text-text-muted flex-shrink-0" />
+                                <a 
+                                  href={`tel:${centro.telefono}`}
+                                  className="text-xs text-primary hover:text-primary-dark transition-colors"
+                                >
+                                  {centro.telefono}
+                                </a>
+                              </div>
+                            )}
+
+                            {/* Email */}
+                            {centro.correo && (
+                              <div className="flex items-center gap-2">
+                                <Mail className="w-3 h-3 text-text-muted flex-shrink-0" />
+                                <a 
+                                  href={`mailto:${centro.correo}`}
+                                  className="text-xs text-primary hover:text-primary-dark transition-colors truncate"
+                                >
+                                  {centro.correo}
+                                </a>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Botón compacto */}
+                          <button 
+                            className="w-full px-3 py-2 bg-primary hover:bg-primary-dark text-white text-xs font-medium rounded-lg transition-colors"
+                            onClick={() => {
+                              if (centro.telefono) {
+                                window.open(`tel:${centro.telefono}`);
+                              } else if (centro.correo) {
+                                window.open(`mailto:${centro.correo}`);
+                              }
+                            }}
+                          >
+                            {currentTexts.contact}
+                          </button>
+                        </div>
                       </div>
                     ))}
                   </div>

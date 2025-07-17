@@ -1,373 +1,396 @@
-// src/pages/admin/SliderForm.tsx - Versión con upload de archivos
+// src/pages/admin/Sliders.tsx - Con vista de imágenes
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { sliderService } from '../../services/sliderService';
-import { useFileUpload } from '../../hooks/useFileUpload';
-import { STORAGE_BUCKETS } from '../../services/storageService';
-import type { SliderFormData } from '../../types/slider';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import FileUpload from '../../components/ui/FileUpload';
-import { Loader2, Save, ArrowLeft } from 'lucide-react';
+import type { Slider } from '../../types/slider';
+import { 
+  Plus, 
+  Edit, 
+  Trash2, 
+  Eye, 
+  EyeOff, 
+  Loader2,
+  Image as ImageIcon,
+  Grid,
+  List,
+  AlertCircle
+} from 'lucide-react';
 
-export default function SliderForm() {
-  const { id } = useParams();
-  const navigate = useNavigate();
-  const isEditing = !!id;
-
-  const [formData, setFormData] = useState<SliderFormData>({
-    titulo: '',
-    subtitulo: '',
-    extra: '',
-    boton_texto: '',
-    boton_enlace: '',
-    en_titulo: '',
-    en_subtitulo: '',
-    en_extra: '',
-    en_boton_texto: '',
-    imagen: '',
-    logo: '',
-    publicado: false,
-  });
-
-  const [loading, setLoading] = useState(false);
-  const [saving, setSaving] = useState(false);
+export default function AdminSliders() {
+  const [sliders, setSliders] = useState<Slider[]>([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  // Hooks para upload de archivos
-  const imageUpload = useFileUpload({
-    bucket: STORAGE_BUCKETS.SLIDERS,
-    folder: 'images',
-    onSuccess: (url) => {
-      setFormData(prev => ({ ...prev, imagen: url }));
-      setError(null); // Limpiar errores al subir exitosamente
-    },
-    onError: (error) => {
-      setError(`Error subiendo imagen: ${error}`);
-    }
-  });
-
-  const logoUpload = useFileUpload({
-    bucket: STORAGE_BUCKETS.SLIDERS,
-    folder: 'logos',
-    onSuccess: (url) => {
-      setFormData(prev => ({ ...prev, logo: url }));
-      setError(null); // Limpiar errores al subir exitosamente
-    },
-    onError: (error) => {
-      setError(`Error subiendo logo: ${error}`);
-    }
-  });
+  const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
   useEffect(() => {
-    if (isEditing && id) {
-      loadSlider(parseInt(id));
-    }
-  }, [id, isEditing]);
+    loadSliders();
+  }, []);
 
-  const loadSlider = async (sliderId: number) => {
+  const loadSliders = async () => {
     try {
       setLoading(true);
-      const slider = await sliderService.getSliderById(sliderId);
-      if (slider) {
-        setFormData({
-          titulo: slider.titulo || '',
-          subtitulo: slider.subtitulo || '',
-          extra: slider.extra || '',
-          boton_texto: slider.boton_texto || '',
-          boton_enlace: slider.boton_enlace || '',
-          en_titulo: slider.en_titulo || '',
-          en_subtitulo: slider.en_subtitulo || '',
-          en_extra: slider.en_extra || '',
-          en_boton_texto: slider.en_boton_texto || '',
-          imagen: slider.imagen || '',
-          logo: slider.logo || '',
-          publicado: slider.publicado,
-        });
-      }
+      const data = await sliderService.getSliders();
+      setSliders(data);
     } catch (err: any) {
-      console.error('Error loading slider:', err);
-      setError('Error al cargar el slider');
+      console.error('Error loading sliders:', err);
+      setError('Error al cargar los sliders');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSaving(true);
-    setError(null);
-
+  const handleTogglePublished = async (id: number, currentStatus: boolean) => {
     try {
-      if (isEditing && id) {
-        await sliderService.updateSlider(parseInt(id), formData);
-      } else {
-        await sliderService.createSlider(formData);
-      }
-      navigate('/admin/sliders');
+      await sliderService.togglePublished(id, !currentStatus);
+      setSliders(sliders.map(slider => 
+        slider.id === id 
+          ? { ...slider, publicado: !currentStatus }
+          : slider
+      ));
     } catch (err: any) {
-      console.error('Error saving slider:', err);
-      setError('Error al guardar el slider');
-    } finally {
-      setSaving(false);
+      console.error('Error toggling published status:', err);
+      setError('Error al cambiar el estado');
     }
   };
 
-  const handleInputChange = (
-    field: keyof SliderFormData,
-    value: string | boolean
-  ) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
+  const handleDelete = async (id: number) => {
+    if (!confirm('¿Estás seguro de que quieres eliminar este slider?')) {
+      return;
+    }
+
+    try {
+      setDeletingId(id);
+      await sliderService.deleteSlider(id);
+      setSliders(sliders.filter(slider => slider.id !== id));
+    } catch (err: any) {
+      console.error('Error deleting slider:', err);
+      setError('Error al eliminar el slider');
+    } finally {
+      setDeletingId(null);
+    }
   };
+
+  const SliderCard = ({ slider }: { slider: Slider }) => (
+    <div className="bg-bg-light rounded-lg border border-border overflow-hidden hover:shadow-lg transition-all duration-300 hover:border-primary/30">
+      {/* Imagen del slider */}
+      <div className="relative h-48 bg-bg">
+        {slider.imagen ? (
+          <img
+            src={slider.imagen}
+            alt={slider.titulo || 'Slider'}
+            className="w-full h-full object-cover"
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              target.src = '';
+              target.style.display = 'none';
+            }}
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center">
+            <ImageIcon className="h-12 w-12 text-border" />
+            <span className="ml-2 text-text-muted">Sin imagen</span>
+          </div>
+        )}
+        
+        {/* Badge de estado */}
+        <div className="absolute top-3 right-3">
+          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+            slider.publicado 
+              ? 'bg-accent text-black' 
+              : 'bg-bg-light text-text-muted border border-border'
+          }`}>
+            {slider.publicado ? 'Publicado' : 'Borrador'}
+          </span>
+        </div>
+
+        {/* Logo si existe */}
+        {slider.logo && (
+          <div className="absolute bottom-3 left-3">
+            <img
+              src={slider.logo}
+              alt="Logo"
+              className="h-8 w-auto bg-bg-light p-1 rounded shadow-sm border border-border"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.style.display = 'none';
+              }}
+            />
+          </div>
+        )}
+      </div>
+
+      {/* Contenido */}
+      <div className="p-4">
+        <div className="mb-4">
+          <h3 className="text-lg font-semibold truncate text-text">
+            {slider.titulo || 'Sin título'}
+          </h3>
+          
+          <p className="text-text-muted text-sm mt-1 line-clamp-2">
+            {slider.subtitulo || 'Sin subtítulo'}
+          </p>
+          
+          {slider.boton_texto && (
+            <p className="text-xs text-text-muted mt-2">
+              Botón: {slider.boton_texto}
+            </p>
+          )}
+          
+          <p className="text-xs text-text-muted mt-2">
+            Creado: {new Date(slider.created_at).toLocaleDateString()}
+          </p>
+        </div>
+
+        {/* Acciones */}
+        <div className="flex items-center justify-end gap-2">
+          <button
+            onClick={() => handleTogglePublished(slider.id, slider.publicado)}
+            className={`p-2 rounded-lg transition-colors duration-200 ${
+              slider.publicado 
+                ? 'bg-accent/10 text-accent-dark hover:bg-accent/20' 
+                : 'bg-bg text-text-muted hover:bg-border'
+            }`}
+            title={slider.publicado ? 'Despublicar' : 'Publicar'}
+          >
+            {slider.publicado ? (
+              <EyeOff className="h-4 w-4" />
+            ) : (
+              <Eye className="h-4 w-4" />
+            )}
+          </button>
+          
+          <Link to={`/admin/sliders/${slider.id}/editar`}>
+            <button 
+              className="p-2 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors duration-200"
+              title="Editar"
+            >
+              <Edit className="h-4 w-4" />
+            </button>
+          </Link>
+          
+          <button
+            onClick={() => handleDelete(slider.id)}
+            disabled={deletingId === slider.id}
+            className="p-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition-colors duration-200 disabled:opacity-50"
+            title="Eliminar"
+          >
+            {deletingId === slider.id ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Trash2 className="h-4 w-4" />
+            )}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
+  const SliderListItem = ({ slider }: { slider: Slider }) => (
+    <div className="bg-bg-light rounded-lg border border-border p-6 hover:shadow-lg transition-all duration-300 hover:border-primary/30">
+      <div className="flex items-start gap-4">
+        {/* Imagen thumbnail */}
+        <div className="flex-shrink-0">
+          <div className="w-20 h-16 bg-bg rounded overflow-hidden border border-border">
+            {slider.imagen ? (
+              <img
+                src={slider.imagen}
+                alt={slider.titulo || 'Slider'}
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.src = '';
+                  target.style.display = 'none';
+                }}
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center">
+                <ImageIcon className="h-6 w-6 text-border" />
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Contenido */}
+        <div className="flex-1">
+          <div className="flex items-center gap-2 mb-2">
+            <h3 className="text-lg font-semibold text-text">
+              {slider.titulo || 'Sin título'}
+            </h3>
+            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+              slider.publicado 
+                ? 'bg-accent text-black' 
+                : 'bg-bg text-text-muted border border-border'
+            }`}>
+              {slider.publicado ? 'Publicado' : 'Borrador'}
+            </span>
+          </div>
+          
+          <p className="text-text-muted mb-2">
+            {slider.subtitulo || 'Sin subtítulo'}
+          </p>
+          
+          {slider.boton_texto && (
+            <p className="text-sm text-text-muted">
+              Botón: {slider.boton_texto}
+            </p>
+          )}
+          
+          <p className="text-xs text-text-muted mt-2">
+            Creado: {new Date(slider.created_at).toLocaleDateString()}
+          </p>
+        </div>
+
+        {/* Acciones */}
+        <div className="flex items-center gap-2 ml-4">
+          <button
+            onClick={() => handleTogglePublished(slider.id, slider.publicado)}
+            className={`p-2 rounded-lg transition-colors duration-200 ${
+              slider.publicado 
+                ? 'bg-accent/10 text-accent-dark hover:bg-accent/20' 
+                : 'bg-bg text-text-muted hover:bg-border'
+            }`}
+          >
+            {slider.publicado ? (
+              <EyeOff className="h-4 w-4" />
+            ) : (
+              <Eye className="h-4 w-4" />
+            )}
+          </button>
+          
+          <Link to={`/admin/sliders/${slider.id}/editar`}>
+            <button className="p-2 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors duration-200">
+              <Edit className="h-4 w-4" />
+            </button>
+          </Link>
+          
+          <button
+            onClick={() => handleDelete(slider.id)}
+            disabled={deletingId === slider.id}
+            className="p-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition-colors duration-200 disabled:opacity-50"
+          >
+            {deletingId === slider.id ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Trash2 className="h-4 w-4" />
+            )}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 
   if (loading) {
     return (
       <div className="flex items-center justify-center p-8">
-        <Loader2 className="h-8 w-8 animate-spin" />
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Button variant="outline" onClick={() => navigate('/admin/sliders')}>
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Volver
-        </Button>
-        <h1 className="text-3xl font-bold text-gray-900">
-          {isEditing ? 'Editar Slider' : 'Nuevo Slider'}
-        </h1>
+      {/* Header */}
+      <div className="flex justify-between items-center">
+        <h1 className="text-3xl font-medium text-primary">Gestión de Sliders</h1>
+        
+        <div className="flex items-center gap-4">
+          {/* Toggle de vista */}
+          <div className="flex items-center gap-1 border border-border rounded-lg p-1 bg-bg-light">
+            <button
+              onClick={() => setViewMode('grid')}
+              className={`p-2 rounded-lg transition-colors duration-200 ${
+                viewMode === 'grid' 
+                  ? 'bg-primary text-white' 
+                  : 'text-text-muted hover:text-primary hover:bg-bg'
+              }`}
+            >
+              <Grid className="h-4 w-4" />
+            </button>
+            <button
+              onClick={() => setViewMode('list')}
+              className={`p-2 rounded-lg transition-colors duration-200 ${
+                viewMode === 'list' 
+                  ? 'bg-primary text-white' 
+                  : 'text-text-muted hover:text-primary hover:bg-bg'
+              }`}
+            >
+              <List className="h-4 w-4" />
+            </button>
+          </div>
+          
+          <Link to="/admin/sliders/nuevo">
+            <button className="btn-primary flex items-center">
+              <Plus className="mr-2 h-4 w-4" />
+              Nuevo Slider
+            </button>
+          </Link>
+        </div>
       </div>
 
       {error && (
-        <Alert variant="destructive">
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <div className="flex items-center">
+            <AlertCircle className="h-5 w-5 text-red-600 mr-2" />
+            <span className="text-red-700">{error}</span>
+          </div>
+        </div>
       )}
 
-      <form onSubmit={handleSubmit}>
-        <Card>
-          <CardHeader>
-            <CardTitle>Información del Slider</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Tabs defaultValue="spanish" className="space-y-6">
-              <TabsList>
-                <TabsTrigger value="spanish">Español</TabsTrigger>
-                <TabsTrigger value="english">English</TabsTrigger>
-                <TabsTrigger value="media">Imágenes</TabsTrigger>
-                <TabsTrigger value="settings">Configuración</TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="spanish" className="space-y-4">
-                <div className="grid gap-4">
-                  <div>
-                    <Label htmlFor="titulo">Título</Label>
-                    <Input
-                      id="titulo"
-                      value={formData.titulo}
-                      onChange={(e) => handleInputChange('titulo', e.target.value)}
-                      placeholder="Título principal del slider"
-                    />
-                  </div>
-                  
-                  <div>
-                    <Label htmlFor="subtitulo">Subtítulo</Label>
-                    <Textarea
-                      id="subtitulo"
-                      value={formData.subtitulo}
-                      onChange={(e) => handleInputChange('subtitulo', e.target.value)}
-                      placeholder="Descripción o subtítulo"
-                      rows={3}
-                    />
-                  </div>
-                  
-                  <div>
-                    <Label htmlFor="extra">Texto Extra</Label>
-                    <Input
-                      id="extra"
-                      value={formData.extra}
-                      onChange={(e) => handleInputChange('extra', e.target.value)}
-                      placeholder="Información adicional"
-                    />
-                  </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="boton_texto">Texto del Botón</Label>
-                      <Input
-                        id="boton_texto"
-                        value={formData.boton_texto}
-                        onChange={(e) => handleInputChange('boton_texto', e.target.value)}
-                        placeholder="Ej: Ver más"
-                      />
-                    </div>
-                    
-                    <div>
-                      <Label htmlFor="boton_enlace">Enlace del Botón</Label>
-                      <Input
-                        id="boton_enlace"
-                        value={formData.boton_enlace}
-                        onChange={(e) => handleInputChange('boton_enlace', e.target.value)}
-                        placeholder="Ej: /examenes"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </TabsContent>
-
-              <TabsContent value="english" className="space-y-4">
-                <div className="grid gap-4">
-                  <div>
-                    <Label htmlFor="en_titulo">Title (English)</Label>
-                    <Input
-                      id="en_titulo"
-                      value={formData.en_titulo}
-                      onChange={(e) => handleInputChange('en_titulo', e.target.value)}
-                      placeholder="English title"
-                    />
-                  </div>
-                  
-                  <div>
-                    <Label htmlFor="en_subtitulo">Subtitle (English)</Label>
-                    <Textarea
-                      id="en_subtitulo"
-                      value={formData.en_subtitulo}
-                      onChange={(e) => handleInputChange('en_subtitulo', e.target.value)}
-                      placeholder="English description"
-                      rows={3}
-                    />
-                  </div>
-                  
-                  <div>
-                    <Label htmlFor="en_extra">Extra Text (English)</Label>
-                    <Input
-                      id="en_extra"
-                      value={formData.en_extra}
-                      onChange={(e) => handleInputChange('en_extra', e.target.value)}
-                      placeholder="Additional information in English"
-                    />
-                  </div>
-                  
-                  <div>
-                    <Label htmlFor="en_boton_texto">Button Text (English)</Label>
-                    <Input
-                      id="en_boton_texto"
-                      value={formData.en_boton_texto}
-                      onChange={(e) => handleInputChange('en_boton_texto', e.target.value)}
-                      placeholder="Ex: Learn more"
-                    />
-                  </div>
-                </div>
-              </TabsContent>
-
-              <TabsContent value="media" className="space-y-6">
-                <div className="space-y-6">
-                  {/* Upload de Imagen Principal */}
-                  <div>
-                    <Label className="text-base font-medium">Imagen Principal</Label>
-                    <FileUpload
-                      onFileSelect={imageUpload.uploadFile}
-                      onRemove={() => setFormData(prev => ({ ...prev, imagen: '' }))}
-                      preview={formData.imagen}
-                      uploading={imageUpload.uploading}
-                      progress={imageUpload.progress}
-                      error={imageUpload.error}
-                      label="Subir imagen principal"
-                      disabled={saving}
-                    />
-                    
-                    {/* Opción manual de URL */}
-                    <div className="mt-4">
-                      <Label htmlFor="imagen">O ingresa URL manualmente</Label>
-                      <Input
-                        id="imagen"
-                        value={formData.imagen}
-                        onChange={(e) => handleInputChange('imagen', e.target.value)}
-                        placeholder="https://ejemplo.com/imagen.jpg"
-                      />
-                    </div>
-                  </div>
-                  
-                  {/* Upload de Logo */}
-                  <div>
-                    <Label className="text-base font-medium">Logo</Label>
-                    <FileUpload
-                      onFileSelect={logoUpload.uploadFile}
-                      onRemove={() => setFormData(prev => ({ ...prev, logo: '' }))}
-                      preview={formData.logo}
-                      uploading={logoUpload.uploading}
-                      progress={logoUpload.progress}
-                      error={logoUpload.error}
-                      label="Subir logo"
-                      disabled={saving}
-                    />
-                    
-                    {/* Opción manual de URL */}
-                    <div className="mt-4">
-                      <Label htmlFor="logo">O ingresa URL manualmente</Label>
-                      <Input
-                        id="logo"
-                        value={formData.logo}
-                        onChange={(e) => handleInputChange('logo', e.target.value)}
-                        placeholder="https://ejemplo.com/logo.png"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </TabsContent>
-
-              <TabsContent value="settings" className="space-y-4">
-                <div className="flex items-center space-x-2">
-                  <Switch
-                    id="publicado"
-                    checked={formData.publicado}
-                    onCheckedChange={(checked) => handleInputChange('publicado', checked)}
-                  />
-                  <Label htmlFor="publicado">Publicar slider</Label>
-                </div>
-              </TabsContent>
-            </Tabs>
-
-            <div className="flex justify-end gap-4 mt-6">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => navigate('/admin/sliders')}
-                disabled={saving || imageUpload.uploading || logoUpload.uploading}
-              >
-                Cancelar
-              </Button>
-              <Button 
-                type="submit" 
-                disabled={saving || imageUpload.uploading || logoUpload.uploading}
-              >
-                {saving ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Guardando...
-                  </>
-                ) : (
-                  <>
-                    <Save className="mr-2 h-4 w-4" />
-                    {isEditing ? 'Actualizar' : 'Crear'} Slider
-                  </>
-                )}
-              </Button>
+      {sliders.length === 0 ? (
+        <div className="bg-bg-light rounded-lg border border-border p-6">
+          <div className="text-center py-8">
+            <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+              <ImageIcon className="h-8 w-8 text-primary" />
             </div>
-          </CardContent>
-        </Card>
-      </form>
+            <h3 className="text-lg font-semibold text-text mb-2">
+              No hay sliders
+            </h3>
+            <p className="text-text-muted mb-4">
+              Comienza creando tu primer slider para la página principal.
+            </p>
+            <Link to="/admin/sliders/nuevo">
+              <button className="btn-primary flex items-center mx-auto">
+                <Plus className="mr-2 h-4 w-4" />
+                Crear Slider
+              </button>
+            </Link>
+          </div>
+        </div>
+      ) : (
+        <>
+          {/* Contador de sliders */}
+          <div className="flex items-center justify-between">
+            <p className="text-text-muted">
+              {sliders.length} {sliders.length === 1 ? 'slider' : 'sliders'} en total
+            </p>
+            <div className="flex items-center gap-4 text-sm text-text-muted">
+              <span className="flex items-center gap-1">
+                <div className="w-3 h-3 bg-accent rounded-full"></div>
+                {sliders.filter(s => s.publicado).length} Publicados
+              </span>
+              <span className="flex items-center gap-1">
+                <div className="w-3 h-3 bg-border rounded-full"></div>
+                {sliders.filter(s => !s.publicado).length} Borradores
+              </span>
+            </div>
+          </div>
+
+          {viewMode === 'grid' ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {sliders.map((slider) => (
+                <SliderCard key={slider.id} slider={slider} />
+              ))}
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {sliders.map((slider) => (
+                <SliderListItem key={slider.id} slider={slider} />
+              ))}
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 }
