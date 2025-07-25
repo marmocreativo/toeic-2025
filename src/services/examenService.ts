@@ -165,6 +165,82 @@ export const examenService = {
     return data;
   },
 
+  // Actualizar examen completo con todas sus relaciones
+async updateExamenCompleto(id: number, examenData: ExamenCompletoFormData): Promise<ExamenCompleto> {
+  try {
+    console.log('=== INICIANDO UPDATE EXAMEN COMPLETO ===');
+    console.log('ID:', id);
+    console.log('Datos recibidos:', {
+      examen: {
+        url: examenData.url,
+        titulo: examenData.titulo,
+        publicado: examenData.publicado
+      },
+      horarios: examenData.horarios?.length || 0,
+      extras: examenData.extras?.length || 0,
+      faqs: examenData.faqs?.length || 0,
+      muestras: examenData.muestras?.length || 0
+    });
+
+    // 1. Actualizar examen principal
+    const { horarios, extras, faqs, muestras, ...examenBase } = examenData;
+    console.log('Actualizando examen base...');
+    const examen = await this.updateExamen(id, examenBase);
+    console.log('Examen base actualizado');
+
+    // 2. Actualizar relaciones - Eliminar todas las existentes y crear nuevas
+    // Esto es más simple que hacer un diff y actualizar individualmente
+    
+    console.log('Eliminando relaciones existentes...');
+    await Promise.all([
+      supabase.from('examenes_horarios').delete().eq('id_examen', id),
+      supabase.from('examenes_extras').delete().eq('id_examen', id),
+      supabase.from('examenes_faq').delete().eq('id_examen', id),
+      supabase.from('examenes_muestras').delete().eq('id_examen', id)
+    ]);
+    console.log('Relaciones existentes eliminadas');
+
+    // 3. Crear nuevas relaciones en paralelo si existen
+    const promises = [];
+
+    if (horarios && horarios.length > 0) {
+      console.log(`Creando ${horarios.length} horarios...`);
+      promises.push(this.createMultipleHorarios(id, horarios));
+    }
+
+    if (extras && extras.length > 0) {
+      console.log(`Creando ${extras.length} extras...`);
+      promises.push(this.createMultipleExtras(id, extras));
+    }
+
+    if (faqs && faqs.length > 0) {
+      console.log(`Creando ${faqs.length} faqs...`);
+      promises.push(this.createMultipleFaqs(id, faqs));
+    }
+
+    if (muestras && muestras.length > 0) {
+      console.log(`Creando ${muestras.length} muestras...`);
+      promises.push(this.createMultipleMuestras(id, muestras));
+    }
+
+    if (promises.length > 0) {
+      await Promise.all(promises);
+      console.log('Nuevas relaciones creadas');
+    }
+
+    // 4. Retornar examen completo actualizado
+    console.log('Obteniendo examen completo actualizado...');
+    const examenCompleto = await this.getExamenCompleto(id);
+    console.log('=== UPDATE EXAMEN COMPLETO TERMINADO ===');
+    
+    return examenCompleto as ExamenCompleto;
+
+  } catch (error) {
+    console.error('Error actualizando examen completo:', error);
+    throw error;
+  }
+},
+
   // Eliminar examen (CON eliminación de archivos y relaciones)
   async deleteExamen(id: number): Promise<void> {
     try {

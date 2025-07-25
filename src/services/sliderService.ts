@@ -53,20 +53,69 @@ export const sliderService = {
     return data;
   },
 
-  // Actualizar slider
+  // Actualizar slider (CON manejo de archivos viejos)
   async updateSlider(id: number, sliderData: Partial<SliderFormData>): Promise<Slider> {
-    const { data, error } = await supabase
-      .from('sliders')
-      .update({
-        ...sliderData,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', id)
-      .select()
-      .single();
+    try {
+      // 1. Obtener el slider actual para comparar archivos
+      const currentSlider = await this.getSliderById(id);
+      
+      if (!currentSlider) {
+        throw new Error('Slider no encontrado');
+      }
 
-    if (error) throw error;
-    return data;
+      // 2. Identificar archivos que han cambiado y necesitan ser eliminados
+      const filesToDelete: string[] = [];
+      
+      // Si la imagen cambió, eliminar la anterior (solo si la nueva no es vacía y es diferente)
+      if (sliderData.imagen !== undefined && 
+          currentSlider.imagen && 
+          sliderData.imagen !== currentSlider.imagen) {
+        const oldImagePath = this.extractPathFromUrl(currentSlider.imagen);
+        if (oldImagePath) filesToDelete.push(oldImagePath);
+      }
+      
+      // Si el logo cambió, eliminar el anterior (solo si el nuevo no es vacío y es diferente)
+      if (sliderData.logo !== undefined && 
+          currentSlider.logo && 
+          sliderData.logo !== currentSlider.logo) {
+        const oldLogoPath = this.extractPathFromUrl(currentSlider.logo);
+        if (oldLogoPath) filesToDelete.push(oldLogoPath);
+      }
+
+      // 3. Actualizar en la base de datos
+      const { data, error } = await supabase
+        .from('sliders')
+        .update({
+          ...sliderData,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      // 4. Eliminar archivos viejos del storage (después de la actualización exitosa)
+      for (const filePath of filesToDelete) {
+        try {
+          await StorageService.deleteFile(STORAGE_BUCKETS.SLIDERS, filePath);
+          console.log(`Archivo anterior eliminado: ${filePath}`);
+        } catch (error) {
+          console.warn(`No se pudo eliminar archivo anterior: ${filePath}`, error);
+          // No lanzar error, solo advertir
+        }
+      }
+
+      if (filesToDelete.length > 0) {
+        console.log(`Slider ${id} actualizado exitosamente. Archivos eliminados: ${filesToDelete.length}`);
+      }
+      
+      return data;
+
+    } catch (error) {
+      console.error('Error actualizando slider:', error);
+      throw error;
+    }
   },
 
   // Eliminar slider (CON eliminación de archivos)
@@ -155,6 +204,66 @@ export const sliderService = {
     } catch (error) {
       console.warn('No se pudo extraer path de URL:', url, error);
       return null;
+    }
+  },
+
+  // Función auxiliar para verificar si una URL es del storage de Supabase
+  isSupabaseStorageUrl(url: string): boolean {
+    try {
+      const urlObj = new URL(url);
+      return urlObj.pathname.includes('/storage/v1/object/public/');
+    } catch (error) {
+      return false;
+    }
+  },
+
+  // Función auxiliar para limpiar archivo específico si es de Supabase Storage
+  async cleanupFileIfNeeded(url: string | null): Promise<void> {
+    if (!url || !this.isSupabaseStorageUrl(url)) {
+      return; // No es una URL de Supabase Storage, no hacer nada
+    }
+
+    const filePath = this.extractPathFromUrl(url);
+    if (filePath) {
+      try {
+        await StorageService.deleteFile(STORAGE_BUCKETS.SLIDERS, filePath);
+        console.log(`Archivo limpiado: ${filePath}`);
+      } catch (error) {
+        console.warn(`No se pudo limpiar archivo: ${filePath}`, error);
+      }
+    }
+  },
+
+  // Duplicar slider (útil para crear variaciones)
+  async duplicateSlider(id: number): Promise<Slider> {
+    try {
+      const originalSlider = await this.getSliderById(id);
+      
+      if (!originalSlider) {
+        throw new Error('Slider no encontrado');
+      }
+
+      // Crear datos para el nuevo slider (sin id, created_at, updated_at)
+      const newSliderData: SliderFormData = {
+        titulo: `${originalSlider.titulo} (Copia)`,
+        subtitulo: originalSlider.subtitulo || '',
+        extra: originalSlider.extra || '',
+        boton_texto: originalSlider.boton_texto || '',
+        boton_enlace: originalSlider.boton_enlace || '',
+        en_titulo: originalSlider.en_titulo || '',
+        en_subtitulo: originalSlider.en_subtitulo || '',
+        en_extra: originalSlider.en_extra || '',
+        en_boton_texto: originalSlider.en_boton_texto || '',
+        imagen: originalSlider.imagen || '',
+        logo: originalSlider.logo || '',
+        publicado: false // Los duplicados empiezan como borrador
+      };
+
+      return await this.createSlider(newSliderData);
+
+    } catch (error) {
+      console.error('Error duplicando slider:', error);
+      throw error;
     }
   },
 
@@ -253,6 +362,57 @@ export const sliderService = {
       };
     } catch (error) {
       console.error('Error obteniendo estadísticas:', error);
+      throw error;
+    }
+  },
+
+  // Obtener slider anterior/siguiente (útil para navegación)
+  async getAdjacentSliders(currentId: number): Promise<{
+    previous: Slider | null;
+    next: Slider | null;
+  }> {
+    try {
+      const sliders = await this.getSliders();
+      const currentIndex = sliders.findIndex(s => s.id === currentId);
+      
+      if (currentIndex === -1) {
+        return { previous: null, next: null };
+      }
+      
+      return {
+        previous: currentIndex > 0 ? sliders[currentIndex - 1] : null,
+        next: currentIndex < sliders.length - 1 ? sliders[currentIndex + 1] : null
+      };
+    } catch (error) {
+      console.error('Error obteniendo sliders adyacentes:', error);
+      throw error;
+    }
+  },
+
+  // Reordenar sliders (si implementas ordenamiento manual)
+  async reorderSliders(orderedIds: number[]): Promise<void> {
+    try {
+      // Actualizar orden de cada slider
+      const updatePromises = orderedIds.map((id, index) => 
+        supabase
+          .from('sliders')
+          .update({ 
+            orden: index + 1,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', id)
+      );
+
+      const results = await Promise.all(updatePromises);
+      
+      // Verificar si alguna actualización falló
+      const errors = results.filter(result => result.error);
+      if (errors.length > 0) {
+        throw new Error(`Error reordenando sliders: ${errors[0].error?.message}`);
+      }
+
+    } catch (error) {
+      console.error('Error reordenando sliders:', error);
       throw error;
     }
   }

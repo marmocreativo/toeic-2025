@@ -12,6 +12,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/ta
 import { Switch } from '../../components/ui/switch';
 import { Alert, AlertDescription } from '../../components/ui/alert';
 import { FileUpload } from '../../components/ui/FileUpload';
+import { WysiwygEditor } from '../../components/ui/WysiwygEditor';
+import HorariosImprovedSection from '../../components/admin/HorariosImprovedSection';
 import { 
   Save, 
   ArrowLeft, 
@@ -180,6 +182,20 @@ export default function ExamenForm() {
         throw new Error('El título es requerido');
       }
 
+      // DEBUG: Mostrar datos antes de enviar
+      console.log('FormData antes de enviar:', {
+        examen: {
+          url: formData.url,
+          titulo: formData.titulo,
+          publicado: formData.publicado
+        },
+        horarios: formData.horarios?.length || 0,
+        extras: formData.extras?.length || 0,
+        faqs: formData.faqs?.length || 0,
+        muestras: formData.muestras?.length || 0,
+        horariosDetalle: formData.horarios
+      });
+
       // Validar URL única
       const isUniqueUrl = await examenService.validateUniqueUrl(
         formData.url, 
@@ -191,16 +207,26 @@ export default function ExamenForm() {
       }
 
       if (isEditing) {
-        // Actualizar examen existente
-        await examenService.updateExamen(parseInt(id!), formData);
-        // TODO: Aquí habría que actualizar también las relaciones individualmente
+        console.log('=== MODO EDICIÓN ===');
+        console.log('ID del examen:', id);
+        
+        // USAR EL NUEVO MÉTODO updateExamenCompleto
+        await examenService.updateExamenCompleto(parseInt(id!), formData);
+        console.log('Examen completo actualizado exitosamente');
+        
       } else {
-        // Crear nuevo examen
+        console.log('=== MODO CREACIÓN ===');
         await examenService.createExamenCompleto(formData);
+        console.log('Examen completo creado exitosamente');
       }
 
       navigate('/admin/examenes');
     } catch (err) {
+      console.error('Error detallado:', {
+        error: err,
+        message: err instanceof Error ? err.message : 'Error desconocido',
+        stack: err instanceof Error ? err.stack : undefined
+      });
       const errorMessage = err instanceof Error ? err.message : 'Error guardando examen';
       setError(errorMessage);
     } finally {
@@ -208,30 +234,6 @@ export default function ExamenForm() {
     }
   };
 
-  // ===========================================
-  // FUNCIONES PARA MANEJAR HORARIOS
-  // ===========================================
-
-  const addHorario = () => {
-    const newHorario: ExamenHorarioFormData = {
-      dia: '',
-      hora: '',
-      publicado: true
-    };
-    handleInputChange('horarios', [...(formData.horarios || []), newHorario]);
-  };
-
-  const updateHorario = (index: number, field: string, value: any) => {
-    const updatedHorarios = (formData.horarios || []).map((horario, i) => 
-      i === index ? { ...horario, [field]: value } : horario
-    );
-    handleInputChange('horarios', updatedHorarios);
-  };
-
-  const removeHorario = (index: number) => {
-    const updatedHorarios = (formData.horarios || []).filter((_, i) => i !== index);
-    handleInputChange('horarios', updatedHorarios);
-  };
 
   // ===========================================
   // FUNCIONES PARA MANEJAR FAQS
@@ -484,13 +486,15 @@ export default function ExamenForm() {
 
                   <div>
                     <Label htmlFor="contenido">Contenido</Label>
-                    <Textarea
-                      id="contenido"
-                      value={formData.contenido}
-                      onChange={(e) => handleInputChange('contenido', e.target.value)}
+                    <div>
+                    <WysiwygEditor
+                      label="Contenido"
+                      content={formData.contenido}
+                      onChange={(content) => handleInputChange('contenido', content)}
                       placeholder="Contenido detallado del examen..."
-                      rows={6}
+                      className="min-h-[300px]"
                     />
+                  </div>
                   </div>
                 </TabsContent>
 
@@ -518,13 +522,15 @@ export default function ExamenForm() {
 
                   <div>
                     <Label htmlFor="en_contenido">Content</Label>
-                    <Textarea
-                      id="en_contenido"
-                      value={formData.en_contenido}
-                      onChange={(e) => handleInputChange('en_contenido', e.target.value)}
+                    <div>
+                    <WysiwygEditor
+                      label="Content"
+                      content={formData.en_contenido}
+                      onChange={(content) => handleInputChange('en_contenido', content)}
                       placeholder="Detailed exam content..."
-                      rows={6}
+                      className="min-h-[300px]"
                     />
+                  </div>
                   </div>
                 </TabsContent>
               </Tabs>
@@ -545,78 +551,10 @@ export default function ExamenForm() {
 
         {/* ===== TAB HORARIOS ===== */}
         <TabsContent value="horarios" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle>Horarios de Examen</CardTitle>
-                  <p className="text-sm text-gray-600 mt-1">
-                    Define cuándo se realizan los exámenes
-                  </p>
-                </div>
-                <Button onClick={addHorario}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Agregar Horario
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              {formData.horarios && formData.horarios.length > 0 ? (
-                <div className="space-y-4">
-                  {formData.horarios.map((horario, index) => (
-                    <div key={index} className="border rounded-lg p-4 bg-gray-50">
-                      <div className="flex items-center justify-between mb-4">
-                        <h4 className="font-medium text-gray-900">Horario #{index + 1}</h4>
-                        <div className="flex items-center gap-2">
-                          <Switch
-                            checked={horario.publicado}
-                            onCheckedChange={(checked) => updateHorario(index, 'publicado', checked)}
-                          />
-                          <Label className="text-sm">Publicado</Label>
-                          <Button
-                            size="sm"
-                            variant="destructive"
-                            onClick={() => removeHorario(index)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <Label>Día</Label>
-                          <Input
-                            value={horario.dia || ''}
-                            onChange={(e) => updateHorario(index, 'dia', e.target.value)}
-                            placeholder="ej: Lunes a Viernes"
-                          />
-                        </div>
-                        <div>
-                          <Label>Hora</Label>
-                          <Input
-                            value={horario.hora || ''}
-                            onChange={(e) => updateHorario(index, 'hora', e.target.value)}
-                            placeholder="ej: 9:00 AM - 12:00 PM"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-8">
-                  <Calendar className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-600 mb-2">No hay horarios</h3>
-                  <p className="text-gray-500 mb-4">Agrega horarios para que los usuarios sepan cuándo se realizan los exámenes</p>
-                  <Button onClick={addHorario}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Agregar Primer Horario
-                  </Button>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+         <HorariosImprovedSection 
+            formData={formData}
+            onHorariosChange={(horarios) => handleInputChange('horarios', horarios)}
+          />
         </TabsContent>
 
         {/* ===== TAB FAQS ===== */}
@@ -676,11 +614,11 @@ export default function ExamenForm() {
                           </div>
                           <div>
                             <Label>Respuesta</Label>
-                            <Textarea
-                              value={faq.respuesta || ''}
-                              onChange={(e) => updateFaq(index, 'respuesta', e.target.value)}
+                            <WysiwygEditor
+                              content={faq.respuesta || ''}
+                              onChange={(content) => updateFaq(index, 'respuesta', content)}
                               placeholder="El examen tiene una duración de..."
-                              rows={3}
+                              className="min-h-[150px]"
                             />
                           </div>
                         </TabsContent>
@@ -696,11 +634,11 @@ export default function ExamenForm() {
                           </div>
                           <div>
                             <Label>Answer</Label>
-                            <Textarea
-                              value={faq.en_respuesta || ''}
-                              onChange={(e) => updateFaq(index, 'en_respuesta', e.target.value)}
+                            <WysiwygEditor
+                              content={faq.en_respuesta || ''}
+                              onChange={(content) => updateFaq(index, 'en_respuesta', content)}
                               placeholder="The exam duration is..."
-                              rows={3}
+                              className="min-h-[150px]"
                             />
                           </div>
                         </TabsContent>
@@ -780,11 +718,11 @@ export default function ExamenForm() {
                           </div>
                           <div>
                             <Label>Contenido</Label>
-                            <Textarea
-                              value={extra.contenido || ''}
-                              onChange={(e) => updateExtra(index, 'contenido', e.target.value)}
+                            <WysiwygEditor
+                              content={extra.contenido || ''}
+                              onChange={(content) => updateExtra(index, 'contenido', content)}
                               placeholder="Información adicional..."
-                              rows={4}
+                              className="min-h-[200px]"
                             />
                           </div>
                           <div>
@@ -808,11 +746,11 @@ export default function ExamenForm() {
                           </div>
                           <div>
                             <Label>Content</Label>
-                            <Textarea
-                              value={extra.en_contenido || ''}
-                              onChange={(e) => updateExtra(index, 'en_contenido', e.target.value)}
+                            <WysiwygEditor
+                              content={extra.en_contenido || ''}
+                              onChange={(content) => updateExtra(index, 'en_contenido', content)}
                               placeholder="Additional information..."
-                              rows={4}
+                              className="min-h-[200px]"
                             />
                           </div>
                           <div>

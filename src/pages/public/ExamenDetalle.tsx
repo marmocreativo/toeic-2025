@@ -5,8 +5,8 @@ import { useLanguage } from '../../hooks/useLanguage';
 import { generateLocalizedPath } from '../../utils/languageUtils';
 import { examenService } from '../../services/examenService';
 import type { ExamenCompleto, Examen } from '../../types/examen';
-import { 
-  Clock, 
+import {
+  Clock,
   Calendar, 
   ArrowRight, 
   ExternalLink,
@@ -55,25 +55,126 @@ const ExamenHero = ({ examen }: { examen: ExamenCompleto }) => {
   );
 };
 
-// Componente Sidebar con Horarios
-const HorariosSidebar = ({ horarios }: { horarios: any[] }) => {
+
+// Componente HorariosGrid mejorado para reemplazar HorariosSidebar
+
+const HorariosGrid = ({ horarios }: { horarios: any[] }) => {
   const { language } = useLanguage();
 
   const texts = {
     es: {
       title: 'Horarios Disponibles',
       noSchedules: 'No hay horarios disponibles',
-      contact: 'Contacta para más información'
+      contact: 'Contacta para más información',
+      available: 'Disponible',
+      notAvailable: 'No disponible',
+      registerNow: 'Registrarte Ahora'
     },
     en: {
       title: 'Available Schedules',
       noSchedules: 'No schedules available',
-      contact: 'Contact for more information'
+      contact: 'Contact for more information',
+      available: 'Available',
+      notAvailable: 'Not available',
+      registerNow: 'Register Now'
     }
   };
 
   const currentTexts = texts[language];
   const horariosPublicados = horarios?.filter(h => h.publicado) || [];
+
+  // Días de la semana en orden
+  const diasSemana = [
+    { key: 'lunes', label: language === 'es' ? 'L' : 'M', fullName: language === 'es' ? 'Lunes' : 'Monday' },
+    { key: 'martes', label: language === 'es' ? 'M' : 'T', fullName: language === 'es' ? 'Martes' : 'Tuesday' },
+    { key: 'miércoles', label: language === 'es' ? 'M' : 'W', fullName: language === 'es' ? 'Miércoles' : 'Wednesday' },
+    { key: 'jueves', label: language === 'es' ? 'J' : 'T', fullName: language === 'es' ? 'Jueves' : 'Thursday' },
+    { key: 'viernes', label: language === 'es' ? 'V' : 'F', fullName: language === 'es' ? 'Viernes' : 'Friday' },
+    { key: 'sábado', label: language === 'es' ? 'S' : 'S', fullName: language === 'es' ? 'Sábado' : 'Saturday' },
+    { key: 'domingo', label: language === 'es' ? 'D' : 'S', fullName: language === 'es' ? 'Domingo' : 'Sunday' }
+  ];
+
+  // Horarios estándar
+  const horasStandard = ['9:30', '12:30', '15:30'];
+
+  // Crear matriz de disponibilidad
+  const crearMatrizHorarios = () => {
+    const matriz: { [key: string]: { [key: string]: boolean } } = {};
+    
+    // Inicializar todas las combinaciones como no disponibles
+    diasSemana.forEach(dia => {
+      matriz[dia.key] = {};
+      horasStandard.forEach(hora => {
+        matriz[dia.key][hora] = false;
+      });
+    });
+
+    // Marcar horarios disponibles
+    horariosPublicados.forEach(horario => {
+      const diaKey = horario.dia?.toLowerCase();
+      const hora = horario.hora;
+      
+      // Buscar día coincidente
+      const diaEncontrado = diasSemana.find(d => 
+        diaKey?.includes(d.key) || 
+        diaKey?.includes(d.fullName.toLowerCase()) ||
+        horario.dia?.toLowerCase().includes(d.fullName.toLowerCase())
+      );
+      
+      if (diaEncontrado && horasStandard.includes(hora)) {
+        matriz[diaEncontrado.key][hora] = true;
+      }
+    });
+
+    return matriz;
+  };
+
+  // Obtener horarios especiales (no estándar)
+  const obtenerHorariosEspeciales = () => {
+    return horariosPublicados.filter(horario => {
+      const diaKey = horario.dia?.toLowerCase();
+      const hora = horario.hora;
+      
+      // Si no es un día estándar o no es una hora estándar
+      const esDiaStandard = diasSemana.some(d => 
+        diaKey?.includes(d.key) || 
+        diaKey?.includes(d.fullName.toLowerCase())
+      );
+      const esHoraStandard = horasStandard.includes(hora);
+      
+      return !esDiaStandard || !esHoraStandard;
+    });
+  };
+
+  const matrizHorarios = crearMatrizHorarios();
+  const horariosEspeciales = obtenerHorariosEspeciales();
+
+  // Verificar si hay algún horario disponible
+  const hayHorariosDisponibles = Object.values(matrizHorarios).some(dia => 
+    Object.values(dia).some(disponible => disponible)
+  ) || horariosEspeciales.length > 0;
+
+  if (!hayHorariosDisponibles) {
+    return (
+      <div className="bg-bg-light rounded-lg shadow-md border border-border">
+        <div className="p-4 border-b border-border">
+          <h3 className="font-semibold text-text flex items-center gap-2">
+            <Calendar className="w-5 h-5 text-primary" />
+            {currentTexts.title}
+          </h3>
+        </div>
+        <div className="p-4">
+          <div className="text-center py-6">
+            <Calendar className="w-12 h-12 text-border mx-auto mb-3" />
+            <p className="text-text-muted text-sm mb-4">{currentTexts.noSchedules}</p>
+            <button className="btn-outline-primary text-sm px-4 py-2">
+              {currentTexts.contact}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-bg-light rounded-lg shadow-md border border-border">
@@ -83,30 +184,107 @@ const HorariosSidebar = ({ horarios }: { horarios: any[] }) => {
           {currentTexts.title}
         </h3>
       </div>
+      
       <div className="p-4">
-        {horariosPublicados.length > 0 ? (
-          <div className="space-y-3">
-            {horariosPublicados.map((horario, index) => (
-              <div key={index} className="border border-border rounded-lg p-3 bg-bg">
-                <div className="font-medium text-text mb-1">
-                  {horario.dia}
-                </div>
-                <div className="text-sm text-text-muted flex items-center gap-1">
-                  <Clock className="w-4 h-4" />
-                  {horario.hora}
-                </div>
+        {/* Cuadrícula de horarios estándar */}
+        <div className="mb-6">
+          {/* Header con las horas */}
+          <div className="grid grid-cols-4 gap-2 mb-2">
+            <div></div> {/* Espacio vacío para alinear */}
+            {horasStandard.map(hora => (
+              <div key={hora} className="text-center text-xs font-medium text-text-muted py-2">
+                {hora}
               </div>
             ))}
           </div>
-        ) : (
-          <div className="text-center py-4">
-            <Calendar className="w-8 h-8 text-border mx-auto mb-2" />
-            <p className="text-text-muted text-sm mb-3">{currentTexts.noSchedules}</p>
-            <button className="btn-outline-primary text-sm px-4 py-2">
-              {currentTexts.contact}
-            </button>
+
+          {/* Filas de días */}
+          {diasSemana.map(dia => (
+            <div key={dia.key} className="grid grid-cols-4 gap-2 mb-2">
+              {/* Label del día */}
+              <div className="flex items-center justify-center bg-bg border border-border rounded text-sm font-medium text-text py-3">
+                <span className="hidden sm:inline">{dia.fullName}</span>
+                <span className="sm:hidden">{dia.label}</span>
+              </div>
+              
+              {/* Celdas de horas */}
+              {horasStandard.map(hora => {
+                const disponible = matrizHorarios[dia.key][hora];
+                return (
+                  <div
+                    key={`${dia.key}-${hora}`}
+                    className={`
+                      flex items-center justify-center py-3 px-2 rounded text-xs font-medium transition-colors cursor-pointer
+                      ${disponible 
+                        ? 'bg-green-500 text-white hover:bg-green-600' 
+                        : 'bg-gray-200 text-gray-500 cursor-default'
+                      }
+                    `}
+                    title={`${dia.fullName} ${hora} - ${disponible ? currentTexts.available : currentTexts.notAvailable}`}
+                  >
+                    {disponible ? (
+                      <div className="flex items-center justify-center">
+                        <span className="hidden sm:inline">✓</span>
+                        <div className="w-2 h-2 bg-white rounded-full sm:hidden"></div>
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-center">
+                        <span className="hidden sm:inline">—</span>
+                        <div className="w-2 h-2 bg-gray-400 rounded-full sm:hidden"></div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          ))}
+        </div>
+
+        {/* Leyenda */}
+        <div className="flex items-center justify-center gap-4 text-xs mb-4">
+          <div className="flex items-center gap-1">
+            <div className="w-3 h-3 bg-green-500 rounded"></div>
+            <span className="text-text-muted">{currentTexts.available}</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <div className="w-3 h-3 bg-gray-200 rounded"></div>
+            <span className="text-text-muted">{currentTexts.notAvailable}</span>
+          </div>
+        </div>
+
+        {/* Horarios especiales */}
+        {horariosEspeciales.length > 0 && (
+          <div className="border-t border-border pt-4 mt-4">
+            <h4 className="text-sm font-medium text-text mb-3">Horarios Especiales:</h4>
+            <div className="space-y-2">
+              {horariosEspeciales.map((horario, index) => (
+                <div key={index} className="bg-primary/10 border border-primary/20 rounded-lg p-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="font-medium text-text text-sm">{horario.dia}</div>
+                      <div className="text-xs text-text-muted flex items-center gap-1">
+                        <Clock className="w-3 h-3" />
+                        {horario.hora}
+                      </div>
+                    </div>
+                    <div className="w-3 h-3 bg-primary rounded-full"></div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
+
+        {/* Botón de acción */}
+        <div className="mt-6">
+          <Link
+            to={generateLocalizedPath('centros', language)}
+            className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 bg-primary hover:bg-primary-dark text-white font-medium rounded-lg transition-colors"
+          >
+            <Building2 className="w-4 h-4" />
+            {currentTexts.registerNow}
+          </Link>
+        </div>
       </div>
     </div>
   );
@@ -569,7 +747,7 @@ export default function ExamenDetalle() {
 
             {/* Sidebar */}
             <div className="lg:col-span-1 space-y-6">
-              <HorariosSidebar horarios={examen.horarios || []} />
+              <HorariosGrid horarios={examen.horarios || []} />
               <ExtrasSidebar extras={examen.extras || []} />
             </div>
           </div>

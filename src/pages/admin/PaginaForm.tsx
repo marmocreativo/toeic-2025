@@ -13,6 +13,7 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import FileUpload from '../../components/ui/FileUpload';
+import { WysiwygEditor } from '../../components/ui/WysiwygEditor';
 import { Loader2, Save, ArrowLeft, Link2 } from 'lucide-react';
 
 export default function PaginaForm() {
@@ -208,14 +209,14 @@ export default function PaginaForm() {
                     />
                   </div>
                   
+                  {/* REEMPLAZAR EL TEXTAREA DE CONTENIDO CON WYSIWYG */}
                   <div>
-                    <Label htmlFor="contenido">Contenido</Label>
-                    <Textarea
-                      id="contenido"
-                      value={formData.contenido}
-                      onChange={(e) => handleInputChange('contenido', e.target.value)}
-                      placeholder="Contenido completo de la página"
-                      rows={10}
+                    <WysiwygEditor
+                      label="Contenido"
+                      content={formData.contenido}
+                      onChange={(content) => handleInputChange('contenido', content)}
+                      placeholder="Contenido completo de la página..."
+                      className="min-h-[400px]"
                     />
                   </div>
                 </div>
@@ -244,14 +245,14 @@ export default function PaginaForm() {
                     />
                   </div>
                   
+                  {/* REEMPLAZAR EL TEXTAREA DE EN_CONTENIDO CON WYSIWYG */}
                   <div>
-                    <Label htmlFor="en_contenido">Content (English)</Label>
-                    <Textarea
-                      id="en_contenido"
-                      value={formData.en_contenido}
-                      onChange={(e) => handleInputChange('en_contenido', e.target.value)}
-                      placeholder="Full content in English"
-                      rows={10}
+                    <WysiwygEditor
+                      label="Content (English)"
+                      content={formData.en_contenido}
+                      onChange={(content) => handleInputChange('en_contenido', content)}
+                      placeholder="Full content in English..."
+                      className="min-h-[400px]"
                     />
                   </div>
                   
@@ -266,7 +267,6 @@ export default function PaginaForm() {
                   </div>
                 </div>
               </TabsContent>
-
               <TabsContent value="media" className="space-y-6">
                 <div>
                   <Label className="text-base font-medium">Imagen de la Página</Label>

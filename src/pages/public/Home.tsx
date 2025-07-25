@@ -459,7 +459,6 @@ const StatsSection = () => {
               key={index} 
               className="text-center"
               variants={staggerItem}
-              whileHover={{ y: -5 }}
             >
               <motion.p 
                 className="text-lg text-white-muted"
