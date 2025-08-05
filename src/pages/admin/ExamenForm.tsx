@@ -12,7 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/ta
 import { Switch } from '../../components/ui/switch';
 import { Alert, AlertDescription } from '../../components/ui/alert';
 import { FileUpload } from '../../components/ui/FileUpload';
-import { WysiwygEditor } from '../../components/ui/WysiwygEditor';
+import { SimpleHtmlEditor } from '../../components/ui/SimpleHtmlEditor';
 import HorariosImprovedSection from '../../components/admin/HorariosImprovedSection';
 import { 
   Save, 
@@ -168,7 +168,7 @@ export default function ExamenForm() {
     }
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (shouldNavigate: boolean = true) => {
     try {
       setSaving(true);
       setError(null);
@@ -214,13 +214,33 @@ export default function ExamenForm() {
         await examenService.updateExamenCompleto(parseInt(id!), formData);
         console.log('Examen completo actualizado exitosamente');
         
+        // Mostrar mensaje de éxito
+        if (shouldNavigate) {
+          navigate('/admin/examenes');
+        } else {
+          // Mostrar feedback temporal de éxito sin navegar
+          const successMessage = 'Examen actualizado exitosamente';
+          setError(null);
+          
+          // Crear elemento temporal de éxito
+          const successDiv = document.createElement('div');
+          successDiv.className = 'fixed top-4 right-4 z-50 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg';
+          successDiv.textContent = successMessage;
+          document.body.appendChild(successDiv);
+          
+          // Remover después de 3 segundos
+          setTimeout(() => {
+            document.body.removeChild(successDiv);
+          }, 3000);
+        }
+        
       } else {
         console.log('=== MODO CREACIÓN ===');
         await examenService.createExamenCompleto(formData);
         console.log('Examen completo creado exitosamente');
+        navigate('/admin/examenes');
       }
 
-      navigate('/admin/examenes');
     } catch (err) {
       console.error('Error detallado:', {
         error: err,
@@ -330,7 +350,6 @@ export default function ExamenForm() {
 
   return (
     <div className="space-y-6 max-w-6xl mx-auto">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Button
@@ -361,23 +380,65 @@ export default function ExamenForm() {
             </Button>
           )}
           
-          <Button
-            onClick={handleSubmit}
-            disabled={saving || uploading}
-            size="lg"
-          >
-            {saving ? (
-              <>
-                <RefreshCw className="h-4 w-4 animate-spin mr-2" />
-                {isEditing ? 'Actualizando...' : 'Creando...'}
-              </>
-            ) : (
-              <>
-                <Save className="h-4 w-4 mr-2" />
-                {isEditing ? 'Actualizar' : 'Crear'} Examen
-              </>
-            )}
-          </Button>
+          {/* Botones de guardado - Diferentes para editar vs crear */}
+          {isEditing ? (
+            <>
+              <Button
+                onClick={() => handleSubmit(false)}
+                disabled={saving || uploading}
+                size="lg"
+                variant="outline"
+              >
+                {saving ? (
+                  <>
+                    <RefreshCw className="h-4 w-4 animate-spin mr-2" />
+                    Actualizando...
+                  </>
+                ) : (
+                  <>
+                    <Save className="h-4 w-4 mr-2" />
+                    Actualizar y Continuar
+                  </>
+                )}
+              </Button>
+              
+              <Button
+                onClick={() => handleSubmit(true)}
+                disabled={saving || uploading}
+                size="lg"
+              >
+                {saving ? (
+                  <>
+                    <RefreshCw className="h-4 w-4 animate-spin mr-2" />
+                    Actualizando...
+                  </>
+                ) : (
+                  <>
+                    <Save className="h-4 w-4 mr-2" />
+                    Actualizar y Salir
+                  </>
+                )}
+              </Button>
+            </>
+          ) : (
+            <Button
+              onClick={() => handleSubmit(true)}
+              disabled={saving || uploading}
+              size="lg"
+            >
+              {saving ? (
+                <>
+                  <RefreshCw className="h-4 w-4 animate-spin mr-2" />
+                  Creando...
+                </>
+              ) : (
+                <>
+                  <Save className="h-4 w-4 mr-2" />
+                  Crear Examen
+                </>
+              )}
+            </Button>
+          )}
         </div>
       </div>
 
@@ -486,16 +547,14 @@ export default function ExamenForm() {
 
                   <div>
                     <Label htmlFor="contenido">Contenido</Label>
-                    <div>
-                    <WysiwygEditor
+                    <SimpleHtmlEditor
                       label="Contenido"
                       content={formData.contenido}
                       onChange={(content) => handleInputChange('contenido', content)}
                       placeholder="Contenido detallado del examen..."
-                      className="min-h-[300px]"
                     />
                   </div>
-                  </div>
+
                 </TabsContent>
 
                 <TabsContent value="en" className="space-y-4">
@@ -522,16 +581,14 @@ export default function ExamenForm() {
 
                   <div>
                     <Label htmlFor="en_contenido">Content</Label>
-                    <div>
-                    <WysiwygEditor
+                    <SimpleHtmlEditor
                       label="Content"
                       content={formData.en_contenido}
                       onChange={(content) => handleInputChange('en_contenido', content)}
                       placeholder="Detailed exam content..."
-                      className="min-h-[300px]"
                     />
                   </div>
-                  </div>
+
                 </TabsContent>
               </Tabs>
 
@@ -614,11 +671,10 @@ export default function ExamenForm() {
                           </div>
                           <div>
                             <Label>Respuesta</Label>
-                            <WysiwygEditor
+                            <SimpleHtmlEditor
                               content={faq.respuesta || ''}
                               onChange={(content) => updateFaq(index, 'respuesta', content)}
                               placeholder="El examen tiene una duración de..."
-                              className="min-h-[150px]"
                             />
                           </div>
                         </TabsContent>
@@ -634,11 +690,10 @@ export default function ExamenForm() {
                           </div>
                           <div>
                             <Label>Answer</Label>
-                            <WysiwygEditor
+                            <SimpleHtmlEditor
                               content={faq.en_respuesta || ''}
                               onChange={(content) => updateFaq(index, 'en_respuesta', content)}
                               placeholder="The exam duration is..."
-                              className="min-h-[150px]"
                             />
                           </div>
                         </TabsContent>
@@ -718,11 +773,10 @@ export default function ExamenForm() {
                           </div>
                           <div>
                             <Label>Contenido</Label>
-                            <WysiwygEditor
+                            <SimpleHtmlEditor
                               content={extra.contenido || ''}
                               onChange={(content) => updateExtra(index, 'contenido', content)}
                               placeholder="Información adicional..."
-                              className="min-h-[200px]"
                             />
                           </div>
                           <div>
@@ -746,11 +800,10 @@ export default function ExamenForm() {
                           </div>
                           <div>
                             <Label>Content</Label>
-                            <WysiwygEditor
+                            <SimpleHtmlEditor
                               content={extra.en_contenido || ''}
                               onChange={(content) => updateExtra(index, 'en_contenido', content)}
                               placeholder="Additional information..."
-                              className="min-h-[200px]"
                             />
                           </div>
                           <div>
@@ -809,7 +862,7 @@ export default function ExamenForm() {
             </CardHeader>
             <CardContent>
               {formData.muestras && formData.muestras.length > 0 ? (
-                <div className="space-y-4">
+                <div className="space-y-6">
                   {formData.muestras.map((muestra, index) => (
                     <div key={index} className="border rounded-lg p-4 bg-gray-50">
                       <div className="flex items-center justify-between mb-4">
@@ -830,7 +883,7 @@ export default function ExamenForm() {
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                      <div className="space-y-4">
                         <div>
                           <Label>Sección</Label>
                           <Input
@@ -839,16 +892,15 @@ export default function ExamenForm() {
                             placeholder="ej: Listening, Reading, Grammar"
                           />
                         </div>
-                      </div>
 
-                      <div>
-                        <Label>Pregunta de Muestra</Label>
-                        <Textarea
-                          value={muestra.pregunta || ''}
-                          onChange={(e) => updateMuestra(index, 'pregunta', e.target.value)}
-                          placeholder="Escribe aquí la pregunta de ejemplo con sus opciones..."
-                          rows={4}
-                        />
+                        <div>
+                          <Label>Pregunta de Muestra</Label>
+                          <SimpleHtmlEditor
+                            content={muestra.pregunta || ''}
+                            onChange={(content) => updateMuestra(index, 'pregunta', content)}
+                            placeholder="Escribe aquí la pregunta de ejemplo con sus opciones..."
+                          />
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -872,7 +924,7 @@ export default function ExamenForm() {
       {/* Botón flotante de guardar en mobile */}
       <div className="md:hidden fixed bottom-4 right-4 z-50">
         <Button
-          onClick={handleSubmit}
+          onClick={() => handleSubmit(true)}
           disabled={saving || uploading}
           size="lg"
           className="rounded-full shadow-lg h-14 w-14"

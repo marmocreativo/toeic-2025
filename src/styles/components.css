@@ -365,3 +365,59 @@
     text-align: center;
   }
 }
+
+/* Estilos para Lexical Editor */
+.lexical-editor-container .editor-placeholder {
+  color: #9ca3af;
+  overflow: hidden;
+  position: absolute;
+  text-overflow: ellipsis;
+  top: 15px;
+  left: 15px;
+  font-size: 15px;
+  user-select: none;
+  display: inline-block;
+  pointer-events: none;
+}
+
+.lexical-editor-container .editor-input {
+  position: relative;
+}
+
+.lexical-editor-container .editor-listitem {
+  margin: 0 32px;
+}
+
+.lexical-editor-container .editor-list-ol {
+  list-style-type: decimal;
+  padding: 0;
+  margin: 0;
+}
+
+.lexical-editor-container .editor-list-ul {
+  list-style-type: disc;
+  padding: 0;
+  margin: 0;
+}
+
+/* Prose styles para mejor formato */
+.lexical-editor-container .prose {
+  max-width: none;
+}
+
+.lexical-editor-container .prose p {
+  margin: 0.5rem 0;
+}
+
+.lexical-editor-container .prose ul, 
+.lexical-editor-container .prose ol {
+  margin: 0.5rem 0;
+  padding-left: 1.5rem;
+}
+
+.lexical-editor-container .prose blockquote {
+  margin: 1rem 0;
+  padding-left: 1rem;
+  border-left: 4px solid #e5e7eb;
+  color: #6b7280;
+}

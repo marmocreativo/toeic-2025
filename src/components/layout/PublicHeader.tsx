@@ -84,7 +84,7 @@ export default function PublicHeader() {
             to={links.home} 
             className="flex items-center space-x-3 text-xl font-bold text-primary hover:text-primary-dark transition-colors group"
           >
-            <img src='./images/logo.png' className='h-8' alt="TOEIC Logo" />
+            <img src='/images/logo.png' className='h-8' alt="TOEIC Logo" />
           </Link>
           
           {/* Desktop Menu */}

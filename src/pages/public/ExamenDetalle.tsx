@@ -58,6 +58,7 @@ const ExamenHero = ({ examen }: { examen: ExamenCompleto }) => {
 
 // Componente HorariosGrid mejorado para reemplazar HorariosSidebar
 
+// Componente HorariosGrid mejorado para reemplazar HorariosSidebar
 const HorariosGrid = ({ horarios }: { horarios: any[] }) => {
   const { language } = useLanguage();
 
@@ -83,15 +84,15 @@ const HorariosGrid = ({ horarios }: { horarios: any[] }) => {
   const currentTexts = texts[language];
   const horariosPublicados = horarios?.filter(h => h.publicado) || [];
 
-  // Días de la semana en orden
+  // Días de la semana en orden (solo una letra)
   const diasSemana = [
-    { key: 'lunes', label: language === 'es' ? 'L' : 'M', fullName: language === 'es' ? 'Lunes' : 'Monday' },
-    { key: 'martes', label: language === 'es' ? 'M' : 'T', fullName: language === 'es' ? 'Martes' : 'Tuesday' },
-    { key: 'miércoles', label: language === 'es' ? 'M' : 'W', fullName: language === 'es' ? 'Miércoles' : 'Wednesday' },
-    { key: 'jueves', label: language === 'es' ? 'J' : 'T', fullName: language === 'es' ? 'Jueves' : 'Thursday' },
-    { key: 'viernes', label: language === 'es' ? 'V' : 'F', fullName: language === 'es' ? 'Viernes' : 'Friday' },
-    { key: 'sábado', label: language === 'es' ? 'S' : 'S', fullName: language === 'es' ? 'Sábado' : 'Saturday' },
-    { key: 'domingo', label: language === 'es' ? 'D' : 'S', fullName: language === 'es' ? 'Domingo' : 'Sunday' }
+    { key: 'lunes', label: 'L', fullName: language === 'es' ? 'Lunes' : 'Monday' },
+    { key: 'martes', label: 'M', fullName: language === 'es' ? 'Martes' : 'Tuesday' },
+    { key: 'miércoles', label: 'X', fullName: language === 'es' ? 'Miércoles' : 'Wednesday' },
+    { key: 'jueves', label: 'J', fullName: language === 'es' ? 'Jueves' : 'Thursday' },
+    { key: 'viernes', label: 'V', fullName: language === 'es' ? 'Viernes' : 'Friday' },
+    { key: 'sábado', label: 'S', fullName: language === 'es' ? 'Sábado' : 'Saturday' },
+    { key: 'domingo', label: 'D', fullName: language === 'es' ? 'Domingo' : 'Sunday' }
   ];
 
   // Horarios estándar
@@ -146,13 +147,22 @@ const HorariosGrid = ({ horarios }: { horarios: any[] }) => {
     });
   };
 
+  // Filtrar días que tienen al menos un horario disponible
+  const obtenerDiasConHorarios = () => {
+    const matrizHorarios = crearMatrizHorarios();
+    
+    return diasSemana.filter(dia => {
+      // Verificar si el día tiene al menos un horario disponible
+      return Object.values(matrizHorarios[dia.key]).some(disponible => disponible);
+    });
+  };
+
   const matrizHorarios = crearMatrizHorarios();
   const horariosEspeciales = obtenerHorariosEspeciales();
+  const diasConHorarios = obtenerDiasConHorarios();
 
   // Verificar si hay algún horario disponible
-  const hayHorariosDisponibles = Object.values(matrizHorarios).some(dia => 
-    Object.values(dia).some(disponible => disponible)
-  ) || horariosEspeciales.length > 0;
+  const hayHorariosDisponibles = diasConHorarios.length > 0 || horariosEspeciales.length > 0;
 
   if (!hayHorariosDisponibles) {
     return (
@@ -186,61 +196,55 @@ const HorariosGrid = ({ horarios }: { horarios: any[] }) => {
       </div>
       
       <div className="p-4">
-        {/* Cuadrícula de horarios estándar */}
-        <div className="mb-6">
-          {/* Header con las horas */}
-          <div className="grid grid-cols-4 gap-2 mb-2">
-            <div></div> {/* Espacio vacío para alinear */}
-            {horasStandard.map(hora => (
-              <div key={hora} className="text-center text-xs font-medium text-text-muted py-2">
-                {hora}
+        {/* Cuadrícula de horarios estándar - Solo días con horarios */}
+        {diasConHorarios.length > 0 && (
+          <div className="mb-4">
+            {/* Header con las horas */}
+            <div className="grid gap-1 mb-2" style={{ gridTemplateColumns: `40px repeat(${horasStandard.length}, 1fr)` }}>
+              <div></div> {/* Espacio vacío para alinear */}
+              {horasStandard.map(hora => (
+                <div key={hora} className="text-center text-xs font-medium text-text-muted py-2">
+                  {hora}
+                </div>
+              ))}
+            </div>
+
+            {/* Filas de días - Solo días que tienen horarios */}
+            {diasConHorarios.map(dia => (
+              <div key={dia.key} className="grid gap-1 mb-1" style={{ gridTemplateColumns: `40px repeat(${horasStandard.length}, 1fr)` }}>
+                {/* Label del día - Solo una letra */}
+                <div 
+                  className="flex items-center justify-center bg-bg border border-border rounded text-xs font-bold text-text h-10 w-10"
+                  title={dia.fullName}
+                >
+                  {dia.label}
+                </div>
+                
+                {/* Celdas de horas */}
+                {horasStandard.map(hora => {
+                  const disponible = matrizHorarios[dia.key][hora];
+                  return (
+                    <div
+                      key={`${dia.key}-${hora}`}
+                      className={`
+                        flex items-center justify-center h-10 rounded text-xs font-medium transition-all cursor-pointer
+                        ${disponible 
+                          ? 'bg-green-500 hover:bg-green-600' 
+                          : 'bg-gray-200 cursor-default'
+                        }
+                      `}
+                      title={`${dia.fullName} ${hora} - ${disponible ? currentTexts.available : currentTexts.notAvailable}`}
+                    >
+                      {/* Sin iconos, solo color de fondo */}
+                    </div>
+                  );
+                })}
               </div>
             ))}
           </div>
+        )}
 
-          {/* Filas de días */}
-          {diasSemana.map(dia => (
-            <div key={dia.key} className="grid grid-cols-4 gap-2 mb-2">
-              {/* Label del día */}
-              <div className="flex items-center justify-center bg-bg border border-border rounded text-sm font-medium text-text py-3">
-                <span className="hidden sm:inline">{dia.fullName}</span>
-                <span className="sm:hidden">{dia.label}</span>
-              </div>
-              
-              {/* Celdas de horas */}
-              {horasStandard.map(hora => {
-                const disponible = matrizHorarios[dia.key][hora];
-                return (
-                  <div
-                    key={`${dia.key}-${hora}`}
-                    className={`
-                      flex items-center justify-center py-3 px-2 rounded text-xs font-medium transition-colors cursor-pointer
-                      ${disponible 
-                        ? 'bg-green-500 text-white hover:bg-green-600' 
-                        : 'bg-gray-200 text-gray-500 cursor-default'
-                      }
-                    `}
-                    title={`${dia.fullName} ${hora} - ${disponible ? currentTexts.available : currentTexts.notAvailable}`}
-                  >
-                    {disponible ? (
-                      <div className="flex items-center justify-center">
-                        <span className="hidden sm:inline">✓</span>
-                        <div className="w-2 h-2 bg-white rounded-full sm:hidden"></div>
-                      </div>
-                    ) : (
-                      <div className="flex items-center justify-center">
-                        <span className="hidden sm:inline">—</span>
-                        <div className="w-2 h-2 bg-gray-400 rounded-full sm:hidden"></div>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          ))}
-        </div>
-
-        {/* Leyenda */}
+        {/* Leyenda compacta */}
         <div className="flex items-center justify-center gap-4 text-xs mb-4">
           <div className="flex items-center gap-1">
             <div className="w-3 h-3 bg-green-500 rounded"></div>
@@ -289,8 +293,7 @@ const HorariosGrid = ({ horarios }: { horarios: any[] }) => {
     </div>
   );
 };
-
-// Componente Extras Sidebar
+// Componente Extras Sidebar - CORREGIDO para renderizar HTML
 const ExtrasSidebar = ({ extras }: { extras: any[] }) => {
   const { language } = useLanguage();
 
@@ -307,9 +310,12 @@ const ExtrasSidebar = ({ extras }: { extras: any[] }) => {
           <h3 className="font-semibold text-text mb-2">
             {language === 'es' ? (extra.titulo || '') : (extra.en_titulo || '')}
           </h3>
-          <p className="text-sm text-text-muted mb-3 line-clamp-3">
-            {language === 'es' ? (extra.contenido || '') : (extra.en_contenido || '')}
-          </p>
+          <div 
+            className="wysiwyg-content text-sm text-text-muted mb-3 line-clamp-3"
+            dangerouslySetInnerHTML={{ 
+              __html: language === 'es' ? (extra.contenido || '') : (extra.en_contenido || '') 
+            }}
+          />
           {extra.boton_texto && extra.boton_enlace && (
             <a 
               href={extra.boton_enlace} 
@@ -327,7 +333,7 @@ const ExtrasSidebar = ({ extras }: { extras: any[] }) => {
   );
 };
 
-// Componente Tab de Contenido
+// Componente Tab de Contenido - CORREGIDO para renderizar HTML
 const ContenidoTab = ({ examen }: { examen: ExamenCompleto }) => {
   const { language } = useLanguage();
 
@@ -336,9 +342,10 @@ const ContenidoTab = ({ examen }: { examen: ExamenCompleto }) => {
   return (
     <div className="prose prose-lg max-w-none">
       {contenido ? (
-        <div className="whitespace-pre-wrap leading-relaxed text-text">
-          {contenido}
-        </div>
+        <div 
+          className="wysiwyg-content leading-relaxed text-text"
+          dangerouslySetInnerHTML={{ __html: contenido }}
+        />
       ) : (
         <div className="text-center py-8">
           <FileText className="w-12 h-12 text-border mx-auto mb-4" />
@@ -408,7 +415,7 @@ const MuestrasTab = ({ muestras }: { muestras: any[] }) => {
   );
 };
 
-// Componente Tab de FAQs
+// Componente Tab de FAQs - CORREGIDO para renderizar HTML
 const FaqTab = ({ faqs }: { faqs: any[] }) => {
   const { language } = useLanguage();
 
@@ -436,9 +443,12 @@ const FaqTab = ({ faqs }: { faqs: any[] }) => {
                 <HelpCircle className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
                 {language === 'es' ? (faq.pregunta || '') : (faq.en_pregunta || '')}
               </h3>
-              <div className="text-text-muted leading-relaxed pl-7">
-                {language === 'es' ? (faq.respuesta || '') : (faq.en_respuesta || '')}
-              </div>
+              <div 
+                className="wysiwyg-content text-text-muted leading-relaxed pl-7"
+                dangerouslySetInnerHTML={{ 
+                  __html: language === 'es' ? (faq.respuesta || '') : (faq.en_respuesta || '') 
+                }}
+              />
             </div>
           ))}
         </div>

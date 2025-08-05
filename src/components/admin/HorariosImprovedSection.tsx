@@ -12,20 +12,16 @@ import {
   Calendar,
   Clock,
   Check,
-  X
+  X,
+  Edit3,
+  Save,
+  RotateCcw
 } from 'lucide-react';
 
-// Definir tipos para el horario mejorado
-interface HorarioConfig {
-  dias: string[];
-  horas: string[];
-  publicado: boolean;
-}
-
-interface HorarioPersonalizado {
-  dia: string;
-  hora: string;
-  publicado: boolean;
+// Definir tipos para el horario individual editable
+interface HorarioEditable extends ExamenHorarioFormData {
+  id: string; // ID temporal para manejo local
+  isEditing?: boolean;
 }
 
 interface HorariosImprovedProps {
@@ -57,81 +53,71 @@ const HorariosImprovedSection: React.FC<HorariosImprovedProps> = ({
     '15:30'
   ];
 
-  // Estados locales
+  // Estados para generación rápida
   const [selectedDias, setSelectedDias] = useState<string[]>([]);
   const [selectedHoras, setSelectedHoras] = useState<string[]>([]);
-  const [horariosPersonalizados, setHorariosPersonalizados] = useState<HorarioPersonalizado[]>([]);
+  
+  // Estado principal: lista de horarios editables
+  const [horariosEditables, setHorariosEditables] = useState<HorarioEditable[]>([]);
+  
+  // Estados para horario personalizado
   const [nuevoHorario, setNuevoHorario] = useState({ dia: '', hora: '' });
+
+  // Generar ID único para horarios
+  const generateId = () => `horario_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
   // Inicializar desde formData existente
   useEffect(() => {
     if (formData.horarios && formData.horarios.length > 0) {
-      parseExistingHorarios();
+      const horariosConId = formData.horarios.map(horario => ({
+        ...horario,
+        id: generateId(),
+        isEditing: false
+      }));
+      setHorariosEditables(horariosConId);
     }
   }, []);
 
-  const parseExistingHorarios = () => {
-    const personalizados: HorarioPersonalizado[] = [];
-    const diasSet = new Set<string>();
-    const horasSet = new Set<string>();
+  // Actualizar formData cuando cambian los horarios editables
+  useEffect(() => {
+    const horariosParaFormulario = horariosEditables.map(({ id, isEditing, ...horario }) => horario);
+    onHorariosChange(horariosParaFormulario);
+  }, [horariosEditables]);
 
-    formData.horarios?.forEach(horario => {
-      if (horario.dia && horario.hora) {
-        // Si es un día y hora estándar, agregarlo a selecciones
-        const diaKey = horario.dia.toLowerCase();
-        const diaStandard = diasSemana.find(d => d.key === diaKey || d.label === horario.dia);
-        const horaStandard = horariosStandard.includes(horario.hora);
+  // Generar combinaciones desde selección rápida
+  const generarCombinaciones = () => {
+    const nuevasCombinaciones: HorarioEditable[] = [];
 
-        if (diaStandard && horaStandard) {
-          diasSet.add(diaStandard.key);
-          horasSet.add(horario.hora);
-        } else {
-          // Si no es estándar, agregarlo como personalizado
-          personalizados.push({
-            dia: horario.dia,
-            hora: horario.hora,
-            publicado: horario.publicado || true
-          });
-        }
-      }
-    });
-
-    setSelectedDias(Array.from(diasSet));
-    setSelectedHoras(Array.from(horasSet));
-    setHorariosPersonalizados(personalizados);
-  };
-
-  const generateHorarios = () => {
-    const horarios: ExamenHorarioFormData[] = [];
-
-    // Generar combinaciones de días y horas seleccionados
     selectedDias.forEach(diaKey => {
       const dia = diasSemana.find(d => d.key === diaKey)?.label || diaKey;
       selectedHoras.forEach(hora => {
-        horarios.push({
-          dia,
-          hora,
-          publicado: true
-        });
+        // Verificar si ya existe esta combinación
+        const yaExiste = horariosEditables.some(h => 
+          h.dia === dia && h.hora === hora
+        );
+        
+        if (!yaExiste) {
+          nuevasCombinaciones.push({
+            id: generateId(),
+            dia,
+            hora,
+            publicado: true,
+            isEditing: false
+          });
+        }
       });
     });
 
-    // Agregar horarios personalizados
-    horariosPersonalizados.forEach(horario => {
-      horarios.push({
-        dia: horario.dia,
-        hora: horario.hora,
-        publicado: horario.publicado
-      });
-    });
-
-    onHorariosChange(horarios);
+    if (nuevasCombinaciones.length > 0) {
+      setHorariosEditables(prev => [...prev, ...nuevasCombinaciones]);
+      
+      // Limpiar selecciones después de generar
+      setSelectedDias([]);
+      setSelectedHoras([]);
+    }
   };
 
-  useEffect(() => {
-    generateHorarios();
-  }, [selectedDias, selectedHoras, horariosPersonalizados]);
-
+  // Manejar selección de días
   const handleDiaToggle = (diaKey: string) => {
     setSelectedDias(prev => 
       prev.includes(diaKey) 
@@ -140,6 +126,7 @@ const HorariosImprovedSection: React.FC<HorariosImprovedProps> = ({
     );
   };
 
+  // Manejar selección de horas
   const handleHoraToggle = (hora: string) => {
     setSelectedHoras(prev => 
       prev.includes(hora) 
@@ -148,27 +135,80 @@ const HorariosImprovedSection: React.FC<HorariosImprovedProps> = ({
     );
   };
 
+  // Agregar horario personalizado
   const agregarHorarioPersonalizado = () => {
     if (nuevoHorario.dia && nuevoHorario.hora) {
-      setHorariosPersonalizados(prev => [...prev, {
-        ...nuevoHorario,
-        publicado: true
-      }]);
-      setNuevoHorario({ dia: '', hora: '' });
+      // Verificar si ya existe
+      const yaExiste = horariosEditables.some(h => 
+        h.dia === nuevoHorario.dia && h.hora === nuevoHorario.hora
+      );
+
+      if (!yaExiste) {
+        const nuevoHorarioEditable: HorarioEditable = {
+          id: generateId(),
+          dia: nuevoHorario.dia,
+          hora: nuevoHorario.hora,
+          publicado: true,
+          isEditing: false
+        };
+
+        setHorariosEditables(prev => [...prev, nuevoHorarioEditable]);
+        setNuevoHorario({ dia: '', hora: '' });
+      }
     }
   };
 
-  const eliminarHorarioPersonalizado = (index: number) => {
-    setHorariosPersonalizados(prev => prev.filter((_, i) => i !== index));
+  // Eliminar horario específico
+  const eliminarHorario = (id: string) => {
+    setHorariosEditables(prev => prev.filter(h => h.id !== id));
   };
 
-  const togglePublicadoPersonalizado = (index: number) => {
-    setHorariosPersonalizados(prev => prev.map((horario, i) => 
-      i === index ? { ...horario, publicado: !horario.publicado } : horario
+  // Toggle publicado
+  const togglePublicado = (id: string) => {
+    setHorariosEditables(prev => prev.map(horario => 
+      horario.id === id 
+        ? { ...horario, publicado: !horario.publicado }
+        : horario
     ));
   };
 
-  // Función para establecer horarios rápidos
+  // Iniciar edición
+  const iniciarEdicion = (id: string) => {
+    setHorariosEditables(prev => prev.map(horario => 
+      horario.id === id 
+        ? { ...horario, isEditing: true }
+        : { ...horario, isEditing: false } // Solo uno en edición a la vez
+    ));
+  };
+
+  // Guardar edición
+  const guardarEdicion = (id: string) => {
+    setHorariosEditables(prev => prev.map(horario => 
+      horario.id === id 
+        ? { ...horario, isEditing: false }
+        : horario
+    ));
+  };
+
+  // Cancelar edición
+  const cancelarEdicion = (id: string) => {
+    setHorariosEditables(prev => prev.map(horario => 
+      horario.id === id 
+        ? { ...horario, isEditing: false }
+        : horario
+    ));
+  };
+
+  // Actualizar horario en edición
+  const actualizarHorarioEnEdicion = (id: string, field: 'dia' | 'hora', value: string) => {
+    setHorariosEditables(prev => prev.map(horario => 
+      horario.id === id 
+        ? { ...horario, [field]: value }
+        : horario
+    ));
+  };
+
+  // Configuraciones rápidas
   const setHorarioRapido = (tipo: 'laboral' | 'completo' | 'sabado') => {
     switch (tipo) {
       case 'laboral':
@@ -177,7 +217,7 @@ const HorariosImprovedSection: React.FC<HorariosImprovedProps> = ({
         break;
       case 'completo':
         setSelectedDias(['lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado']);
-        setSelectedHoras(['9:30', 'finde', '15:30']);
+        setSelectedHoras(['9:30', '12:30', '15:30']);
         break;
       case 'sabado':
         setSelectedDias(['sábado']);
@@ -186,13 +226,15 @@ const HorariosImprovedSection: React.FC<HorariosImprovedProps> = ({
     }
   };
 
+  // Limpiar todo
   const limpiarTodo = () => {
     setSelectedDias([]);
     setSelectedHoras([]);
-    setHorariosPersonalizados([]);
+    setHorariosEditables([]);
   };
 
-  const totalHorarios = selectedDias.length * selectedHoras.length + horariosPersonalizados.length;
+  const totalCombinacionesPendientes = selectedDias.length * selectedHoras.length;
+  const totalHorarios = horariosEditables.length;
 
   return (
     <Card>
@@ -207,7 +249,7 @@ const HorariosImprovedSection: React.FC<HorariosImprovedProps> = ({
               )}
             </CardTitle>
             <p className="text-sm text-gray-600 mt-1">
-              Selecciona días y horarios, o agrega horarios personalizados
+              Genera combinaciones rápidas o agrega horarios individuales. Cada horario es completamente editable.
             </p>
           </div>
         </div>
@@ -240,101 +282,186 @@ const HorariosImprovedSection: React.FC<HorariosImprovedProps> = ({
           >
             Solo Sábados
           </Button>
-          <Button 
-            type="button" 
-            variant="outline" 
-            size="sm"
-            onClick={limpiarTodo}
-          >
-            <X className="h-4 w-4 mr-1" />
-            Limpiar
-          </Button>
+          {totalHorarios > 0 && (
+            <Button 
+              type="button" 
+              variant="outline" 
+              size="sm"
+              onClick={limpiarTodo}
+            >
+              <X className="h-4 w-4 mr-1" />
+              Limpiar Todo
+            </Button>
+          )}
         </div>
 
-        {/* Selección de días */}
-        <div>
-          <Label className="text-base font-medium mb-3 block">Días de la semana</Label>
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2">
-            {diasSemana.map(dia => (
-              <button
-                key={dia.key}
-                type="button"
-                onClick={() => handleDiaToggle(dia.key)}
-                className={`p-3 rounded-lg border text-sm font-medium transition-all ${
-                  selectedDias.includes(dia.key)
-                    ? 'bg-blue-500 text-white border-blue-500'
-                    : 'bg-white text-gray-700 border-gray-300 hover:border-gray-400'
-                }`}
-              >
-                {selectedDias.includes(dia.key) && (
-                  <Check className="h-4 w-4 mx-auto mb-1" />
-                )}
-                {dia.label}
-              </button>
-            ))}
+        {/* Generador de combinaciones */}
+        <div className="border rounded-lg p-4 bg-gray-50">
+          <Label className="text-base font-medium mb-3 block">Generador rápido de combinaciones</Label>
+          
+          {/* Selección de días */}
+          <div className="mb-4">
+            <Label className="text-sm font-medium mb-2 block">Seleccionar días:</Label>
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2">
+              {diasSemana.map(dia => (
+                <button
+                  key={dia.key}
+                  type="button"
+                  onClick={() => handleDiaToggle(dia.key)}
+                  className={`p-2 rounded-lg border text-xs font-medium transition-all ${
+                    selectedDias.includes(dia.key)
+                      ? 'bg-blue-500 text-white border-blue-500'
+                      : 'bg-white text-gray-700 border-gray-300 hover:border-gray-400'
+                  }`}
+                >
+                  {selectedDias.includes(dia.key) && (
+                    <Check className="h-3 w-3 mx-auto mb-1" />
+                  )}
+                  {dia.label}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
 
-        {/* Selección de horarios */}
-        <div>
-          <Label className="text-base font-medium mb-3 block">Horarios estándar</Label>
-          <div className="flex flex-wrap gap-2">
-            {horariosStandard.map(hora => (
-              <button
-                key={hora}
-                type="button"
-                onClick={() => handleHoraToggle(hora)}
-                className={`px-4 py-2 rounded-lg border text-sm font-medium transition-all flex items-center gap-2 ${
-                  selectedHoras.includes(hora)
-                    ? 'bg-green-500 text-white border-green-500'
-                    : 'bg-white text-gray-700 border-gray-300 hover:border-gray-400'
-                }`}
-              >
-                {selectedHoras.includes(hora) && (
-                  <Check className="h-4 w-4" />
-                )}
-                <Clock className="h-4 w-4" />
-                {hora}
-              </button>
-            ))}
+          {/* Selección de horarios */}
+          <div className="mb-4">
+            <Label className="text-sm font-medium mb-2 block">Seleccionar horarios:</Label>
+            <div className="flex flex-wrap gap-2">
+              {horariosStandard.map(hora => (
+                <button
+                  key={hora}
+                  type="button"
+                  onClick={() => handleHoraToggle(hora)}
+                  className={`px-3 py-2 rounded-lg border text-sm font-medium transition-all flex items-center gap-2 ${
+                    selectedHoras.includes(hora)
+                      ? 'bg-green-500 text-white border-green-500'
+                      : 'bg-white text-gray-700 border-gray-300 hover:border-gray-400'
+                  }`}
+                >
+                  {selectedHoras.includes(hora) && (
+                    <Check className="h-3 w-3" />
+                  )}
+                  <Clock className="h-3 w-3" />
+                  {hora}
+                </button>
+              ))}
+            </div>
           </div>
+
+          {/* Botón generar */}
+          {totalCombinacionesPendientes > 0 && (
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-gray-600">
+                Se generarán <strong>{totalCombinacionesPendientes} combinaciones</strong>
+              </p>
+              <Button
+                type="button"
+                onClick={generarCombinaciones}
+                size="sm"
+              >
+                <Plus className="h-4 w-4 mr-1" />
+                Generar Combinaciones
+              </Button>
+            </div>
+          )}
         </div>
 
-        {/* Vista previa de horarios generados */}
+        {/* Lista de horarios editables */}
         {totalHorarios > 0 && (
-          <div className="bg-gray-50 rounded-lg p-4">
+          <div>
             <Label className="text-base font-medium mb-3 block">
-              Vista previa ({totalHorarios} horarios)
+              Horarios configurados ({totalHorarios})
             </Label>
-            <div className="space-y-2 max-h-32 overflow-y-auto">
-              {selectedDias.map(diaKey => {
-                const dia = diasSemana.find(d => d.key === diaKey)?.label || diaKey;
-                return selectedHoras.map(hora => (
-                  <div key={`${dia}-${hora}`} className="text-sm bg-white px-3 py-2 rounded border">
-                    <span className="font-medium">{dia}</span> - <span className="text-gray-600">{hora}</span>
-                  </div>
-                ));
-              })}
-              {horariosPersonalizados.map((horario, index) => (
-                <div key={index} className="text-sm bg-white px-3 py-2 rounded border flex items-center justify-between">
-                  <span>
-                    <span className="font-medium">{horario.dia}</span> - <span className="text-gray-600">{horario.hora}</span>
-                    {!horario.publicado && <span className="text-red-500 ml-2">(No publicado)</span>}
-                  </span>
-                  <div className="flex items-center gap-2">
-                    <Switch
-                      checked={horario.publicado}
-                      onCheckedChange={() => togglePublicadoPersonalizado(index)}
-                    />
-                    <Button
-                      type="button"
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => eliminarHorarioPersonalizado(index)}
-                    >
-                      <Trash2 className="h-3 w-3" />
-                    </Button>
-                  </div>
+            <div className="space-y-2 max-h-96 overflow-y-auto border rounded-lg p-2">
+              {horariosEditables.map((horario) => (
+                <div 
+                  key={horario.id} 
+                  className={`flex items-center justify-between p-3 rounded-lg border transition-all ${
+                    horario.isEditing 
+                      ? 'bg-blue-50 border-blue-200' 
+                      : 'bg-white border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  {horario.isEditing ? (
+                    /* Modo edición */
+                    <div className="flex items-center gap-2 flex-1">
+                      <Input
+                        value={horario.dia || ''}
+                        onChange={(e) => actualizarHorarioEnEdicion(horario.id, 'dia', e.target.value)}
+                        placeholder="Día"
+                        className="w-32"
+                      />
+                      <span className="text-gray-400">-</span>
+                      <Input
+                        value={horario.hora || ''}
+                        onChange={(e) => actualizarHorarioEnEdicion(horario.id, 'hora', e.target.value)}
+                        placeholder="Hora"
+                        className="w-24"
+                      />
+                      <div className="flex items-center gap-1 ml-auto">
+                        <Button
+                          type="button"
+                          size="sm"
+                          onClick={() => guardarEdicion(horario.id)}
+                          className="h-8 w-8 p-0"
+                        >
+                          <Save className="h-3 w-3" />
+                        </Button>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => cancelarEdicion(horario.id)}
+                          className="h-8 w-8 p-0"
+                        >
+                          <RotateCcw className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    /* Modo vista */
+                    <>
+                      <div className="flex items-center gap-3 flex-1">
+                        <div>
+                          <span className="font-medium text-gray-900">{horario.dia}</span>
+                          <span className="text-gray-400 mx-2">-</span>
+                          <span className="text-gray-600">{horario.hora}</span>
+                        </div>
+                        {!horario.publicado && (
+                          <Badge variant="secondary" className="text-xs">
+                            No publicado
+                          </Badge>
+                        )}
+                      </div>
+                      
+                      <div className="flex items-center gap-2">
+                        <Switch
+                          checked={horario.publicado || false}
+                          onCheckedChange={() => togglePublicado(horario.id)}
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => iniciarEdicion(horario.id)}
+                          className="h-8 w-8 p-0"
+                          title="Editar horario"
+                        >
+                          <Edit3 className="h-3 w-3" />
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => eliminarHorario(horario.id)}
+                          className="h-8 w-8 p-0"
+                          title="Eliminar horario"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    </>
+                  )}
                 </div>
               ))}
             </div>
@@ -343,7 +470,7 @@ const HorariosImprovedSection: React.FC<HorariosImprovedProps> = ({
 
         {/* Agregar horario personalizado */}
         <div className="border-t pt-4">
-          <Label className="text-base font-medium mb-3 block">Agregar horario personalizado</Label>
+          <Label className="text-base font-medium mb-3 block">Agregar horario individual</Label>
           <div className="flex gap-2 items-end">
             <div className="flex-1">
               <Label htmlFor="custom-dia" className="text-sm">Día</Label>
@@ -374,13 +501,13 @@ const HorariosImprovedSection: React.FC<HorariosImprovedProps> = ({
           </div>
         </div>
 
-        {/* Estado sin horarios */}
+        {/* Estado vacío */}
         {totalHorarios === 0 && (
           <div className="text-center py-8 bg-gray-50 rounded-lg">
             <Calendar className="h-12 w-12 text-gray-300 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-600 mb-2">No hay horarios configurados</h3>
             <p className="text-gray-500 mb-4">
-              Selecciona días y horarios arriba, o usa los botones de configuración rápida
+              Usa el generador rápido arriba o agrega horarios individuales
             </p>
           </div>
         )}
