@@ -48,6 +48,7 @@ export const WysiwygEditor: React.FC<WysiwygEditorProps> = ({
 }) => {
   const [showLinkDialog, setShowLinkDialog] = useState(false);
   const [linkUrl, setLinkUrl] = useState('');
+  console.log(placeholder);
 
   const editor = useEditor({
     extensions: [
@@ -356,6 +357,7 @@ export const WysiwygEditor: React.FC<WysiwygEditorProps> = ({
       <EditorContent 
         editor={editor} 
         className="min-h-[200px] max-h-[400px] overflow-y-auto bg-white"
+        placeholder={placeholder}
       />
 
       {/* Character count */}

@@ -293,7 +293,7 @@ const HorariosGrid = ({ horarios }: { horarios: any[] }) => {
     </div>
   );
 };
-// Componente Extras Sidebar - CORREGIDO para renderizar HTML
+// Componente Extras Sidebar - ACTUALIZADO con mejores estilos
 const ExtrasSidebar = ({ extras }: { extras: any[] }) => {
   const { language } = useLanguage();
 
@@ -311,7 +311,7 @@ const ExtrasSidebar = ({ extras }: { extras: any[] }) => {
             {language === 'es' ? (extra.titulo || '') : (extra.en_titulo || '')}
           </h3>
           <div 
-            className="wysiwyg-content text-sm text-text-muted mb-3 line-clamp-3"
+            className="wysiwyg-content extra-content text-sm text-text-muted mb-3"
             dangerouslySetInnerHTML={{ 
               __html: language === 'es' ? (extra.contenido || '') : (extra.en_contenido || '') 
             }}
@@ -333,7 +333,7 @@ const ExtrasSidebar = ({ extras }: { extras: any[] }) => {
   );
 };
 
-// Componente Tab de Contenido - CORREGIDO para renderizar HTML
+// Componente Tab de Contenido - ACTUALIZADO con mejores estilos
 const ContenidoTab = ({ examen }: { examen: ExamenCompleto }) => {
   const { language } = useLanguage();
 
@@ -343,7 +343,7 @@ const ContenidoTab = ({ examen }: { examen: ExamenCompleto }) => {
     <div className="prose prose-lg max-w-none">
       {contenido ? (
         <div 
-          className="wysiwyg-content leading-relaxed text-text"
+          className="wysiwyg-content"
           dangerouslySetInnerHTML={{ __html: contenido }}
         />
       ) : (
@@ -358,7 +358,7 @@ const ContenidoTab = ({ examen }: { examen: ExamenCompleto }) => {
   );
 };
 
-// Componente Tab de Muestras
+// Componente Tab de Muestras - ACTUALIZADO
 const MuestrasTab = ({ muestras }: { muestras: any[] }) => {
   const { language } = useLanguage();
 
@@ -391,9 +391,11 @@ const MuestrasTab = ({ muestras }: { muestras: any[] }) => {
                 </h3>
               </div>
               <div className="p-4">
-                <div className="whitespace-pre-wrap leading-relaxed text-text">
-                  {muestra.pregunta}
-                </div>
+                {/* Usar wysiwyg-content también para las muestras */}
+                <div 
+                  className="wysiwyg-content"
+                  dangerouslySetInnerHTML={{ __html: muestra.pregunta || '' }}
+                />
               </div>
             </div>
           ))}
@@ -415,7 +417,7 @@ const MuestrasTab = ({ muestras }: { muestras: any[] }) => {
   );
 };
 
-// Componente Tab de FAQs - CORREGIDO para renderizar HTML
+// Componente Tab de FAQs - ACTUALIZADO con mejores estilos
 const FaqTab = ({ faqs }: { faqs: any[] }) => {
   const { language } = useLanguage();
 
@@ -444,7 +446,7 @@ const FaqTab = ({ faqs }: { faqs: any[] }) => {
                 {language === 'es' ? (faq.pregunta || '') : (faq.en_pregunta || '')}
               </h3>
               <div 
-                className="wysiwyg-content text-text-muted leading-relaxed pl-7"
+                className="wysiwyg-content faq-content text-text-muted leading-relaxed pl-7"
                 dangerouslySetInnerHTML={{ 
                   __html: language === 'es' ? (faq.respuesta || '') : (faq.en_respuesta || '') 
                 }}

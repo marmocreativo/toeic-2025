@@ -10,8 +10,13 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@lexical/html": "^0.33.1",
+    "@lexical/link": "^0.33.1",
+    "@lexical/list": "^0.33.1",
     "@lexical/markdown": "^0.33.1",
     "@lexical/react": "^0.33.1",
+    "@lexical/rich-text": "^0.33.1",
+    "@lexical/selection": "^0.33.1",
     "@lexical/utils": "^0.33.1",
     "@radix-ui/react-dialog": "^1.1.14",
     "@radix-ui/react-dropdown-menu": "^2.1.15",

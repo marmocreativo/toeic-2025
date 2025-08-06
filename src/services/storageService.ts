@@ -145,6 +145,36 @@ export class StorageService {
     return { valid: true };
   }
 
+  // Validar tipo de archivo de audio
+  static validateAudioFile(file: File): { valid: boolean; error?: string } {
+  const validTypes = [
+    'audio/mpeg', 
+    'audio/mp3', 
+    'audio/wav', 
+    'audio/ogg', 
+    'audio/m4a', 
+    'audio/webm',
+    'audio/mp4'
+  ];
+  const maxSize = 50 * 1024 * 1024; // 50MB
+
+  if (!validTypes.includes(file.type)) {
+    return {
+      valid: false,
+      error: 'Tipo de archivo no válido. Solo se permiten: MP3, WAV, OGG, M4A, WebM'
+    };
+  }
+
+  if (file.size > maxSize) {
+    return {
+      valid: false,
+      error: 'El archivo es demasiado grande. Máximo 50MB'
+    };
+  }
+
+  return { valid: true };
+}
+
   // Verificar estado del storage (útil para debugging)
   static async checkStorageStatus(): Promise<{
     isAuthenticated: boolean;
@@ -236,4 +266,118 @@ export class StorageService {
       throw error;
     }
   }
+
+  // Agregar estas funciones al StorageService.ts
+
+// Extraer nombre de archivo desde URL de Supabase
+static extractFilePathFromUrl(url: string): string | null {
+  try {
+    const urlObj = new URL(url);
+    // Formato: /storage/v1/object/public/bucket/path/to/file.ext
+    const pathParts = urlObj.pathname.split('/');
+    const publicIndex = pathParts.indexOf('public');
+    
+    if (publicIndex !== -1 && publicIndex + 2 < pathParts.length) {
+      // Omitir 'public' y 'bucket', tomar el resto como path
+      return pathParts.slice(publicIndex + 2).join('/');
+    }
+    
+    return null;
+  } catch (error) {
+    console.warn('Error extrayendo path de URL:', url, error);
+    return null;
+  }
+}
+
+// Eliminar archivo por URL
+static async deleteFileByUrl(url: string): Promise<boolean> {
+  try {
+    // Verificar autenticación
+    await this.verifyAuth();
+    
+    const filePath = this.extractFilePathFromUrl(url);
+    if (!filePath) {
+      console.warn('No se pudo extraer path de URL:', url);
+      return false;
+    }
+    
+    // Determinar el bucket basado en el path
+    let bucket: string = STORAGE_BUCKETS.EXAMENES; // Por defecto
+    if (filePath.startsWith('editor-images/')) {
+      bucket = STORAGE_BUCKETS.EXAMENES;
+    } else if (filePath.startsWith('editor-audios/')) {
+      bucket = STORAGE_BUCKETS.EXAMENES;
+    } else if (filePath.startsWith('sliders/')) {
+      bucket = STORAGE_BUCKETS.SLIDERS;
+    } else if (filePath.startsWith('general/')) {
+      bucket = STORAGE_BUCKETS.GENERAL;
+    }
+    
+    console.log('🗑️ Eliminando archivo:', { bucket, path: filePath, url });
+    
+    const { error } = await supabase.storage
+      .from(bucket)
+      .remove([filePath]);
+
+    if (error) {
+      console.error('Error eliminando archivo del storage:', error);
+      return false;
+    }
+    
+    console.log('✅ Archivo eliminado del storage:', filePath);
+    return true;
+  } catch (error) {
+    console.error('Error en deleteFileByUrl:', error);
+    return false;
+  }
+}
+
+// Limpiar archivos huérfanos de un contenido HTML
+static async cleanupOrphanedFiles(oldContent: string, newContent: string): Promise<void> {
+  try {
+    const oldUrls = this.extractUrlsFromContent(oldContent);
+    const newUrls = this.extractUrlsFromContent(newContent);
+    
+    // Encontrar URLs que ya no están en el nuevo contenido
+    const orphanedUrls = oldUrls.filter(url => !newUrls.includes(url));
+    
+    if (orphanedUrls.length > 0) {
+      console.log('🧹 Limpiando archivos huérfanos:', orphanedUrls.length);
+      
+      for (const url of orphanedUrls) {
+        await this.deleteFileByUrl(url);
+      }
+      
+      console.log('✅ Limpieza completada');
+    }
+  } catch (error) {
+    console.error('Error en limpieza de archivos:', error);
+  }
+}
+
+// Extraer todas las URLs de Supabase Storage de un contenido HTML
+static extractUrlsFromContent(content: string): string[] {
+  if (!content) return [];
+  
+  const urls: string[] = [];
+  
+  // Regex para encontrar URLs de Supabase Storage
+  const supabaseUrlRegex = /https:\/\/[^\/]+\.supabase\.co\/storage\/v1\/object\/public\/[^\s\)"\]>]+/g;
+  const matches = content.match(supabaseUrlRegex);
+  
+  if (matches) {
+    urls.push(...matches);
+  }
+  
+  return [...new Set(urls)]; // Eliminar duplicados
+}
+
+// Función para usar en el ExamenService cuando se actualiza contenido
+static async handleContentUpdate(oldContent: string, newContent: string): Promise<void> {
+  // Ejecutar limpieza en background para no bloquear la UI
+  setTimeout(async () => {
+    await this.cleanupOrphanedFiles(oldContent, newContent);
+  }, 1000);
+}
+
 }

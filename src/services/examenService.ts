@@ -150,7 +150,15 @@ export const examenService = {
   },
 
   // Actualizar examen
-  async updateExamen(id: number, examenData: Partial<ExamenFormData>): Promise<Examen> {
+async updateExamen(id: number, examenData: Partial<ExamenFormData>): Promise<Examen> {
+  try {
+    // Obtener contenido anterior para limpieza
+    const existingExamen = await this.getExamenById(id);
+    const oldContent = [
+      existingExamen?.contenido || '',
+      existingExamen?.en_contenido || ''
+    ].join(' ');
+    
     const { data, error } = await supabase
       .from('examenes')
       .update({
@@ -162,76 +170,93 @@ export const examenService = {
       .single();
 
     if (error) throw error;
+    
+    // Ejecutar limpieza de archivos huérfanos
+    const newContent = [
+      examenData.contenido || '',
+      examenData.en_contenido || ''
+    ].join(' ');
+    
+    // Importar StorageService dinámicamente para evitar dependencias circulares
+    const { StorageService } = await import('./storageService');
+    StorageService.handleContentUpdate(oldContent, newContent);
+    
     return data;
-  },
+  } catch (error) {
+    console.error('Error actualizando examen:', error);
+    throw error;
+  }
+},
 
   // Actualizar examen completo con todas sus relaciones
 async updateExamenCompleto(id: number, examenData: ExamenCompletoFormData): Promise<ExamenCompleto> {
   try {
-    console.log('=== INICIANDO UPDATE EXAMEN COMPLETO ===');
-    console.log('ID:', id);
-    console.log('Datos recibidos:', {
-      examen: {
-        url: examenData.url,
-        titulo: examenData.titulo,
-        publicado: examenData.publicado
-      },
-      horarios: examenData.horarios?.length || 0,
-      extras: examenData.extras?.length || 0,
-      faqs: examenData.faqs?.length || 0,
-      muestras: examenData.muestras?.length || 0
-    });
-
+    console.log('=== INICIANDO UPDATE EXAMEN COMPLETO CON LIMPIEZA ===');
+    
+    // Obtener datos existentes para limpieza
+    const existingExamen = await this.getExamenCompleto(id);
+    let oldContent = '';
+    
+    if (existingExamen) {
+      // Concatenar todo el contenido anterior
+      oldContent = [
+        existingExamen.contenido || '',
+        existingExamen.en_contenido || '',
+        ...(existingExamen.extras || []).map(e => `${e.contenido || ''} ${e.en_contenido || ''}`),
+        ...(existingExamen.faqs || []).map(f => `${f.respuesta || ''} ${f.en_respuesta || ''}`),
+        ...(existingExamen.muestras || []).map(m => m.pregunta || '')
+      ].join(' ');
+    }
+    
     // 1. Actualizar examen principal
     const { horarios, extras, faqs, muestras, ...examenBase } = examenData;
-    console.log('Actualizando examen base...');
     const examen = await this.updateExamen(id, examenBase);
-    console.log('Examen base actualizado');
-
-    // 2. Actualizar relaciones - Eliminar todas las existentes y crear nuevas
-    // Esto es más simple que hacer un diff y actualizar individualmente
+    // log para evitar el error de never read
+    console.log(examen);
     
-    console.log('Eliminando relaciones existentes...');
+    // 2. Eliminar relaciones existentes
     await Promise.all([
       supabase.from('examenes_horarios').delete().eq('id_examen', id),
       supabase.from('examenes_extras').delete().eq('id_examen', id),
       supabase.from('examenes_faq').delete().eq('id_examen', id),
       supabase.from('examenes_muestras').delete().eq('id_examen', id)
     ]);
-    console.log('Relaciones existentes eliminadas');
 
-    // 3. Crear nuevas relaciones en paralelo si existen
+    // 3. Crear nuevas relaciones
     const promises = [];
-
     if (horarios && horarios.length > 0) {
-      console.log(`Creando ${horarios.length} horarios...`);
       promises.push(this.createMultipleHorarios(id, horarios));
     }
-
     if (extras && extras.length > 0) {
-      console.log(`Creando ${extras.length} extras...`);
       promises.push(this.createMultipleExtras(id, extras));
     }
-
     if (faqs && faqs.length > 0) {
-      console.log(`Creando ${faqs.length} faqs...`);
       promises.push(this.createMultipleFaqs(id, faqs));
     }
-
     if (muestras && muestras.length > 0) {
-      console.log(`Creando ${muestras.length} muestras...`);
       promises.push(this.createMultipleMuestras(id, muestras));
     }
 
     if (promises.length > 0) {
       await Promise.all(promises);
-      console.log('Nuevas relaciones creadas');
     }
 
-    // 4. Retornar examen completo actualizado
-    console.log('Obteniendo examen completo actualizado...');
+    // 4. Limpieza de archivos huérfanos
+    const newContent = [
+      examenData.contenido || '',
+      examenData.en_contenido || '',
+      ...(examenData.extras || []).map(e => `${e.contenido || ''} ${e.en_contenido || ''}`),
+      ...(examenData.faqs || []).map(f => `${f.respuesta || ''} ${f.en_respuesta || ''}`),
+      ...(examenData.muestras || []).map(m => m.pregunta || '')
+    ].join(' ');
+    
+    // Ejecutar limpieza en background
+    const { StorageService } = await import('./storageService');
+    StorageService.handleContentUpdate(oldContent, newContent);
+    
+    // 5. Retornar examen completo actualizado
     const examenCompleto = await this.getExamenCompleto(id);
-    console.log('=== UPDATE EXAMEN COMPLETO TERMINADO ===');
+    console.log('=== UPDATE EXAMEN COMPLETO CON LIMPIEZA TERMINADO ===');
     
     return examenCompleto as ExamenCompleto;
 

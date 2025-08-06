@@ -12,7 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/ta
 import { Switch } from '../../components/ui/switch';
 import { Alert, AlertDescription } from '../../components/ui/alert';
 import { FileUpload } from '../../components/ui/FileUpload';
-import { SimpleHtmlEditor } from '../../components/ui/SimpleHtmlEditor';
+import { LexicalEditor } from '../../components/ui/LexicalEditor';
 import HorariosImprovedSection from '../../components/admin/HorariosImprovedSection';
 import { 
   Save, 
@@ -31,7 +31,6 @@ import {
 import type { 
   ExamenCompleto, 
   ExamenCompletoFormData,
-  ExamenHorarioFormData,
   ExamenExtraFormData,
   ExamenFaqFormData,
   ExamenMuestraFormData
@@ -547,11 +546,11 @@ export default function ExamenForm() {
 
                   <div>
                     <Label htmlFor="contenido">Contenido</Label>
-                    <SimpleHtmlEditor
+                    <LexicalEditor
                       label="Contenido"
                       content={formData.contenido}
                       onChange={(content) => handleInputChange('contenido', content)}
-                      placeholder="Contenido detallado del examen..."
+                      placeholder=""
                     />
                   </div>
 
@@ -581,7 +580,7 @@ export default function ExamenForm() {
 
                   <div>
                     <Label htmlFor="en_contenido">Content</Label>
-                    <SimpleHtmlEditor
+                    <LexicalEditor
                       label="Content"
                       content={formData.en_contenido}
                       onChange={(content) => handleInputChange('en_contenido', content)}
@@ -625,15 +624,19 @@ export default function ExamenForm() {
                     Responde las dudas más comunes sobre este examen
                   </p>
                 </div>
-                <Button onClick={addFaq}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Agregar FAQ
-                </Button>
+                {/* Botón principal solo si no hay FAQs */}
+                {(!formData.faqs || formData.faqs.length === 0) && (
+                  <Button onClick={addFaq}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Agregar FAQ
+                  </Button>
+                )}
               </div>
             </CardHeader>
             <CardContent>
               {formData.faqs && formData.faqs.length > 0 ? (
                 <div className="space-y-6">
+                  {/* Lista de FAQs existentes */}
                   {formData.faqs.map((faq, index) => (
                     <div key={index} className="border rounded-lg p-4 bg-gray-50">
                       <div className="flex items-center justify-between mb-4">
@@ -671,7 +674,7 @@ export default function ExamenForm() {
                           </div>
                           <div>
                             <Label>Respuesta</Label>
-                            <SimpleHtmlEditor
+                            <LexicalEditor
                               content={faq.respuesta || ''}
                               onChange={(content) => updateFaq(index, 'respuesta', content)}
                               placeholder="El examen tiene una duración de..."
@@ -690,7 +693,7 @@ export default function ExamenForm() {
                           </div>
                           <div>
                             <Label>Answer</Label>
-                            <SimpleHtmlEditor
+                            <LexicalEditor
                               content={faq.en_respuesta || ''}
                               onChange={(content) => updateFaq(index, 'en_respuesta', content)}
                               placeholder="The exam duration is..."
@@ -700,6 +703,14 @@ export default function ExamenForm() {
                       </Tabs>
                     </div>
                   ))}
+
+                  {/* Botón "Agregar más" al final de la lista */}
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-primary hover:bg-primary/5 transition-colors">
+                    <Button onClick={addFaq} variant="ghost" className="w-full">
+                      <Plus className="h-5 w-5 mr-2" />
+                      Agregar otra FAQ
+                    </Button>
+                  </div>
                 </div>
               ) : (
                 <div className="text-center py-8">
@@ -727,15 +738,19 @@ export default function ExamenForm() {
                     Contenido adicional como consejos, recursos o material complementario
                   </p>
                 </div>
-                <Button onClick={addExtra}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Agregar Extra
-                </Button>
+                {/* Botón principal solo si no hay extras */}
+                {(!formData.extras || formData.extras.length === 0) && (
+                  <Button onClick={addExtra}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Agregar Extra
+                  </Button>
+                )}
               </div>
             </CardHeader>
             <CardContent>
               {formData.extras && formData.extras.length > 0 ? (
                 <div className="space-y-6">
+                  {/* Lista de extras existentes */}
                   {formData.extras.map((extra, index) => (
                     <div key={index} className="border rounded-lg p-4 bg-gray-50">
                       <div className="flex items-center justify-between mb-4">
@@ -773,7 +788,7 @@ export default function ExamenForm() {
                           </div>
                           <div>
                             <Label>Contenido</Label>
-                            <SimpleHtmlEditor
+                            <LexicalEditor
                               content={extra.contenido || ''}
                               onChange={(content) => updateExtra(index, 'contenido', content)}
                               placeholder="Información adicional..."
@@ -800,7 +815,7 @@ export default function ExamenForm() {
                           </div>
                           <div>
                             <Label>Content</Label>
-                            <SimpleHtmlEditor
+                            <LexicalEditor
                               content={extra.en_contenido || ''}
                               onChange={(content) => updateExtra(index, 'en_contenido', content)}
                               placeholder="Additional information..."
@@ -827,6 +842,14 @@ export default function ExamenForm() {
                       </div>
                     </div>
                   ))}
+
+                  {/* Botón "Agregar más" al final de la lista */}
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-primary hover:bg-primary/5 transition-colors">
+                    <Button onClick={addExtra} variant="ghost" className="w-full">
+                      <Plus className="h-5 w-5 mr-2" />
+                      Agregar otro Extra
+                    </Button>
+                  </div>
                 </div>
               ) : (
                 <div className="text-center py-8">
@@ -843,6 +866,7 @@ export default function ExamenForm() {
           </Card>
         </TabsContent>
 
+
         {/* ===== TAB MUESTRAS ===== */}
         <TabsContent value="muestras" className="space-y-6">
           <Card>
@@ -854,15 +878,19 @@ export default function ExamenForm() {
                     Ejemplos de preguntas para que los usuarios practiquen
                   </p>
                 </div>
-                <Button onClick={addMuestra}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Agregar Muestra
-                </Button>
+                {/* Botón principal solo si no hay muestras */}
+                {(!formData.muestras || formData.muestras.length === 0) && (
+                  <Button onClick={addMuestra}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Agregar Muestra
+                  </Button>
+                )}
               </div>
             </CardHeader>
             <CardContent>
               {formData.muestras && formData.muestras.length > 0 ? (
                 <div className="space-y-6">
+                  {/* Lista de muestras existentes */}
                   {formData.muestras.map((muestra, index) => (
                     <div key={index} className="border rounded-lg p-4 bg-gray-50">
                       <div className="flex items-center justify-between mb-4">
@@ -895,7 +923,7 @@ export default function ExamenForm() {
 
                         <div>
                           <Label>Pregunta de Muestra</Label>
-                          <SimpleHtmlEditor
+                          <LexicalEditor
                             content={muestra.pregunta || ''}
                             onChange={(content) => updateMuestra(index, 'pregunta', content)}
                             placeholder="Escribe aquí la pregunta de ejemplo con sus opciones..."
@@ -904,6 +932,14 @@ export default function ExamenForm() {
                       </div>
                     </div>
                   ))}
+
+                  {/* Botón "Agregar más" al final de la lista */}
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-primary hover:bg-primary/5 transition-colors">
+                    <Button onClick={addMuestra} variant="ghost" className="w-full">
+                      <Plus className="h-5 w-5 mr-2" />
+                      Agregar otra Muestra
+                    </Button>
+                  </div>
                 </div>
               ) : (
                 <div className="text-center py-8">

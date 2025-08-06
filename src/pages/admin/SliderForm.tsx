@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { sliderService } from '../../services/sliderService';
 import { StorageService, STORAGE_BUCKETS } from '../../services/storageService';
-import type { Slider, SliderFormData } from '../../types/slider';
+import type { SliderFormData } from '../../types/slider';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
