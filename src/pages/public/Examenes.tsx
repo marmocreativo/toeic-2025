@@ -6,13 +6,11 @@ import { generateLocalizedPath } from '../../utils/languageUtils';
 import { examenService } from '../../services/examenService';
 import type { Examen } from '../../types/examen';
 import { 
-  Clock, 
-  Users, 
+  Clock,
   Award, 
   ArrowRight, 
   Search,
   Filter,
-  Calendar,
   Building2,
   BookOpen,
   Target
@@ -169,7 +167,7 @@ export default function Examenes() {
       </section>
 
       {/* Features Bar */}
-      <section className="bg-primary text-white py-4">
+      <section className="hidden md:block bg-primary text-white py-4">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center divide-x-1 divide-solid divide-white">
             <div className="flex items-center justify-center space-x-3">
@@ -239,18 +237,6 @@ export default function Examenes() {
                         {language === 'es' ? (examen.resumen || '') : (examen.en_resumen || '')}
                       </p>
 
-                      {/* Metadatos */}
-                      <div className="flex items-center justify-between text-sm text-text-muted mb-4">
-                        <div className="flex items-center space-x-1">
-                          <Users className="w-4 h-4" />
-                          <span>Profesional</span>
-                        </div>
-                        <div className="flex items-center space-x-1">
-                          <Clock className="w-4 h-4" />
-                          <span>2-4 horas</span>
-                        </div>
-                      </div>
-
                       <div className="inline-flex items-center text-primary font-medium group">
                         <span>{currentTexts.viewDetails}</span>
                         <ArrowRight className="ml-1 w-4 h-4 transform group-hover:translate-x-1 transition-transform" />
@@ -285,13 +271,13 @@ export default function Examenes() {
       {/* Call to Action */}
       <section className="py-16 gradient-primary">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-3 gap-8 divide-x-1 divide-solid divide-white">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 divide-x-1 divide-solid divide-white">
             <div>
               <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
                 {currentTexts.ctaTitle}
               </h2>
             </div>
-            <div className="col-span-2">
+            <div className="md:col-span-2">
               <p className="text-xl text-white/90 mb-8 max-w-2xl">
                 {currentTexts.ctaDescription}
               </p>
@@ -302,13 +288,6 @@ export default function Examenes() {
                 >
                   <Building2 className="mr-2 w-5 h-5" />
                   {currentTexts.ctaButton}
-                </Link>
-                <Link
-                  to={generateLocalizedPath('examenes', language)}
-                  className="inline-flex items-center px-8 py-4 border-2 border-white text-white font-semibold rounded-lg hover:bg-white hover:text-primary transition-colors"
-                >
-                  <Calendar className="mr-2 w-5 h-5" />
-                  {currentTexts.ctaSecondary}
                 </Link>
               </div>
             </div>

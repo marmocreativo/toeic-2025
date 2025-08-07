@@ -96,7 +96,15 @@ const HorariosGrid = ({ horarios }: { horarios: any[] }) => {
   ];
 
   // Horarios estándar
-  const horasStandard = ['9:30', '12:30', '15:30'];
+  const horasStandard = [
+    '9:30',
+    '10:00',
+    '12:00',
+    '12:30',
+    '14:00', 
+    '15:30',
+    '16:00'
+  ];
 
   // Crear matriz de disponibilidad
   const crearMatrizHorarios = () => {
@@ -572,13 +580,13 @@ const CallToAction = () => {
   return (
     <section className="py-16 gradient-primary">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-3 gap-8 divide-x-1 divide-solid divide-white">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 divide-x-1 divide-solid divide-white">
           <div>
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
               {currentTexts.title}
             </h2>
           </div>
-          <div className="col-span-2">
+          <div className="md:col-span-2">
             <p className="text-xl text-white/90 mb-8 max-w-2xl">
               {currentTexts.description}
             </p>
@@ -589,13 +597,6 @@ const CallToAction = () => {
               >
                 <Building2 className="w-5 h-5 mr-2" />
                 {currentTexts.primaryButton}
-              </Link>
-              <Link
-                to={generateLocalizedPath('examenes', language)}
-                className="inline-flex items-center px-8 py-4 border-2 border-white text-white font-semibold rounded-lg hover:bg-white hover:text-primary transition-colors"
-              >
-                <Calendar className="w-5 h-5 mr-2" />
-                {currentTexts.secondaryButton}
               </Link>
             </div>
           </div>

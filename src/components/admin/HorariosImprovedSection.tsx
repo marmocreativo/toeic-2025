@@ -49,8 +49,12 @@ const HorariosImprovedSection: React.FC<HorariosImprovedProps> = ({
   // Horarios predefinidos
   const horariosStandard = [
     '9:30',
-    '12:30', 
-    '15:30'
+    '10:00',
+    '12:00',
+    '12:30',
+    '14:00', 
+    '15:30',
+    '16:00'
   ];
 
   // Estados para generación rápida
@@ -216,8 +220,8 @@ const HorariosImprovedSection: React.FC<HorariosImprovedProps> = ({
         setSelectedHoras(['9:30', '12:30', '15:30']);
         break;
       case 'completo':
-        setSelectedDias(['lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado']);
-        setSelectedHoras(['9:30', '12:30', '15:30']);
+        setSelectedDias(['lunes', 'martes', 'miércoles', 'jueves', 'viernes']);
+        setSelectedHoras(['10:00', '12:00', '14:00', '16:00']);
         break;
       case 'sabado':
         setSelectedDias(['sábado']);
@@ -272,7 +276,7 @@ const HorariosImprovedSection: React.FC<HorariosImprovedProps> = ({
             size="sm"
             onClick={() => setHorarioRapido('completo')}
           >
-            Lun-Sáb (completo)
+            Lun-Vie (10:00, 12:00, 14:00, 16:00)
           </Button>
           <Button 
             type="button" 

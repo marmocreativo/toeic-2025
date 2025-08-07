@@ -216,7 +216,7 @@ const HeroSlider = () => {
   const currentSlider = sliders[currentSlide];
 
   return (
-    <section className="relative h-96 md:h-[500px] lg:h-[600px] overflow-hidden -mt-16">
+    <section className="relative h-screen overflow-hidden -mt-16">
       {/* Background animado */}
       <motion.div 
         className="absolute inset-0" 
@@ -243,43 +243,43 @@ const HeroSlider = () => {
           {/* Texto extra como fondo */}
           {currentSlider.extra && (
             <motion.div 
-              className="absolute inset-0 flex items-center justify-center pointer-events-none -mt-64"
+              className="absolute inset-0 flex items-center justify-center pointer-events-none -mt-32 md:-mt-64"
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.8, delay: 0.3 }}
             >
-              <h2 className="font-open-sans text-6xl md:text-8xl lg:text-9xl font-black text-white/60 select-none text-center leading-none">
+              <h2 className="font-open-sans text-4xl sm:text-5xl md:text-8xl lg:text-9xl font-black text-white/60 select-none text-center leading-none">
                 {language === 'es' ? (currentSlider.extra || '') : (currentSlider.en_extra || '')}
               </h2>
             </motion.div>
           )}
           
           {/* Contenido principal */}
-          <div className="relative h-full flex items-end z-10">
+          <div className="relative h-full flex items-center lg:items-end z-10">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-end h-full min-h-[400px]">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center lg:items-end h-full min-h-screen pt-20 lg:pt-16">
                 
-                {/* Columna Izquierda - Contenido */}
+                {/* Columna Izquierda - Contenido (arriba en móvil) */}
                 <motion.div 
-                  className="space-y-6 pb-16"
+                  className="space-y-6 lg:space-y-8 pb-12 lg:pb-16 order-1 lg:order-1"
                   initial="initial"
                   animate="animate"
                   variants={staggerContainer}
                 >
                   {/* Logo */}
                   {currentSlider.logo && (
-                    <motion.div className="mb-8" variants={fadeInLeft}>
+                    <motion.div className="mb-8 lg:mb-10" variants={fadeInLeft}>
                       <img 
                         src={currentSlider.logo}
                         alt="TOEIC Logo" 
-                        className="h-12 md:h-16 w-auto"
+                        className="h-12 md:h-14 lg:h-16 w-auto"
                       />
                     </motion.div>
                   )}
                   
                   {/* Título */}
                   <motion.h1 
-                    className="font-open-sans font-light text-3xl md:text-4xl lg:text-5xl font-bold text-primary leading-tight"
+                    className="font-open-sans font-light text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-primary leading-tight"
                     variants={fadeInUp}
                   >
                     {language === 'es' ? (currentSlider.titulo || '') : (currentSlider.en_titulo || '')}
@@ -287,7 +287,7 @@ const HeroSlider = () => {
                   
                   {/* Subtítulo */}
                   <motion.p 
-                    className="text-lg md:text-xl text-text-primary leading-relaxed"
+                    className="text-lg md:text-xl lg:text-2xl text-text-primary leading-relaxed"
                     variants={fadeInUp}
                   >
                     {language === 'es' ? (currentSlider.subtitulo || '') : (currentSlider.en_subtitulo || '')}
@@ -298,7 +298,7 @@ const HeroSlider = () => {
                     <motion.div variants={fadeInUp}>
                       <Link
                         to={currentSlider.boton_enlace}
-                        className="inline-flex items-center px-8 py-4 bg-accent hover:bg-accent-dark text-black font-semibold rounded-lg transition-colors shadow-lg hover:shadow-xl transform hover:-translate-y-1 duration-200"
+                        className="inline-flex items-center px-8 lg:px-10 py-4 lg:py-5 bg-accent hover:bg-accent-dark text-black font-semibold rounded-lg transition-colors shadow-lg hover:shadow-xl transform hover:-translate-y-1 duration-200"
                       >
                         <motion.span
                           whileHover={{ x: -5 }}
@@ -310,16 +310,16 @@ const HeroSlider = () => {
                           whileHover={{ x: 5 }}
                           transition={{ duration: 0.2 }}
                         >
-                          <ArrowRight className="ml-3 w-5 h-5" />
+                          <ArrowRight className="ml-3 w-5 h-5 lg:w-6 lg:h-6" />
                         </motion.div>
                       </Link>
                     </motion.div>
                   )}
                 </motion.div>
                 
-                {/* Columna Derecha - Imagen */}
+                {/* Columna Derecha - Imagen (abajo en móvil) */}
                 <motion.div 
-                  className="flex justify-center lg:justify-end"
+                  className="flex justify-center lg:justify-end order-2 lg:order-2"
                   initial={{ opacity: 0, x: 100 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.8, delay: 0.3 }}
@@ -333,7 +333,7 @@ const HeroSlider = () => {
                       <img
                         src={currentSlider.imagen}
                         alt={language === 'es' ? (currentSlider.titulo || '') : (currentSlider.en_titulo || '')}
-                        className="w-full max-w-md lg:max-w-lg h-auto object-contain drop-shadow-2xl"
+                        className="w-full max-w-sm sm:max-w-md md:max-w-lg lg:max-w-xl h-auto object-contain drop-shadow-2xl"
                       />
                     </motion.div>
                   )}
@@ -349,28 +349,28 @@ const HeroSlider = () => {
         <>
           <motion.button
             onClick={prevSlide}
-            className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-bg-light/20 hover:bg-bg-light/40 backdrop-blur-sm text-text p-3 rounded-full transition-all border border-border/30 shadow-lg z-20"
+            className="absolute left-2 lg:left-4 top-1/2 transform -translate-y-1/2 bg-bg-light/20 hover:bg-bg-light/40 backdrop-blur-sm text-text p-2 lg:p-3 rounded-full transition-all border border-border/30 shadow-lg z-20"
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
           >
-            <ChevronLeft className="w-6 h-6" />
+            <ChevronLeft className="w-5 h-5 lg:w-6 lg:h-6" />
           </motion.button>
           <motion.button
             onClick={nextSlide}
-            className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-bg-light/20 hover:bg-bg-light/40 backdrop-blur-sm text-text p-3 rounded-full transition-all border border-border/30 shadow-lg z-20"
+            className="absolute right-2 lg:right-4 top-1/2 transform -translate-y-1/2 bg-bg-light/20 hover:bg-bg-light/40 backdrop-blur-sm text-text p-2 lg:p-3 rounded-full transition-all border border-border/30 shadow-lg z-20"
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
           >
-            <ChevronRight className="w-6 h-6" />
+            <ChevronRight className="w-5 h-5 lg:w-6 lg:h-6" />
           </motion.button>
 
           {/* Dots */}
-          <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex space-x-3 z-20">
+          <div className="absolute bottom-4 lg:bottom-6 left-1/2 transform -translate-x-1/2 flex space-x-2 lg:space-x-3 z-20">
             {sliders.map((_, index) => (
               <motion.button
                 key={index}
                 onClick={() => setCurrentSlide(index)}
-                className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                className={`w-2.5 h-2.5 lg:w-3 lg:h-3 rounded-full transition-all duration-300 ${
                   index === currentSlide 
                     ? 'bg-primary scale-125 shadow-lg' 
                     : 'bg-text-muted/50 hover:bg-text-muted/80'
@@ -451,7 +451,7 @@ const StatsSection = () => {
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div 
-          className="grid grid-cols-1 md:grid-cols-3 gap-8 divide-x-1 divide-solid divide-white"
+          className="grid grid-cols-3 md:grid-cols-3 gap-8 divide-x-1 divide-solid divide-white"
           variants={staggerContainer}
         >
           {stats.map((stat, index) => (
@@ -461,7 +461,7 @@ const StatsSection = () => {
               variants={staggerItem}
             >
               <motion.p 
-                className="text-lg text-white-muted"
+                className="text-sm md:text-lg text-white-muted"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: index * 0.1 }}
@@ -469,7 +469,7 @@ const StatsSection = () => {
                 {stat.label}
               </motion.p>
               <motion.h3 
-                className="text-6xl font-light text-white mb-2"
+                className="text-3xl md:text-6xl font-light text-white mb-2"
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ delay: index * 0.2 + 0.3, type: "spring", stiffness: 100 }}
@@ -477,7 +477,7 @@ const StatsSection = () => {
                 <AnimatedCounter value={stat.number} />
               </motion.h3>
               <motion.p 
-                className="text-lg text-white-muted"
+                className="text-sm md:text-lg text-white-muted"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: index * 0.1 + 0.5 }}
@@ -527,7 +527,7 @@ const AboutToeicSection = () => {
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div 
-          className="grid grid-cols-2 gap-8"
+          className="grid grid-cols-1 md:grid-cols-2 gap-8"
           variants={staggerContainer}
         >
           <motion.div variants={fadeInLeft}>
@@ -702,7 +702,7 @@ const ExamsSection = () => {
         </motion.div>
 
         <motion.div 
-          className="flex items-center gap-8"
+          className="flex flex-col md:flex-row items-center gap-8"
           variants={fadeInUp}
         >
           <div className="flex-1">
@@ -739,23 +739,107 @@ const PartnersCarousel = () => {
 
   const texts = {
     es: {
-      title: '¿Qué industrias utilizan TOEIC®?'
+      title: '¿Qué industrias utilizan TOEIC®?',
+      subtitle: '80% de las compañías listadas en la FORTUNE GLOBAL 500 usan TOEIC.'
     },
     en: {
-      title: 'Wich industries use TOEIC®'
+      title: 'Wich industries use TOEIC®',
+      subtitle: '80% of the companies listed in the FORTUNE GLOBAL 500 use TOEIC'
     }
   };
 
   const currentTexts = texts[language];
 
   // Logos placeholder
-  const logos = Array.from({ length: 10 }, (_, i) => ({
-    id: i + 1,
-    name: `Partner ${i + 1}`,
-    image: `https://via.placeholder.com/300x300/0F5132/FFFFFF?text=Logo+${i + 1}`
-  }));
+  const logos = [
+    {
+      id: 1,
+      name: 'Auto Brand',
+      image: '/images/industrias/auto-brand.svg'
+    },
+    {
+      id: 2,
+      name: 'Banks',
+      image: '/images/industrias/banks.svg'
+    },
+    {
+      id: 3,
+      name: `Biotechnology`,
+      image: '/images/industrias/biotechnology.svg'
+    },
+    {
+      id: 4,
+      name: 'Chemical Industry',
+      image: '/images/industrias/chemical.svg'
+    },
+    {
+      id: 5,
+      name: `Computer Software`,
+      image: '/images/industrias/computer-software.svg'
+    },
+    {
+      id: 6,
+      name: `Conglomerate`,
+      image: '/images/industrias/conglomerate.svg'
+    },
+    {
+      id: 7,
+      name: `Electronics and Electrical Equipment`,
+      image: '/images/industrias/electronics-electrical-equipment.svg'
+    },
+    {
+      id: 8,
+      name: `Engineering`,
+      image: '/images/industrias/engineering.svg'
+    },
+    {
+      id: 9,
+      name: `Health insurance`,
+      image: '/images/industrias/health-insurance.svg'
+    },
+    {
+      id: 10,
+      name: `Information Tecnology`,
+      image: '/images/industrias/information-technology.svg'
+    },
+    {
+      id: 11,
+      name: `Motor Vehicles`,
+      image: '/images/industrias/motor-vechicles.svg'
+    },
+    {
+      id: 12,
+      name: `Pharmaceutical`,
+      image: '/images/industrias/pharmaceutical.svg'
+    },
+    {
+      id: 13,
+      name: `Semiconductor`,
+      image: '/images/industrias/semiconductor.svg'
+    },
+  ];
 
-  const itemsToShow = 5;
+  // Función para obtener items a mostrar según el tamaño de pantalla
+  const getItemsToShow = () => {
+    if (typeof window !== 'undefined') {
+      if (window.innerWidth >= 1024) return 4; // lg: 4 items
+      if (window.innerWidth >= 768) return 5;  // md: 5 items
+      return 2; // mobile: 2 items
+    }
+    return 4; // fallback
+  };
+
+  const [itemsToShow, setItemsToShow] = useState(getItemsToShow);
+  
+  useEffect(() => {
+    const handleResize = () => {
+      setItemsToShow(getItemsToShow());
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const maxIndex = Math.max(0, logos.length - itemsToShow);
 
   const nextSlide = () => {
@@ -781,11 +865,17 @@ const PartnersCarousel = () => {
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.h2 
-          className="text-4xl font-medium text-center text-primary mb-12"
+          className="text-3xl md:text-4xl font-medium text-center text-primary mb-4"
           variants={fadeInUp}
         >
           {currentTexts.title}
         </motion.h2>
+        <motion.h4
+          className='text-xl md:text-2xl font-light text-center text-secondar mb-12'
+          variants={fadeInUp}
+        >
+          {currentTexts.subtitle}
+        </motion.h4>
         
         <div className="relative">
           <div className="overflow-hidden">
@@ -797,14 +887,14 @@ const PartnersCarousel = () => {
               {logos.map((logo, index) => (
                 <motion.div 
                   key={logo.id} 
-                  className="flex-shrink-0 px-4"
+                  className="flex-shrink-0 px-2 md:px-4"
                   style={{ width: `${100 / itemsToShow}%` }}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.1 }}
                 >
                   <motion.div 
-                    className="bg-bg rounded-lg p-6 flex items-center justify-center h-32 hover:shadow-md transition-shadow border border-border"
+                    className="bg-bg rounded-lg p-4 md:p-6 flex flex-col items-center justify-center h-28 md:h-32 hover:shadow-md transition-shadow border border-border"
                     whileHover={{ 
                       y: -5, 
                       boxShadow: "0 10px 30px rgba(0,0,0,0.1)" 
@@ -819,6 +909,9 @@ const PartnersCarousel = () => {
                       transition={{ duration: 0.3 }}
                     />
                   </motion.div>
+                  <motion.h5 className='text-center text-primary font-bold text-sm md:text-base mt-2'>
+                    {logo.name}
+                  </motion.h5>
                 </motion.div>
               ))}
             </motion.div>
@@ -827,19 +920,19 @@ const PartnersCarousel = () => {
           {/* Navigation Buttons */}
           <motion.button
             onClick={prevSlide}
-            className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-4 bg-bg-light shadow-lg rounded-full p-2 hover:bg-bg transition-colors border border-border"
+            className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-2 md:-translate-x-4 bg-bg-light shadow-lg rounded-full p-2 hover:bg-bg transition-colors border border-border"
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
           >
-            <ChevronLeft className="w-6 h-6 text-text-muted" />
+            <ChevronLeft className="w-5 h-5 md:w-6 md:h-6 text-text-muted" />
           </motion.button>
           <motion.button
             onClick={nextSlide}
-            className="absolute right-0 top-1/2 transform -translate-y-1/2 translate-x-4 bg-bg-light shadow-lg rounded-full p-2 hover:bg-bg transition-colors border border-border"
+            className="absolute right-0 top-1/2 transform -translate-y-1/2 translate-x-2 md:translate-x-4 bg-bg-light shadow-lg rounded-full p-2 hover:bg-bg transition-colors border border-border"
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
           >
-            <ChevronRight className="w-6 h-6 text-text-muted" />
+            <ChevronRight className="w-5 h-5 md:w-6 md:h-6 text-text-muted" />
           </motion.button>
         </div>
       </div>
@@ -858,12 +951,12 @@ const CallToActionSection = () => {
   const texts = {
     es: {
       title: '¡No lo pienses más!',
-      description: 'Contáctanos, certifícate o certifica a tus empleados.',
+      description: 'Desarrollando las habilidades de comunicación en inglés más efectivas para la fuerza laboral.',
       primaryButton: 'Contáctanos'
     },
     en: {
       title: 'Ready to Start Your TOEIC Assessment?',
-      description: 'Find your nearest test center and schedule your TOEIC test today.',
+      description: 'Building the most effective English communication skills for the workforce.',
       primaryButton: 'Contact Us',
     }
   };
@@ -894,7 +987,7 @@ const CallToActionSection = () => {
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         <motion.div 
-          className='grid grid-cols-3 gap-8 divide-x-1 divide-solid divide-white'
+          className='grid grid-cols-1 md-grid-cols-3 gap-8 divide-x-1 divide-solid divide-white'
           variants={staggerContainer}
         >
           <motion.div variants={fadeInLeft}>
@@ -903,7 +996,7 @@ const CallToActionSection = () => {
             </h2>
           </motion.div>
           <motion.div 
-            className='col-span-2'
+            className='md:col-span-2'
             variants={fadeInRight}
           >
             <p className="text-xl text-white/90 mb-8 max-w-2xl">

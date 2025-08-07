@@ -10,7 +10,6 @@ import {
   Search, 
   ArrowRight, 
   Calendar,
-  Building2,
   BookOpen,
   RefreshCw,
   Clock
@@ -177,7 +176,7 @@ export default function Paginas() {
       </section>
 
       {/* Features Bar */}
-      <section className="bg-primary text-white py-4">
+      <section className="hidden md:block bg-primary text-white py-4">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center divide-x-1 divide-solid divide-white">
             <div className="flex items-center justify-center space-x-3">
@@ -297,13 +296,13 @@ export default function Paginas() {
       {/* Call to Action */}
       <section className="py-16 gradient-primary">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-3 gap-8 divide-x-1 divide-solid divide-white">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 divide-x-1 divide-solid divide-white">
             <div>
               <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
                 {currentTexts.ctaTitle}
               </h2>
             </div>
-            <div className="col-span-2">
+            <div className="md:col-span-2">
               <p className="text-xl text-white/90 mb-8 max-w-2xl">
                 {currentTexts.ctaDescription}
               </p>
@@ -314,13 +313,6 @@ export default function Paginas() {
                 >
                   <BookOpen className="mr-2 w-5 h-5" />
                   {currentTexts.ctaButton}
-                </Link>
-                <Link
-                  to={generateLocalizedPath('centros', language)}
-                  className="inline-flex items-center px-8 py-4 border-2 border-white text-white font-semibold rounded-lg hover:bg-white hover:text-primary transition-colors"
-                >
-                  <Building2 className="mr-2 w-5 h-5" />
-                  {currentTexts.ctaSecondary}
                 </Link>
               </div>
             </div>
