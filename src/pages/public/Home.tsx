@@ -130,7 +130,14 @@ const AnimatedCounter: React.FC<AnimatedCounterProps> = ({ value, suffix = '', d
 const HeroSlider = () => {
   const [sliders, setSliders] = useState<Slider[]>([]);
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [progress, setProgress] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
   const { language } = useLanguage();
+  
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const SLIDE_DURATION = 5000; // 5 segundos
+  const PROGRESS_INTERVAL = 50; // Actualizar cada 50ms para suavidad
 
   useEffect(() => {
     const loadSliders = async () => {
@@ -144,15 +151,52 @@ const HeroSlider = () => {
     loadSliders();
   }, []);
 
-  useEffect(() => {
-    if (sliders.length > 1) {
-      const interval = setInterval(() => {
-        setCurrentSlide((prev) => (prev + 1) % sliders.length);
-      }, 5000);
-      return () => clearInterval(interval);
+  // Función para limpiar intervalos
+  const clearIntervals = () => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
     }
-  }, [sliders.length]);
+    if (progressIntervalRef.current) {
+      clearInterval(progressIntervalRef.current);
+      progressIntervalRef.current = null;
+    }
+  };
 
+  // Función para iniciar el progreso
+  const startProgress = () => {
+    clearIntervals();
+    setProgress(0);
+    
+    if (sliders.length <= 1 || isPaused) return;
+
+    let currentProgress = 0;
+    const increment = (PROGRESS_INTERVAL / SLIDE_DURATION) * 100;
+
+    progressIntervalRef.current = setInterval(() => {
+      currentProgress += increment;
+      
+      if (currentProgress >= 100) {
+        currentProgress = 0;
+        setCurrentSlide((prev) => (prev + 1) % sliders.length);
+      }
+      
+      setProgress(currentProgress);
+    }, PROGRESS_INTERVAL);
+  };
+
+  // Efecto para manejar el auto-play
+  useEffect(() => {
+    if (sliders.length > 1 && !isPaused) {
+      startProgress();
+    } else {
+      clearIntervals();
+    }
+
+    return () => clearIntervals();
+  }, [sliders.length, isPaused, currentSlide]);
+
+  // Funciones de navegación que reinician el progreso
   const nextSlide = () => {
     setCurrentSlide((prev) => (prev + 1) % sliders.length);
   };
@@ -161,10 +205,76 @@ const HeroSlider = () => {
     setCurrentSlide((prev) => (prev - 1 + sliders.length) % sliders.length);
   };
 
+  const goToSlide = (index: number) => {
+    setCurrentSlide(index);
+  };
+
+  // Manejar hover para pausar/reanudar
+  const handleMouseEnter = () => {
+    setIsPaused(true);
+  };
+
+  const handleMouseLeave = () => {
+    setIsPaused(false);
+  };
+
+  // Componente del indicador de progreso circular
+  const ProgressIndicator = ({ progress, isActive }: { progress: number; isActive: boolean }) => {
+    const radius = 10;
+    const circumference = 2 * Math.PI * radius;
+    const strokeDashoffset = circumference - (progress / 100) * circumference;
+
+    return (
+      <div className="relative w-6 h-6 lg:w-7 lg:h-7">
+        {/* Círculo de fondo */}
+        <svg
+          className="w-full h-full transform -rotate-90"
+          viewBox="0 0 24 24"
+          fill="none"
+        >
+          <circle
+            cx="12"
+            cy="12"
+            r={radius}
+            stroke="currentColor"
+            strokeWidth="2"
+            className="text-white/30"
+            fill="none"
+          />
+          {/* Círculo de progreso */}
+          {isActive && (
+            <circle
+              cx="12"
+              cy="12"
+              r={radius}
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              fill="none"
+              className="text-primary transition-all duration-100 ease-linear"
+              style={{
+                strokeDasharray: circumference,
+                strokeDashoffset: strokeDashoffset,
+              }}
+            />
+          )}
+        </svg>
+        {/* Punto central */}
+        <div 
+          className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-2 h-2 lg:w-2.5 lg:h-2.5 rounded-full transition-all duration-300 ${
+            isActive 
+              ? 'bg-primary scale-125 shadow-lg' 
+              : 'bg-white/60 hover:bg-white/80'
+          }`}
+        />
+      </div>
+    );
+  };
+
   if (sliders.length === 0) {
     return (
       <motion.section 
-        className="relative h-96 md:h-[500px] lg:h-[600px] overflow-hidden -mt-16"
+        className="relative h-96 md:h-[500px] lg:h-[500px] xl:h-[500px] overflow-hidden -mt-16"
         initial="initial"
         animate="animate"
         variants={staggerContainer}
@@ -216,7 +326,11 @@ const HeroSlider = () => {
   const currentSlider = sliders[currentSlide];
 
   return (
-    <section className="relative h-screen overflow-hidden -mt-16">
+    <section 
+      className="relative h-screen md:h-[700px] overflow-hidden -mt-16"
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
       {/* Background animado */}
       <motion.div 
         className="absolute inset-0" 
@@ -230,6 +344,18 @@ const HeroSlider = () => {
         }}
         transition={{ duration: 10, repeat: Infinity }}
       />
+      
+      {/* Indicador de pausa */}
+      {isPaused && sliders.length > 1 && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="absolute top-4 right-4 z-30 bg-black/50 backdrop-blur-sm text-white px-3 py-1 rounded-full text-sm"
+        >
+          Pausado
+        </motion.div>
+      )}
       
       <AnimatePresence mode="wait">
         <motion.div
@@ -257,9 +383,9 @@ const HeroSlider = () => {
           {/* Contenido principal */}
           <div className="relative h-full flex items-center lg:items-end z-10">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center lg:items-end h-full min-h-screen pt-20 lg:pt-16">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center lg:items-end h-full min-h-[400px] md:min-h-[500px] pt-20 lg:pt-16">
                 
-                {/* Columna Izquierda - Contenido (arriba en móvil) */}
+                {/* Columna Izquierda - Contenido */}
                 <motion.div 
                   className="space-y-6 lg:space-y-8 pb-12 lg:pb-16 order-1 lg:order-1"
                   initial="initial"
@@ -317,7 +443,7 @@ const HeroSlider = () => {
                   )}
                 </motion.div>
                 
-                {/* Columna Derecha - Imagen (abajo en móvil) */}
+                {/* Columna Derecha - Imagen */}
                 <motion.div 
                   className="flex justify-center lg:justify-end order-2 lg:order-2"
                   initial={{ opacity: 0, x: 100 }}
@@ -355,6 +481,7 @@ const HeroSlider = () => {
           >
             <ChevronLeft className="w-5 h-5 lg:w-6 lg:h-6" />
           </motion.button>
+          
           <motion.button
             onClick={nextSlide}
             className="absolute right-2 lg:right-4 top-1/2 transform -translate-y-1/2 bg-bg-light/20 hover:bg-bg-light/40 backdrop-blur-sm text-text p-2 lg:p-3 rounded-full transition-all border border-border/30 shadow-lg z-20"
@@ -364,21 +491,27 @@ const HeroSlider = () => {
             <ChevronRight className="w-5 h-5 lg:w-6 lg:h-6" />
           </motion.button>
 
-          {/* Dots */}
-          <div className="absolute bottom-4 lg:bottom-6 left-1/2 transform -translate-x-1/2 flex space-x-2 lg:space-x-3 z-20">
+          {/* Dots con indicador de progreso */}
+          <div className="absolute bottom-4 lg:bottom-6 left-1/2 transform -translate-x-1/2 flex items-center space-x-3 lg:space-x-4 z-20">
             {sliders.map((_, index) => (
               <motion.button
                 key={index}
-                onClick={() => setCurrentSlide(index)}
-                className={`w-2.5 h-2.5 lg:w-3 lg:h-3 rounded-full transition-all duration-300 ${
-                  index === currentSlide 
-                    ? 'bg-primary scale-125 shadow-lg' 
-                    : 'bg-text-muted/50 hover:bg-text-muted/80'
-                }`}
-                whileHover={{ scale: 1.2 }}
-                whileTap={{ scale: 0.8 }}
-              />
+                onClick={() => goToSlide(index)}
+                className="transition-all duration-300 hover:scale-110"
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+              >
+                <ProgressIndicator 
+                  progress={index === currentSlide ? progress : 0}
+                  isActive={index === currentSlide}
+                />
+              </motion.button>
             ))}
+          </div>
+
+          {/* Contador de slides */}
+          <div className="absolute bottom-4 lg:bottom-6 right-4 lg:right-6 z-20 bg-black/30 backdrop-blur-sm text-white px-3 py-1 rounded-full text-sm">
+            {currentSlide + 1} / {sliders.length}
           </div>
         </>
       )}
@@ -586,8 +719,8 @@ const AboutToeicSection = () => {
 
 const ExamsSection = () => {
   const [examenes, setExamenes] = useState<Examen[]>([]);
+  const [loading, setLoading] = useState(true);
   const { language } = useLanguage();
-  const { ref, controls } = useScrollAnimation();
 
   const texts = {
     es: {
@@ -597,10 +730,10 @@ const ExamsSection = () => {
       viewMore: 'Ver más',
     },
     en: {
-      title: 'Tipos de examen disponibles',
-      description: 'Ofrecemos distintas opciones, puedes elegir la que más se ajuste a lo que requieres de tus empleados o que te exija tu área laboral.',
-      cta: 'Puedes elegir uno o varios exámenes para probar tus habilidades. Tenemos mas opciones para que se adapten a tus necesidades.',
-      viewMore: 'Ver más',
+      title: 'Available exam types',
+      description: 'We offer different options, you can choose the one that best suits what you require from your employees or what your work area demands.',
+      cta: 'You can choose one or more exams to test your skills. We have more options to adapt to your needs.',
+      viewMore: 'View more',
     }
   };
 
@@ -609,11 +742,16 @@ const ExamsSection = () => {
   useEffect(() => {
     const loadExamenes = async () => {
       try {
-        const data = await examenService.getExamenes();
-        const publicExamenes = data.filter(examen => examen.publicado).slice(0, 4);
-        setExamenes(publicExamenes);
+        setLoading(true);
+        // Usar getPublishedExamenes que ya viene ordenado desde el servicio
+        const data = await examenService.getPublishedExamenes();
+        // Tomar solo los primeros 4 exámenes (respetando el orden establecido)
+        setExamenes(data.slice(0, 4));
       } catch (error) {
         console.error('Error loading examenes:', error);
+        setExamenes([]);
+      } finally {
+        setLoading(false);
       }
     };
     loadExamenes();
@@ -621,40 +759,72 @@ const ExamsSection = () => {
 
   const examenesLink = generateLocalizedPath('examenes', language);
 
+  // Mostrar skeleton mientras carga
+  if (loading) {
+    return (
+      <section className="py-16 bg-bg">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <div className="h-8 bg-gray-200 rounded-md w-96 mx-auto mb-4 animate-pulse"></div>
+            <div className="h-4 bg-gray-200 rounded-md w-[600px] mx-auto animate-pulse"></div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-12">
+            {[1, 2, 3, 4].map((index) => (
+              <div key={index} className="exam-card">
+                <div className="grid grid-cols-12 gap-4 h-full">
+                  <div className="col-span-5">
+                    <div className="w-full h-32 bg-gray-200 rounded-lg animate-pulse"></div>
+                  </div>
+                  <div className="col-span-7 flex flex-col justify-center p-4">
+                    <div className="h-5 bg-gray-200 rounded-md w-full mb-3 animate-pulse"></div>
+                    <div className="h-3 bg-gray-200 rounded-md w-full mb-2 animate-pulse"></div>
+                    <div className="h-3 bg-gray-200 rounded-md w-2/3 animate-pulse"></div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  // Si no hay exámenes publicados
+  if (examenes.length === 0) {
+    return (
+      <section className="py-16 bg-bg">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <h2 className="text-4xl font-medium text-primary mb-4">
+              {currentTexts.title}
+            </h2>
+            <p className="text-secondary mb-6">
+              Próximamente tendremos exámenes disponibles para ti.
+            </p>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   return (
-    <motion.section 
-      ref={ref}
-      className="py-16 bg-bg"
-      initial="initial"
-      animate={controls}
-      variants={staggerContainer}
-    >
+    <section className="py-16 bg-bg">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <motion.div 
-          className="text-center mb-12"
-          variants={fadeInUp}
-        >
+        <div className="text-center mb-12">
           <h2 className="text-4xl font-medium text-primary mb-4">
             {currentTexts.title}
           </h2>
           <p className="text-secondary mb-6">
             {currentTexts.description}
           </p>
-        </motion.div>
+        </div>
 
-        <motion.div 
-          className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-12"
-          variants={staggerContainer}
-        >
-          {examenes.map((examen, _index) => (
-            <motion.div
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-12">
+          {examenes.map((examen, index) => (
+            <div
               key={examen.id}
-              variants={staggerItem}
-              whileHover={{ 
-                y: -5, 
-                boxShadow: "0 20px 40px rgba(0,0,0,0.1)" 
-              }}
-              transition={{ duration: 0.3 }}
+              className="relative hover:shadow-lg transition-shadow duration-200"
             >
               <Link
                 to={generateLocalizedPath('examen_detalle', language, { url: examen.url })}
@@ -662,16 +832,13 @@ const ExamsSection = () => {
               >
                 <div className="grid grid-cols-12 gap-4 h-full">
                   {/* Columna Izquierda - Imagen */}
-                  <motion.div 
-                    className="col-span-5"
-                    whileHover={{ scale: 1.05 }}
-                    transition={{ duration: 0.3 }}
-                  >
+                  <div className="col-span-5">
                     {examen.imagen ? (
                       <img
                         src={examen.imagen}
                         alt={language === 'es' ? (examen.titulo || '') : (examen.en_titulo || '')}
-                        className="w-full h-full object-cover rounded-lg"
+                        className="w-full h-full object-cover rounded-lg hover:scale-105 transition-transform duration-300"
+                        loading={index < 2 ? "eager" : "lazy"}
                       />
                     ) : (
                       <div className="w-full h-full bg-bg rounded-lg flex items-center justify-center">
@@ -680,51 +847,60 @@ const ExamsSection = () => {
                         </div>
                       </div>
                     )}
-                  </motion.div>
+                  </div>
                   
                   {/* Columna Derecha - Contenido */}
                   <div className="col-span-7 flex flex-col justify-center p-4">
-                    <motion.h3 
-                      className="text-lg font-semibold text-text mb-3 leading-tight"
-                      whileHover={{ color: "hsl(150 77% 17%)" }}
-                      transition={{ duration: 0.2 }}
-                    >
+                    <h3 className="text-lg font-semibold text-text mb-3 leading-tight hover:text-primary transition-colors duration-200">
                       {language === 'es' ? (examen.titulo || '') : (examen.en_titulo || '')}
-                    </motion.h3>
+                    </h3>
                     <p className="text-text-muted text-sm mb-4 line-clamp-3 leading-relaxed">
                       {language === 'es' ? (examen.resumen || '') : (examen.en_resumen || '')}
                     </p>
                   </div>
                 </div>
               </Link>
-            </motion.div>
+              
+              {/* Indicador de posición (solo en desarrollo) */}
+              {process.env.NODE_ENV === 'development' && (
+                <div className="absolute top-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
+                  #{index + 1}
+                </div>
+              )}
+            </div>
           ))}
-        </motion.div>
+        </div>
 
-        <motion.div 
-          className="flex flex-col md:flex-row items-center gap-8"
-          variants={fadeInUp}
-        >
+        {/* Mostrar CTA solo si hay exámenes */}
+        <div className="flex flex-col md:flex-row items-center gap-8">
           <div className="flex-1">
             <h3 className="text-3xl font-light text-primary mb-0">
               {currentTexts.cta}
             </h3>
           </div>
-          <motion.div 
-            className="flex-shrink-0"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
+          <div className="flex-shrink-0">
             <Link
               to={examenesLink}
-              className="btn-accent px-8 py-4 whitespace-nowrap"
+              className="btn-accent px-8 py-4 whitespace-nowrap hover:scale-105 transition-transform duration-200"
             >
               {currentTexts.viewMore}
             </Link>
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
+
+        {/* Indicador de que hay más exámenes disponibles */}
+        {examenes.length === 4 && (
+          <div className="text-center mt-8">
+            <p className="text-text-muted text-sm">
+              {language === 'es' 
+                ? 'Mostrando los primeros 4 exámenes. Hay más opciones disponibles.' 
+                : 'Showing the first 4 exams. More options are available.'
+              }
+            </p>
+          </div>
+        )}
       </div>
-    </motion.section>
+    </section>
   );
 };
 

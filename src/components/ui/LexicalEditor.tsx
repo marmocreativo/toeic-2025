@@ -1,6 +1,6 @@
-// src/components/ui/LexicalEditor.tsx - Con performance, placeholder y scroll arreglados
+// src/components/ui/LexicalEditor.tsx - ARREGLADO - Sin bucles infinitos
 import { $getRoot, $getSelection, FORMAT_TEXT_COMMAND, $createTextNode } from 'lexical';
-import { useEffect, useCallback, useState } from 'react';
+import { useEffect, useCallback, useState, useRef } from 'react';
 
 import { LexicalComposer } from '@lexical/react/LexicalComposer';
 import { ContentEditable } from '@lexical/react/LexicalContentEditable';
@@ -95,17 +95,25 @@ interface LexicalEditorProps {
   placeholder?: string;
   label?: string;
   className?: string;
-  maxHeight?: string; // Nueva prop para controlar altura máxima
+  maxHeight?: string;
 }
 
-// Plugin para manejar el contenido inicial - OPTIMIZADO
+// Plugin para manejar el contenido inicial - ARREGLADO
 function InitialContentPlugin({ content }: { content: string }) {
   const [editor] = useLexicalComposerContext();
-  const [isInitialized, setIsInitialized] = useState(false);
+  const hasInitialized = useRef(false);
+  const lastContentRef = useRef<string>('');
 
   useEffect(() => {
-    // Solo ejecutar una vez cuando el componente se monta Y hay contenido
-    if (!isInitialized && content && content.trim()) {
+    // Solo ejecutar si:
+    // 1. No se ha inicializado antes
+    // 2. El contenido es diferente al último procesado
+    // 3. Hay contenido válido
+    if (!hasInitialized.current && content && content.trim() && content !== lastContentRef.current) {
+      hasInitialized.current = true;
+      lastContentRef.current = content;
+
+      // Usar un timeout para asegurar que el editor esté completamente listo
       const timeoutId = setTimeout(() => {
         editor.update(() => {
           try {
@@ -113,58 +121,67 @@ function InitialContentPlugin({ content }: { content: string }) {
             const dom = parser.parseFromString(content, 'text/html');
             const nodes = $generateNodesFromDOM(editor, dom);
             const root = $getRoot();
-            root.clear();
-            root.append(...nodes);
-            setIsInitialized(true);
+            
+            // Solo limpiar y rellenar si hay nodos válidos
+            if (nodes.length > 0) {
+              root.clear();
+              root.append(...nodes);
+            }
           } catch (error) {
-            console.warn('Error parsing content:', error);
-            setIsInitialized(true);
+            console.warn('Error parsing initial content:', error);
           }
         });
-      }, 100); // Pequeño delay para asegurar que el editor esté listo
+      }, 50);
 
       return () => clearTimeout(timeoutId);
-    } else if (!content || !content.trim()) {
-      setIsInitialized(true);
     }
-  }, []); // Solo dependencias vacías
+  }, [editor]); // Solo depende del editor, no del content
+
+  // Resetear inicialización si el editor cambia (nueva instancia)
+  useEffect(() => {
+    hasInitialized.current = false;
+    lastContentRef.current = '';
+  }, [editor]);
 
   return null;
 }
 
-// Plugin para detectar cambios - DEBOUNCED para mejor performance
+// Plugin para detectar cambios - MEJORADO con mejor debounce
 function OnChangeContentPlugin({ onChange }: { onChange: (html: string) => void }) {
   const [editor] = useLexicalComposerContext();
-  const [debounceTimeout, setDebounceTimeout] = useState<NodeJS.Timeout | null>(null);
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
+  const isUpdatingRef = useRef(false);
   
   return (
     <OnChangePlugin
-      onChange={(_editorState) => {
+      onChange={(editorState) => {
+        // Evitar bucles durante actualizaciones programáticas
+        if (isUpdatingRef.current) {
+          return;
+        }
+
         // Limpiar timeout anterior
-        if (debounceTimeout) {
-          clearTimeout(debounceTimeout);
+        if (debounceRef.current) {
+          clearTimeout(debounceRef.current);
         }
 
         // Crear nuevo timeout para debounce
-        const newTimeout = setTimeout(() => {
-          editor.getEditorState().read(() => {
+        debounceRef.current = setTimeout(() => {
+          editorState.read(() => {
             try {
               const html = $generateHtmlFromNodes(editor, null);
               onChange(html);
             } catch (error) {
               console.warn('Error generating HTML:', error);
-              onChange('');
             }
           });
-        }, 300); // 300ms de debounce
-
-        setDebounceTimeout(newTimeout);
+        }, 500); // Aumentar debounce a 500ms para mejor estabilidad
       }}
     />
   );
 }
 
-// Toolbar Component con soporte para imágenes y audio
+// Toolbar Component - SIN CAMBIOS, pero con mejor manejo de eventos
 function ToolbarPlugin({ 
   isCodeView, 
   setIsCodeView, 
@@ -180,10 +197,11 @@ function ToolbarPlugin({
   const { handleFileInput: handleImageInput, handleFileChange: handleImageChange, fileInputRef: imageInputRef } = useImageUpload();
   const { handleFileInput: handleAudioInput, handleFileChange: handleAudioChange, fileInputRef: audioInputRef } = useAudioUpload();
   const [uploading, setUploading] = useState(false);
+  const isUpdatingRef = useRef(false);
 
   const formatText = useCallback((format: 'bold' | 'italic' | 'underline') => {
     editor.dispatchCommand(FORMAT_TEXT_COMMAND, format);
-    editor.focus(); // Mantener el foco después del formato
+    editor.focus();
   }, [editor]);
 
   const formatHeading = useCallback((headingSize: 'h1' | 'h2') => {
@@ -256,7 +274,7 @@ function ToolbarPlugin({
       alert(`Error subiendo imagen: ${error instanceof Error ? error.message : 'Error desconocido'}`);
     } finally {
       setUploading(false);
-      editor.focus(); // Devolver foco al editor
+      editor.focus();
     }
   }, [handleImageChange, editor]);
 
@@ -270,19 +288,28 @@ function ToolbarPlugin({
       alert(`Error subiendo audio: ${error instanceof Error ? error.message : 'Error desconocido'}`);
     } finally {
       setUploading(false);
-      editor.focus(); // Devolver foco al editor
+      editor.focus();
     }
   }, [handleAudioChange, editor]);
 
   const toggleCodeView = useCallback(() => {
     if (!isCodeView) {
+      // Cambiar a vista de código
       editor.getEditorState().read(() => {
-        const html = $generateHtmlFromNodes(editor, null);
-        setHtmlContent(html);
+        try {
+          const html = $generateHtmlFromNodes(editor, null);
+          setHtmlContent(html);
+        } catch (error) {
+          console.warn('Error generating HTML for code view:', error);
+          setHtmlContent('');
+        }
       });
       setIsCodeView(true);
     } else {
+      // Cambiar a vista visual
       if (htmlContent.trim()) {
+        isUpdatingRef.current = true; // Prevenir bucles
+        
         editor.update(() => {
           try {
             const parser = new DOMParser();
@@ -292,12 +319,17 @@ function ToolbarPlugin({
             root.clear();
             root.append(...nodes);
           } catch (error) {
-            console.warn('Error parsing HTML:', error);
+            console.warn('Error parsing HTML from code view:', error);
           }
         });
+
+        // Resetear flag después de un tiempo
+        setTimeout(() => {
+          isUpdatingRef.current = false;
+        }, 100);
       }
       setIsCodeView(false);
-      setTimeout(() => editor.focus(), 100); // Devolver foco después de cambiar vista
+      setTimeout(() => editor.focus(), 150);
     }
   }, [editor, isCodeView, htmlContent, setIsCodeView, setHtmlContent]);
 
@@ -516,8 +548,8 @@ export const LexicalEditor: React.FC<LexicalEditorProps> = ({
 }) => {
   const [isCodeView, setIsCodeView] = useState(false);
   const [htmlContent, setHtmlContent] = useState('');
-  // log para evitar el error de never read
-  console.log(label);
+  const editorKey = useRef(Math.random()); // Key único para forzar re-render cuando sea necesario
+
   // Configuración inicial con todos los nodos
   const initialConfig = {
     namespace: 'MinimalEditor',
@@ -537,9 +569,15 @@ export const LexicalEditor: React.FC<LexicalEditorProps> = ({
 
   return (
     <div className={`lexical-editor-container ${className}`}>
+      {label && (
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          {label}
+        </label>
+      )}
+      
       <div className="border border-gray-300 rounded-lg overflow-hidden bg-white">
-        <LexicalComposer initialConfig={initialConfig}>
-          {/* Toolbar - Sticky para que siempre esté visible */}
+        <LexicalComposer key={editorKey.current} initialConfig={initialConfig}>
+          {/* Toolbar */}
           <ToolbarPlugin 
             isCodeView={isCodeView} 
             setIsCodeView={setIsCodeView}
@@ -547,7 +585,7 @@ export const LexicalEditor: React.FC<LexicalEditorProps> = ({
             setHtmlContent={setHtmlContent}
           />
           
-          {/* Editor - Scrolleable con altura máxima */}
+          {/* Editor - Solo visible en modo visual */}
           {!isCodeView && (
             <div 
               className="overflow-y-auto"
@@ -579,7 +617,7 @@ export const LexicalEditor: React.FC<LexicalEditorProps> = ({
           <InitialContentPlugin content={content || ''} />
         </LexicalComposer>
 
-        {/* Vista de código HTML - También scrolleable */}
+        {/* Vista de código HTML */}
         {isCodeView && (
           <div 
             className="p-4 bg-gray-100 overflow-y-auto"

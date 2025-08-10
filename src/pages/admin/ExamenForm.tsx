@@ -13,12 +13,17 @@ import { Switch } from '../../components/ui/switch';
 import { Alert, AlertDescription } from '../../components/ui/alert';
 import { FileUpload } from '../../components/ui/FileUpload';
 import { LexicalEditor } from '../../components/ui/LexicalEditor';
+
+// Componentes separados
 import HorariosImprovedSection from '../../components/admin/HorariosImprovedSection';
+import FechasEspecialesSection from '../../components/admin/FechasEspecialesSection';
+import ExtrasSection from '../../components/admin/ExtrasSection';
+import FaqsSection from '../../components/admin/FaqsSection';
+import MuestrasSection from '../../components/admin/MuestrasSection';
+
 import { 
   Save, 
   ArrowLeft, 
-  Plus, 
-  Trash2, 
   Calendar,
   HelpCircle,
   FileText,
@@ -28,12 +33,10 @@ import {
   RefreshCw,
   AlertCircle
 } from 'lucide-react';
+
 import type { 
   ExamenCompleto, 
-  ExamenCompletoFormData,
-  ExamenExtraFormData,
-  ExamenFaqFormData,
-  ExamenMuestraFormData
+  ExamenCompletoFormData
 } from '../../types/examen';
 
 export default function ExamenForm() {
@@ -57,8 +60,10 @@ export default function ExamenForm() {
     en_resumen: '',
     en_contenido: '',
     imagen: '',
+    texto_fechas_especiales: '',
     publicado: false,
     horarios: [],
+    fechas_especiales: [],
     extras: [],
     faqs: [],
     muestras: []
@@ -81,11 +86,17 @@ export default function ExamenForm() {
       en_resumen: examenData.en_resumen || '',
       en_contenido: examenData.en_contenido || '',
       imagen: examenData.imagen || '',
+      texto_fechas_especiales: examenData.texto_fechas_especiales || '',
       publicado: examenData.publicado,
       horarios: (examenData.horarios || []).map(h => ({
         dia: h.dia || '',
         hora: h.hora || '',
         publicado: h.publicado
+      })),
+      fechas_especiales: (examenData.fechas_especiales || []).map(f => ({
+        fecha: f.fecha || '',
+        hora: f.hora || '', // Si es null, se convierte a cadena vacía para el formulario
+        publicado: f.publicado
       })),
       extras: (examenData.extras || []).map(e => ({
         titulo: e.titulo || '',
@@ -181,20 +192,6 @@ export default function ExamenForm() {
         throw new Error('El título es requerido');
       }
 
-      // DEBUG: Mostrar datos antes de enviar
-      console.log('FormData antes de enviar:', {
-        examen: {
-          url: formData.url,
-          titulo: formData.titulo,
-          publicado: formData.publicado
-        },
-        horarios: formData.horarios?.length || 0,
-        extras: formData.extras?.length || 0,
-        faqs: formData.faqs?.length || 0,
-        muestras: formData.muestras?.length || 0,
-        horariosDetalle: formData.horarios
-      });
-
       // Validar URL única
       const isUniqueUrl = await examenService.validateUniqueUrl(
         formData.url, 
@@ -206,134 +203,34 @@ export default function ExamenForm() {
       }
 
       if (isEditing) {
-        console.log('=== MODO EDICIÓN ===');
-        console.log('ID del examen:', id);
-        
-        // USAR EL NUEVO MÉTODO updateExamenCompleto
         await examenService.updateExamenCompleto(parseInt(id!), formData);
-        console.log('Examen completo actualizado exitosamente');
         
-        // Mostrar mensaje de éxito
         if (shouldNavigate) {
           navigate('/admin/examenes');
         } else {
           // Mostrar feedback temporal de éxito sin navegar
-          const successMessage = 'Examen actualizado exitosamente';
-          setError(null);
-          
-          // Crear elemento temporal de éxito
           const successDiv = document.createElement('div');
           successDiv.className = 'fixed top-4 right-4 z-50 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg';
-          successDiv.textContent = successMessage;
+          successDiv.textContent = 'Examen actualizado exitosamente';
           document.body.appendChild(successDiv);
           
-          // Remover después de 3 segundos
           setTimeout(() => {
-            document.body.removeChild(successDiv);
+            if (document.body.contains(successDiv)) {
+              document.body.removeChild(successDiv);
+            }
           }, 3000);
         }
-        
       } else {
-        console.log('=== MODO CREACIÓN ===');
         await examenService.createExamenCompleto(formData);
-        console.log('Examen completo creado exitosamente');
         navigate('/admin/examenes');
       }
 
     } catch (err) {
-      console.error('Error detallado:', {
-        error: err,
-        message: err instanceof Error ? err.message : 'Error desconocido',
-        stack: err instanceof Error ? err.stack : undefined
-      });
       const errorMessage = err instanceof Error ? err.message : 'Error guardando examen';
       setError(errorMessage);
     } finally {
       setSaving(false);
     }
-  };
-
-
-  // ===========================================
-  // FUNCIONES PARA MANEJAR FAQS
-  // ===========================================
-
-  const addFaq = () => {
-    const newFaq: ExamenFaqFormData = {
-      pregunta: '',
-      respuesta: '',
-      en_pregunta: '',
-      en_respuesta: '',
-      publicado: true
-    };
-    handleInputChange('faqs', [...(formData.faqs || []), newFaq]);
-  };
-
-  const updateFaq = (index: number, field: string, value: any) => {
-    const updatedFaqs = (formData.faqs || []).map((faq, i) => 
-      i === index ? { ...faq, [field]: value } : faq
-    );
-    handleInputChange('faqs', updatedFaqs);
-  };
-
-  const removeFaq = (index: number) => {
-    const updatedFaqs = (formData.faqs || []).filter((_, i) => i !== index);
-    handleInputChange('faqs', updatedFaqs);
-  };
-
-  // ===========================================
-  // FUNCIONES PARA MANEJAR EXTRAS
-  // ===========================================
-
-  const addExtra = () => {
-    const newExtra: ExamenExtraFormData = {
-      titulo: '',
-      contenido: '',
-      boton_texto: '',
-      en_titulo: '',
-      en_contenido: '',
-      en_boton_texto: '',
-      boton_enlace: '',
-      publicado: true
-    };
-    handleInputChange('extras', [...(formData.extras || []), newExtra]);
-  };
-
-  const updateExtra = (index: number, field: string, value: any) => {
-    const updatedExtras = (formData.extras || []).map((extra, i) => 
-      i === index ? { ...extra, [field]: value } : extra
-    );
-    handleInputChange('extras', updatedExtras);
-  };
-
-  const removeExtra = (index: number) => {
-    const updatedExtras = (formData.extras || []).filter((_, i) => i !== index);
-    handleInputChange('extras', updatedExtras);
-  };
-
-  // ===========================================
-  // FUNCIONES PARA MANEJAR MUESTRAS
-  // ===========================================
-
-  const addMuestra = () => {
-    const newMuestra: ExamenMuestraFormData = {
-      seccion: '',
-      pregunta: '',
-      publicado: true
-    };
-    handleInputChange('muestras', [...(formData.muestras || []), newMuestra]);
-  };
-
-  const updateMuestra = (index: number, field: string, value: any) => {
-    const updatedMuestras = (formData.muestras || []).map((muestra, i) => 
-      i === index ? { ...muestra, [field]: value } : muestra
-    );
-    handleInputChange('muestras', updatedMuestras);
-  };
-
-  const removeMuestra = (index: number) => {
-    const updatedMuestras = (formData.muestras || []).filter((_, i) => i !== index);
-    handleInputChange('muestras', updatedMuestras);
   };
 
   if (loading) {
@@ -349,6 +246,7 @@ export default function ExamenForm() {
 
   return (
     <div className="space-y-6 max-w-6xl mx-auto">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Button
@@ -379,7 +277,6 @@ export default function ExamenForm() {
             </Button>
           )}
           
-          {/* Botones de guardado - Diferentes para editar vs crear */}
           {isEditing ? (
             <>
               <Button
@@ -451,7 +348,7 @@ export default function ExamenForm() {
 
       {/* Formulario */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="general" className="flex items-center gap-2">
             <Globe className="h-4 w-4" />
             General
@@ -459,6 +356,10 @@ export default function ExamenForm() {
           <TabsTrigger value="horarios" className="flex items-center gap-2">
             <Calendar className="h-4 w-4" />
             Horarios ({(formData.horarios || []).length})
+          </TabsTrigger>
+          <TabsTrigger value="fechas-especiales" className="flex items-center gap-2">
+            <Calendar className="h-4 w-4" />
+            Fechas Esp. ({(formData.fechas_especiales || []).length})
           </TabsTrigger>
           <TabsTrigger value="faqs" className="flex items-center gap-2">
             <HelpCircle className="h-4 w-4" />
@@ -474,7 +375,7 @@ export default function ExamenForm() {
           </TabsTrigger>
         </TabsList>
 
-        {/* ===== TAB GENERAL ===== */}
+        {/* TAB GENERAL */}
         <TabsContent value="general" className="space-y-6">
           <Card>
             <CardHeader>
@@ -553,7 +454,6 @@ export default function ExamenForm() {
                       placeholder=""
                     />
                   </div>
-
                 </TabsContent>
 
                 <TabsContent value="en" className="space-y-4">
@@ -587,7 +487,6 @@ export default function ExamenForm() {
                       placeholder="Detailed exam content..."
                     />
                   </div>
-
                 </TabsContent>
               </Tabs>
 
@@ -601,363 +500,66 @@ export default function ExamenForm() {
                   accept="image/*"
                 />
               </div>
+
+              {/* Texto de fechas especiales */}
+              <div>
+                <Label htmlFor="texto_fechas_especiales">Texto para Fechas Especiales</Label>
+                <Input
+                  id="texto_fechas_especiales"
+                  value={formData.texto_fechas_especiales}
+                  onChange={(e) => handleInputChange('texto_fechas_especiales', e.target.value)}
+                  placeholder="ej: Fechas especiales del examen TOEIC 2025"
+                />
+                <p className="text-sm text-gray-500 mt-1">
+                  Texto explicativo que aparecerá antes de las fechas especiales
+                </p>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
 
-        {/* ===== TAB HORARIOS ===== */}
+        {/* TAB HORARIOS */}
         <TabsContent value="horarios" className="space-y-6">
-         <HorariosImprovedSection 
+          <HorariosImprovedSection 
             formData={formData}
             onHorariosChange={(horarios) => handleInputChange('horarios', horarios)}
           />
         </TabsContent>
 
-        {/* ===== TAB FAQS ===== */}
+        {/* TAB FECHAS ESPECIALES */}
+        <TabsContent value="fechas-especiales" className="space-y-6">
+          <FechasEspecialesSection 
+            fechasEspeciales={formData.fechas_especiales || []}
+            onChange={(fechas) => handleInputChange('fechas_especiales', fechas)}
+          />
+        </TabsContent>
+
+        {/* TAB FAQS */}
         <TabsContent value="faqs" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle>Preguntas Frecuentes</CardTitle>
-                  <p className="text-sm text-gray-600 mt-1">
-                    Responde las dudas más comunes sobre este examen
-                  </p>
-                </div>
-                {/* Botón principal solo si no hay FAQs */}
-                {(!formData.faqs || formData.faqs.length === 0) && (
-                  <Button onClick={addFaq}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Agregar FAQ
-                  </Button>
-                )}
-              </div>
-            </CardHeader>
-            <CardContent>
-              {formData.faqs && formData.faqs.length > 0 ? (
-                <div className="space-y-6">
-                  {/* Lista de FAQs existentes */}
-                  {formData.faqs.map((faq, index) => (
-                    <div key={index} className="border rounded-lg p-4 bg-gray-50">
-                      <div className="flex items-center justify-between mb-4">
-                        <h4 className="font-medium text-gray-900">FAQ #{index + 1}</h4>
-                        <div className="flex items-center gap-2">
-                          <Switch
-                            checked={faq.publicado}
-                            onCheckedChange={(checked) => updateFaq(index, 'publicado', checked)}
-                          />
-                          <Label className="text-sm">Publicado</Label>
-                          <Button
-                            size="sm"
-                            variant="destructive"
-                            onClick={() => removeFaq(index)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-
-                      <Tabs defaultValue="es-faq" className="space-y-4">
-                        <TabsList>
-                          <TabsTrigger value="es-faq">🇪🇸 Español</TabsTrigger>
-                          <TabsTrigger value="en-faq">🇺🇸 English</TabsTrigger>
-                        </TabsList>
-
-                        <TabsContent value="es-faq" className="space-y-4">
-                          <div>
-                            <Label>Pregunta</Label>
-                            <Input
-                              value={faq.pregunta || ''}
-                              onChange={(e) => updateFaq(index, 'pregunta', e.target.value)}
-                              placeholder="¿Cuánto dura el examen?"
-                            />
-                          </div>
-                          <div>
-                            <Label>Respuesta</Label>
-                            <LexicalEditor
-                              content={faq.respuesta || ''}
-                              onChange={(content) => updateFaq(index, 'respuesta', content)}
-                              placeholder="El examen tiene una duración de..."
-                            />
-                          </div>
-                        </TabsContent>
-
-                        <TabsContent value="en-faq" className="space-y-4">
-                          <div>
-                            <Label>Question</Label>
-                            <Input
-                              value={faq.en_pregunta || ''}
-                              onChange={(e) => updateFaq(index, 'en_pregunta', e.target.value)}
-                              placeholder="How long is the exam?"
-                            />
-                          </div>
-                          <div>
-                            <Label>Answer</Label>
-                            <LexicalEditor
-                              content={faq.en_respuesta || ''}
-                              onChange={(content) => updateFaq(index, 'en_respuesta', content)}
-                              placeholder="The exam duration is..."
-                            />
-                          </div>
-                        </TabsContent>
-                      </Tabs>
-                    </div>
-                  ))}
-
-                  {/* Botón "Agregar más" al final de la lista */}
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-primary hover:bg-primary/5 transition-colors">
-                    <Button onClick={addFaq} variant="ghost" className="w-full">
-                      <Plus className="h-5 w-5 mr-2" />
-                      Agregar otra FAQ
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                <div className="text-center py-8">
-                  <HelpCircle className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-600 mb-2">No hay FAQs</h3>
-                  <p className="text-gray-500 mb-4">Agrega preguntas frecuentes para ayudar a los usuarios</p>
-                  <Button onClick={addFaq}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Agregar Primera FAQ
-                  </Button>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          <FaqsSection 
+            faqs={formData.faqs || []}
+            onChange={(faqs) => handleInputChange('faqs', faqs)}
+          />
         </TabsContent>
 
-        {/* ===== TAB EXTRAS ===== */}
+        {/* TAB EXTRAS */}
         <TabsContent value="extras" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle>Información Extra</CardTitle>
-                  <p className="text-sm text-gray-600 mt-1">
-                    Contenido adicional como consejos, recursos o material complementario
-                  </p>
-                </div>
-                {/* Botón principal solo si no hay extras */}
-                {(!formData.extras || formData.extras.length === 0) && (
-                  <Button onClick={addExtra}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Agregar Extra
-                  </Button>
-                )}
-              </div>
-            </CardHeader>
-            <CardContent>
-              {formData.extras && formData.extras.length > 0 ? (
-                <div className="space-y-6">
-                  {/* Lista de extras existentes */}
-                  {formData.extras.map((extra, index) => (
-                    <div key={index} className="border rounded-lg p-4 bg-gray-50">
-                      <div className="flex items-center justify-between mb-4">
-                        <h4 className="font-medium text-gray-900">Extra #{index + 1}</h4>
-                        <div className="flex items-center gap-2">
-                          <Switch
-                            checked={extra.publicado}
-                            onCheckedChange={(checked) => updateExtra(index, 'publicado', checked)}
-                          />
-                          <Label className="text-sm">Publicado</Label>
-                          <Button
-                            size="sm"
-                            variant="destructive"
-                            onClick={() => removeExtra(index)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-
-                      <Tabs defaultValue="es-extra" className="space-y-4">
-                        <TabsList>
-                          <TabsTrigger value="es-extra">🇪🇸 Español</TabsTrigger>
-                          <TabsTrigger value="en-extra">🇺🇸 English</TabsTrigger>
-                        </TabsList>
-
-                        <TabsContent value="es-extra" className="space-y-4">
-                          <div>
-                            <Label>Título</Label>
-                            <Input
-                              value={extra.titulo || ''}
-                              onChange={(e) => updateExtra(index, 'titulo', e.target.value)}
-                              placeholder="ej: Consejos para el examen"
-                            />
-                          </div>
-                          <div>
-                            <Label>Contenido</Label>
-                            <LexicalEditor
-                              content={extra.contenido || ''}
-                              onChange={(content) => updateExtra(index, 'contenido', content)}
-                              placeholder="Información adicional..."
-                            />
-                          </div>
-                          <div>
-                            <Label>Texto del Botón</Label>
-                            <Input
-                              value={extra.boton_texto || ''}
-                              onChange={(e) => updateExtra(index, 'boton_texto', e.target.value)}
-                              placeholder="ej: Descargar Guía"
-                            />
-                          </div>
-                        </TabsContent>
-
-                        <TabsContent value="en-extra" className="space-y-4">
-                          <div>
-                            <Label>Title</Label>
-                            <Input
-                              value={extra.en_titulo || ''}
-                              onChange={(e) => updateExtra(index, 'en_titulo', e.target.value)}
-                              placeholder="e.g: Exam Tips"
-                            />
-                          </div>
-                          <div>
-                            <Label>Content</Label>
-                            <LexicalEditor
-                              content={extra.en_contenido || ''}
-                              onChange={(content) => updateExtra(index, 'en_contenido', content)}
-                              placeholder="Additional information..."
-                            />
-                          </div>
-                          <div>
-                            <Label>Button Text</Label>
-                            <Input
-                              value={extra.en_boton_texto || ''}
-                              onChange={(e) => updateExtra(index, 'en_boton_texto', e.target.value)}
-                              placeholder="e.g: Download Guide"
-                            />
-                          </div>
-                        </TabsContent>
-                      </Tabs>
-
-                      <div className="mt-4">
-                        <Label>Enlace del Botón</Label>
-                        <Input
-                          value={extra.boton_enlace || ''}
-                          onChange={(e) => updateExtra(index, 'boton_enlace', e.target.value)}
-                          placeholder="https://ejemplo.com/recurso"
-                        />
-                      </div>
-                    </div>
-                  ))}
-
-                  {/* Botón "Agregar más" al final de la lista */}
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-primary hover:bg-primary/5 transition-colors">
-                    <Button onClick={addExtra} variant="ghost" className="w-full">
-                      <Plus className="h-5 w-5 mr-2" />
-                      Agregar otro Extra
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                <div className="text-center py-8">
-                  <FileText className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-600 mb-2">No hay información extra</h3>
-                  <p className="text-gray-500 mb-4">Agrega contenido adicional como consejos o recursos</p>
-                  <Button onClick={addExtra}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Agregar Primer Extra
-                  </Button>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          <ExtrasSection 
+            extras={formData.extras || []}
+            onChange={(extras) => handleInputChange('extras', extras)}
+          />
         </TabsContent>
 
-
-        {/* ===== TAB MUESTRAS ===== */}
+        {/* TAB MUESTRAS */}
         <TabsContent value="muestras" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle>Preguntas de Muestra</CardTitle>
-                  <p className="text-sm text-gray-600 mt-1">
-                    Ejemplos de preguntas para que los usuarios practiquen
-                  </p>
-                </div>
-                {/* Botón principal solo si no hay muestras */}
-                {(!formData.muestras || formData.muestras.length === 0) && (
-                  <Button onClick={addMuestra}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Agregar Muestra
-                  </Button>
-                )}
-              </div>
-            </CardHeader>
-            <CardContent>
-              {formData.muestras && formData.muestras.length > 0 ? (
-                <div className="space-y-6">
-                  {/* Lista de muestras existentes */}
-                  {formData.muestras.map((muestra, index) => (
-                    <div key={index} className="border rounded-lg p-4 bg-gray-50">
-                      <div className="flex items-center justify-between mb-4">
-                        <h4 className="font-medium text-gray-900">Muestra #{index + 1}</h4>
-                        <div className="flex items-center gap-2">
-                          <Switch
-                            checked={muestra.publicado}
-                            onCheckedChange={(checked) => updateMuestra(index, 'publicado', checked)}
-                          />
-                          <Label className="text-sm">Publicado</Label>
-                          <Button
-                            size="sm"
-                            variant="destructive"
-                            onClick={() => removeMuestra(index)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-
-                      <div className="space-y-4">
-                        <div>
-                          <Label>Sección</Label>
-                          <Input
-                            value={muestra.seccion || ''}
-                            onChange={(e) => updateMuestra(index, 'seccion', e.target.value)}
-                            placeholder="ej: Listening, Reading, Grammar"
-                          />
-                        </div>
-
-                        <div>
-                          <Label>Pregunta de Muestra</Label>
-                          <LexicalEditor
-                            content={muestra.pregunta || ''}
-                            onChange={(content) => updateMuestra(index, 'pregunta', content)}
-                            placeholder="Escribe aquí la pregunta de ejemplo con sus opciones..."
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-
-                  {/* Botón "Agregar más" al final de la lista */}
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-primary hover:bg-primary/5 transition-colors">
-                    <Button onClick={addMuestra} variant="ghost" className="w-full">
-                      <Plus className="h-5 w-5 mr-2" />
-                      Agregar otra Muestra
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                <div className="text-center py-8">
-                  <Users className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-600 mb-2">No hay muestras</h3>
-                  <p className="text-gray-500 mb-4">Agrega preguntas de ejemplo para que los usuarios puedan practicar</p>
-                  <Button onClick={addMuestra}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Agregar Primera Muestra
-                  </Button>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          <MuestrasSection 
+            muestras={formData.muestras || []}
+            onChange={(muestras) => handleInputChange('muestras', muestras)}
+          />
         </TabsContent>
       </Tabs>
 
-      {/* Botón flotante de guardar en mobile */}
+      {/* Botón flotante para móvil */}
       <div className="md:hidden fixed bottom-4 right-4 z-50">
         <Button
           onClick={() => handleSubmit(true)}
@@ -990,22 +592,20 @@ export default function ExamenForm() {
         </div>
       )}
 
-      {/* Overlay de upload */}
+      {/* Overlay de subida */}
       {uploading && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-lg flex items-center gap-3 max-w-sm mx-4">
             <RefreshCw className="h-6 w-6 animate-spin text-blue-600" />
             <div>
               <p className="font-medium">Subiendo imagen...</p>
-              <p className="text-sm text-gray-600">
-                Por favor espera
-              </p>
+              <p className="text-sm text-gray-600">Por favor espera</p>
             </div>
           </div>
         </div>
       )}
 
-      {/* Indicador de cambios no guardados */}
+      {/* Indicador de cambios sin guardar */}
       {!saving && !uploading && (
         <div className="fixed bottom-4 left-4 z-40">
           <div className="bg-orange-100 border border-orange-200 text-orange-800 px-3 py-2 rounded-lg text-sm flex items-center gap-2">

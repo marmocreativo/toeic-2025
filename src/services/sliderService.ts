@@ -1,25 +1,27 @@
 import { supabase } from '../lib/supabase';
 import { StorageService, STORAGE_BUCKETS } from './storageService';
-import type { Slider, SliderFormData } from '../types/slider';
+import type { Slider, SliderFormData, SliderOrderUpdate, ReorderResult } from '../types/slider';
 
 export const sliderService = {
-  // Obtener todos los sliders
+  // Obtener todos los sliders ORDENADOS
   async getSliders(): Promise<Slider[]> {
     const { data, error } = await supabase
       .from('sliders')
       .select('*')
-      .order('created_at', { ascending: false });
+      .order('orden', { ascending: true })
+      .order('created_at', { ascending: false }); // Fallback si orden es igual
 
     if (error) throw error;
     return data || [];
   },
 
-  // Obtener sliders publicados (para frontend público)
+  // Obtener sliders publicados ORDENADOS (para frontend público)
   async getPublishedSliders(): Promise<Slider[]> {
     const { data, error } = await supabase
       .from('sliders')
       .select('*')
       .eq('publicado', true)
+      .order('orden', { ascending: true })
       .order('created_at', { ascending: false });
 
     if (error) throw error;
@@ -41,19 +43,31 @@ export const sliderService = {
     return data;
   },
 
-  // Crear nuevo slider
+  // Crear nuevo slider CON orden automático
   async createSlider(sliderData: SliderFormData): Promise<Slider> {
-    const { data, error } = await supabase
-      .from('sliders')
-      .insert([sliderData])
-      .select()
-      .single();
+    try {
+      // 1. Obtener el próximo número de orden
+      const nextOrder = await this.getNextOrder();
+      
+      // 2. Crear el slider con el orden asignado
+      const { data, error } = await supabase
+        .from('sliders')
+        .insert([{
+          ...sliderData,
+          orden: nextOrder
+        }])
+        .select()
+        .single();
 
-    if (error) throw error;
-    return data;
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Error creando slider:', error);
+      throw error;
+    }
   },
 
-  // Actualizar slider (CON manejo de archivos viejos)
+  // Actualizar slider (CON manejo de archivos viejos y orden)
   async updateSlider(id: number, sliderData: Partial<SliderFormData>): Promise<Slider> {
     try {
       // 1. Obtener el slider actual para comparar archivos
@@ -66,7 +80,7 @@ export const sliderService = {
       // 2. Identificar archivos que han cambiado y necesitan ser eliminados
       const filesToDelete: string[] = [];
       
-      // Si la imagen cambió, eliminar la anterior (solo si la nueva no es vacía y es diferente)
+      // Si la imagen cambió, eliminar la anterior
       if (sliderData.imagen !== undefined && 
           currentSlider.imagen && 
           sliderData.imagen !== currentSlider.imagen) {
@@ -74,7 +88,7 @@ export const sliderService = {
         if (oldImagePath) filesToDelete.push(oldImagePath);
       }
       
-      // Si el logo cambió, eliminar el anterior (solo si el nuevo no es vacío y es diferente)
+      // Si el logo cambió, eliminar el anterior
       if (sliderData.logo !== undefined && 
           currentSlider.logo && 
           sliderData.logo !== currentSlider.logo) {
@@ -82,34 +96,36 @@ export const sliderService = {
         if (oldLogoPath) filesToDelete.push(oldLogoPath);
       }
 
-      // 3. Actualizar en la base de datos
+      // 3. Actualizar en la base de datos (sin modificar orden a menos que se especifique)
+      const updateData: any = {
+        ...sliderData,
+        updated_at: new Date().toISOString()
+      };
+
+      // Solo incluir orden si se proporciona explícitamente
+      if (sliderData.orden !== undefined) {
+        updateData.orden = sliderData.orden;
+      }
+
       const { data, error } = await supabase
         .from('sliders')
-        .update({
-          ...sliderData,
-          updated_at: new Date().toISOString()
-        })
+        .update(updateData)
         .eq('id', id)
         .select()
         .single();
 
       if (error) throw error;
 
-      // 4. Eliminar archivos viejos del storage (después de la actualización exitosa)
+      // 4. Eliminar archivos viejos del storage
       for (const filePath of filesToDelete) {
         try {
           await StorageService.deleteFile(STORAGE_BUCKETS.SLIDERS, filePath);
           console.log(`Archivo anterior eliminado: ${filePath}`);
         } catch (error) {
           console.warn(`No se pudo eliminar archivo anterior: ${filePath}`, error);
-          // No lanzar error, solo advertir
         }
       }
 
-      if (filesToDelete.length > 0) {
-        console.log(`Slider ${id} actualizado exitosamente. Archivos eliminados: ${filesToDelete.length}`);
-      }
-      
       return data;
 
     } catch (error) {
@@ -118,20 +134,21 @@ export const sliderService = {
     }
   },
 
-  // Eliminar slider (CON eliminación de archivos)
+  // Eliminar slider (CON eliminación de archivos y reordenamiento)
   async deleteSlider(id: number): Promise<void> {
     try {
-      // 1. Primero obtener el slider para conocer sus archivos
+      // 1. Obtener el slider para conocer su orden y archivos
       const slider = await this.getSliderById(id);
       
       if (!slider) {
         throw new Error('Slider no encontrado');
       }
 
+      const deletedOrder = slider.orden;
+
       // 2. Eliminar archivos del storage
       const filesToDelete: string[] = [];
       
-      // Extraer rutas de archivos de las URLs
       if (slider.imagen) {
         const imagePath = this.extractPathFromUrl(slider.imagen);
         if (imagePath) filesToDelete.push(imagePath);
@@ -149,7 +166,6 @@ export const sliderService = {
           console.log(`Archivo eliminado: ${filePath}`);
         } catch (error) {
           console.warn(`No se pudo eliminar archivo: ${filePath}`, error);
-          // Continuar aunque falle la eliminación del archivo
         }
       }
 
@@ -161,7 +177,10 @@ export const sliderService = {
 
       if (error) throw error;
 
-      console.log(`Slider ${id} eliminado exitosamente con ${filesToDelete.length} archivos`);
+      // 4. Reordenar elementos posteriores (opcional - para mantener secuencia)
+      await this.compactOrder(deletedOrder);
+
+      console.log(`Slider ${id} eliminado exitosamente`);
 
     } catch (error) {
       console.error('Error eliminando slider:', error);
@@ -182,21 +201,194 @@ export const sliderService = {
     if (error) throw error;
   },
 
+  // ========================================================================
+  // NUEVAS FUNCIONES DE ORDENAMIENTO
+  // ========================================================================
+
+  // Obtener el próximo número de orden
+  async getNextOrder(): Promise<number> {
+    const { data, error } = await supabase
+      .from('sliders')
+      .select('orden')
+      .order('orden', { ascending: false })
+      .limit(1);
+
+    if (error) throw error;
+
+    if (!data || data.length === 0) {
+      return 1; // Primer elemento
+    }
+
+    return (data[0].orden || 0) + 1;
+  },
+
+  // Reordenar sliders completo (para drag & drop)
+  async reorderSliders(orderedIds: number[]): Promise<ReorderResult> {
+    try {
+      const errors: string[] = [];
+      let updated = 0;
+
+      // Actualizar orden de cada slider
+      const updatePromises = orderedIds.map(async (id, index) => {
+        try {
+          const { error } = await supabase
+            .from('sliders')
+            .update({ 
+              orden: index + 1,
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', id);
+
+          if (error) {
+            errors.push(`Error actualizando slider ${id}: ${error.message}`);
+          } else {
+            updated++;
+          }
+        } catch (err) {
+          errors.push(`Error actualizando slider ${id}: ${err}`);
+        }
+      });
+
+      await Promise.all(updatePromises);
+
+      return {
+        success: errors.length === 0,
+        updated,
+        errors: errors.length > 0 ? errors : undefined
+      };
+
+    } catch (error) {
+      console.error('Error reordenando sliders:', error);
+      throw error;
+    }
+  },
+
+  // Mover un slider a una posición específica
+  async moveSliderToPosition(sliderId: number, newPosition: number): Promise<void> {
+    try {
+      // 1. Obtener todos los sliders ordenados
+      const sliders = await this.getSliders();
+      
+      // 2. Encontrar el slider actual
+      const currentIndex = sliders.findIndex(s => s.id === sliderId);
+      if (currentIndex === -1) {
+        throw new Error('Slider no encontrado');
+      }
+
+      // 3. Remover el slider de su posición actual
+      const [movedSlider] = sliders.splice(currentIndex, 1);
+      
+      // 4. Insertar en la nueva posición (ajustar índice si es necesario)
+      const targetIndex = Math.max(0, Math.min(newPosition - 1, sliders.length));
+      sliders.splice(targetIndex, 0, movedSlider);
+
+      // 5. Actualizar todos los órdenes
+      const orderedIds = sliders.map(s => s.id);
+      await this.reorderSliders(orderedIds);
+
+    } catch (error) {
+      console.error('Error moviendo slider:', error);
+      throw error;
+    }
+  },
+
+  // Intercambiar posiciones de dos sliders
+  async swapSliders(sliderId1: number, sliderId2: number): Promise<void> {
+    try {
+      const slider1 = await this.getSliderById(sliderId1);
+      const slider2 = await this.getSliderById(sliderId2);
+
+      if (!slider1 || !slider2) {
+        throw new Error('Uno o ambos sliders no encontrados');
+      }
+
+      // Intercambiar órdenes
+      const updates = [
+        supabase
+          .from('sliders')
+          .update({ 
+            orden: slider2.orden,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', sliderId1),
+        
+        supabase
+          .from('sliders')
+          .update({ 
+            orden: slider1.orden,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', sliderId2)
+      ];
+
+      const results = await Promise.all(updates);
+      
+      const errors = results.filter(result => result.error);
+      if (errors.length > 0) {
+        throw new Error(`Error intercambiando sliders: ${errors[0].error?.message}`);
+      }
+
+    } catch (error) {
+      console.error('Error intercambiando sliders:', error);
+      throw error;
+    }
+  },
+
+  // Compactar orden (eliminar huecos en la secuencia)
+  async compactOrder(deletedOrder?: number): Promise<void> {
+    try {
+      const sliders = await this.getSliders();
+      
+      // Reasignar órdenes secuenciales
+      const updatePromises = sliders.map((slider, index) => 
+        supabase
+          .from('sliders')
+          .update({ 
+            orden: index + 1,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', slider.id)
+      );
+
+      await Promise.all(updatePromises);
+
+    } catch (error) {
+      console.error('Error compactando orden:', error);
+      throw error;
+    }
+  },
+
+  // Obtener sliders para lista de ordenamiento (datos mínimos)
+  async getSlidersForOrdering(): Promise<Array<{
+    id: number;
+    titulo: string;
+    publicado: boolean;
+    orden: number;
+  }>> {
+    const { data, error } = await supabase
+      .from('sliders')
+      .select('id, titulo, publicado, orden')
+      .order('orden', { ascending: true });
+
+    if (error) throw error;
+    return data || [];
+  },
+
+  // ========================================================================
+  // FUNCIONES EXISTENTES (sin cambios)
+  // ========================================================================
+
   // Función auxiliar para extraer el path del archivo desde la URL pública
   extractPathFromUrl(url: string): string | null {
     try {
-      // URLs de Supabase tienen el formato:
-      // https://[project].supabase.co/storage/v1/object/public/[bucket]/[path]
       const urlObj = new URL(url);
       const pathParts = urlObj.pathname.split('/');
       
-      // Buscar el índice donde está 'public' y el bucket
       const publicIndex = pathParts.indexOf('public');
       const bucketIndex = publicIndex + 1;
       const filePathIndex = bucketIndex + 1;
       
       if (pathParts[bucketIndex] === STORAGE_BUCKETS.SLIDERS && filePathIndex < pathParts.length) {
-        // Unir todas las partes desde el archivo en adelante
         return pathParts.slice(filePathIndex).join('/');
       }
       
@@ -217,24 +409,7 @@ export const sliderService = {
     }
   },
 
-  // Función auxiliar para limpiar archivo específico si es de Supabase Storage
-  async cleanupFileIfNeeded(url: string | null): Promise<void> {
-    if (!url || !this.isSupabaseStorageUrl(url)) {
-      return; // No es una URL de Supabase Storage, no hacer nada
-    }
-
-    const filePath = this.extractPathFromUrl(url);
-    if (filePath) {
-      try {
-        await StorageService.deleteFile(STORAGE_BUCKETS.SLIDERS, filePath);
-        console.log(`Archivo limpiado: ${filePath}`);
-      } catch (error) {
-        console.warn(`No se pudo limpiar archivo: ${filePath}`, error);
-      }
-    }
-  },
-
-  // Duplicar slider (útil para crear variaciones)
+  // Duplicar slider
   async duplicateSlider(id: number): Promise<Slider> {
     try {
       const originalSlider = await this.getSliderById(id);
@@ -243,7 +418,6 @@ export const sliderService = {
         throw new Error('Slider no encontrado');
       }
 
-      // Crear datos para el nuevo slider (sin id, created_at, updated_at)
       const newSliderData: SliderFormData = {
         titulo: `${originalSlider.titulo} (Copia)`,
         subtitulo: originalSlider.subtitulo || '',
@@ -256,77 +430,13 @@ export const sliderService = {
         en_boton_texto: originalSlider.en_boton_texto || '',
         imagen: originalSlider.imagen || '',
         logo: originalSlider.logo || '',
-        publicado: false // Los duplicados empiezan como borrador
+        publicado: false
       };
 
       return await this.createSlider(newSliderData);
 
     } catch (error) {
       console.error('Error duplicando slider:', error);
-      throw error;
-    }
-  },
-
-  // Limpiar archivos huérfanos (función de mantenimiento)
-  async cleanOrphanedFiles(): Promise<{
-    filesInStorage: number;
-    filesInDatabase: number;
-    orphanedFiles: string[];
-    cleanedFiles: string[];
-  }> {
-    try {
-      // 1. Obtener todos los archivos en el bucket
-      const filesInStorage = await StorageService.listFiles(STORAGE_BUCKETS.SLIDERS);
-      
-      // 2. Obtener todas las URLs de imágenes en la base de datos
-      const { data: sliders, error } = await supabase
-        .from('sliders')
-        .select('imagen, logo');
-      
-      if (error) throw error;
-      
-      // 3. Extraer paths de las URLs en la base de datos
-      const pathsInDatabase = new Set<string>();
-      
-      sliders?.forEach(slider => {
-        if (slider.imagen) {
-          const path = this.extractPathFromUrl(slider.imagen);
-          if (path) pathsInDatabase.add(path);
-        }
-        if (slider.logo) {
-          const path = this.extractPathFromUrl(slider.logo);
-          if (path) pathsInDatabase.add(path);
-        }
-      });
-      
-      // 4. Encontrar archivos huérfanos
-      const orphanedFiles = filesInStorage
-        .map(file => file.name)
-        .filter(fileName => !pathsInDatabase.has(fileName));
-      
-      // 5. Eliminar archivos huérfanos (opcional - comentado por seguridad)
-      const cleanedFiles: string[] = [];
-      
-      /* DESCOMENTAR PARA ACTIVAR LIMPIEZA AUTOMÁTICA
-      for (const orphanedFile of orphanedFiles) {
-        try {
-          await StorageService.deleteFile(STORAGE_BUCKETS.SLIDERS, orphanedFile);
-          cleanedFiles.push(orphanedFile);
-        } catch (error) {
-          console.warn(`No se pudo eliminar archivo huérfano: ${orphanedFile}`, error);
-        }
-      }
-      */
-      
-      return {
-        filesInStorage: filesInStorage.length,
-        filesInDatabase: pathsInDatabase.size,
-        orphanedFiles,
-        cleanedFiles
-      };
-      
-    } catch (error) {
-      console.error('Error limpiando archivos huérfanos:', error);
       throw error;
     }
   },
@@ -345,7 +455,6 @@ export const sliderService = {
       const publicados = sliders.filter(s => s.publicado).length;
       const borradores = total - publicados;
       
-      // Encontrar la última actualización
       const fechas = sliders
         .map(s => s.updated_at || s.created_at)
         .filter(Boolean)
@@ -362,57 +471,6 @@ export const sliderService = {
       };
     } catch (error) {
       console.error('Error obteniendo estadísticas:', error);
-      throw error;
-    }
-  },
-
-  // Obtener slider anterior/siguiente (útil para navegación)
-  async getAdjacentSliders(currentId: number): Promise<{
-    previous: Slider | null;
-    next: Slider | null;
-  }> {
-    try {
-      const sliders = await this.getSliders();
-      const currentIndex = sliders.findIndex(s => s.id === currentId);
-      
-      if (currentIndex === -1) {
-        return { previous: null, next: null };
-      }
-      
-      return {
-        previous: currentIndex > 0 ? sliders[currentIndex - 1] : null,
-        next: currentIndex < sliders.length - 1 ? sliders[currentIndex + 1] : null
-      };
-    } catch (error) {
-      console.error('Error obteniendo sliders adyacentes:', error);
-      throw error;
-    }
-  },
-
-  // Reordenar sliders (si implementas ordenamiento manual)
-  async reorderSliders(orderedIds: number[]): Promise<void> {
-    try {
-      // Actualizar orden de cada slider
-      const updatePromises = orderedIds.map((id, index) => 
-        supabase
-          .from('sliders')
-          .update({ 
-            orden: index + 1,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', id)
-      );
-
-      const results = await Promise.all(updatePromises);
-      
-      // Verificar si alguna actualización falló
-      const errors = results.filter(result => result.error);
-      if (errors.length > 0) {
-        throw new Error(`Error reordenando sliders: ${errors[0].error?.message}`);
-      }
-
-    } catch (error) {
-      console.error('Error reordenando sliders:', error);
       throw error;
     }
   }

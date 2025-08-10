@@ -5,6 +5,7 @@ import { useLanguage } from '../../hooks/useLanguage';
 import { generateLocalizedPath } from '../../utils/languageUtils';
 import { examenService } from '../../services/examenService';
 import type { ExamenCompleto, Examen } from '../../types/examen';
+import FechasEspecialesCalendar from '../../components/public/FechasEspecialesCalendar';
 import {
   Clock,
   Calendar, 
@@ -761,6 +762,10 @@ export default function ExamenDetalle() {
             {/* Sidebar */}
             <div className="lg:col-span-1 space-y-6">
               <HorariosGrid horarios={examen.horarios || []} />
+              <FechasEspecialesCalendar 
+                titulo={examen.texto_fechas_especiales || ''}
+                fechasEspeciales={examen.fechas_especiales || []}
+              />
               <ExtrasSidebar extras={examen.extras || []} />
             </div>
           </div>

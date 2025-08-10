@@ -11,17 +11,31 @@ export interface Examen {
   en_resumen: string | null;
   en_contenido: string | null;
   imagen: string | null;
+  texto_fechas_especiales: string | null; // ← NUEVA COLUMNA
   publicado: boolean;
   created_at: string;
   updated_at: string;
 }
 
-// Horarios de examen
+// Horarios de examen (regulares)
 export interface ExamenHorario {
   id: number;
   id_examen: number;
   dia: string | null;
   hora: string | null;
+  orden: number;
+  publicado: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+// ← NUEVA INTERFAZ: Fechas especiales del examen
+export interface ExamenFechaEspecial {
+  id: number;
+  id_examen: number;
+  fecha: string; // formato 'YYYY-MM-DD'
+  hora: string;  // formato 'HH:MM'
+  orden: number;
   publicado: boolean;
   created_at: string;
   updated_at: string;
@@ -38,6 +52,7 @@ export interface ExamenExtra {
   en_contenido: string | null;
   en_boton_texto: string | null;
   boton_enlace: string | null;
+  orden: number;
   publicado: boolean;
   created_at: string;
   updated_at: string;
@@ -51,6 +66,7 @@ export interface ExamenFaq {
   respuesta: string | null;
   en_pregunta: string | null;
   en_respuesta: string | null;
+  orden: number;
   publicado: boolean;
   created_at: string;
   updated_at: string;
@@ -62,6 +78,7 @@ export interface ExamenMuestra {
   id_examen: number;
   seccion: string | null;
   pregunta: string | null;
+  orden: number;
   publicado: boolean;
   created_at: string;
   updated_at: string;
@@ -70,6 +87,7 @@ export interface ExamenMuestra {
 // Examen completo con todas sus relaciones
 export interface ExamenCompleto extends Examen {
   horarios: ExamenHorario[];
+  fechas_especiales: ExamenFechaEspecial[]; // ← NUEVA RELACIÓN
   extras: ExamenExtra[];
   faqs: ExamenFaq[];
   muestras: ExamenMuestra[];
@@ -85,12 +103,22 @@ export interface ExamenFormData {
   en_resumen?: string;
   en_contenido?: string;
   imagen?: string;
+  texto_fechas_especiales?: string; // ← NUEVO CAMPO
   publicado?: boolean;
 }
 
 export interface ExamenHorarioFormData {
   dia?: string;
   hora?: string;
+  orden?: number;
+  publicado?: boolean;
+}
+
+// ← NUEVO FORMULARIO: Para fechas especiales
+export interface ExamenFechaEspecialFormData {
+  fecha?: string; // formato 'YYYY-MM-DD'
+  hora?: string;  // formato 'HH:MM'
+  orden?: number;
   publicado?: boolean;
 }
 
@@ -102,6 +130,7 @@ export interface ExamenExtraFormData {
   en_contenido?: string;
   en_boton_texto?: string;
   boton_enlace?: string;
+  orden?: number;
   publicado?: boolean;
 }
 
@@ -110,18 +139,21 @@ export interface ExamenFaqFormData {
   respuesta?: string;
   en_pregunta?: string;
   en_respuesta?: string;
+  orden?: number;
   publicado?: boolean;
 }
 
 export interface ExamenMuestraFormData {
   seccion?: string;
   pregunta?: string;
+  orden?: number;
   publicado?: boolean;
 }
 
 // Formulario completo para crear/editar examen
 export interface ExamenCompletoFormData extends ExamenFormData {
   horarios?: ExamenHorarioFormData[];
+  fechas_especiales?: ExamenFechaEspecialFormData[]; // ← NUEVA SECCIÓN
   extras?: ExamenExtraFormData[];
   faqs?: ExamenFaqFormData[];
   muestras?: ExamenMuestraFormData[];
@@ -133,8 +165,90 @@ export interface ExamenStats {
   publicados: number;
   borradores: number;
   totalHorarios: number;
+  totalFechasEspeciales: number; // ← NUEVA ESTADÍSTICA
   totalExtras: number;
   totalFaqs: number;
   totalMuestras: number;
   ultimaActualizacion: string | null;
+}
+
+// ========================================================================
+// TIPOS PARA ORDENAMIENTO
+// ========================================================================
+
+// Tipos para reordenamiento
+export interface ExamenOrderUpdate {
+  id: number;
+  orden: number;
+}
+
+export interface ReorderResult {
+  success: boolean;
+  updated: number;
+  errors?: string[];
+}
+
+// Tipos para datos mínimos de ordenamiento
+export interface ExamenHorarioForOrdering {
+  id: number;
+  dia: string | null;
+  hora: string | null;
+  orden: number;
+  publicado: boolean;
+}
+
+// ← NUEVO TIPO: Para ordenamiento de fechas especiales
+export interface ExamenFechaEspecialForOrdering {
+  id: number;
+  fecha: string;
+  hora: string;
+  orden: number;
+  publicado: boolean;
+}
+
+export interface ExamenExtraForOrdering {
+  id: number;
+  titulo: string | null;
+  orden: number;
+  publicado: boolean;
+}
+
+export interface ExamenFaqForOrdering {
+  id: number;
+  pregunta: string | null;
+  orden: number;
+  publicado: boolean;
+}
+
+export interface ExamenMuestraForOrdering {
+  id: number;
+  seccion: string | null;
+  pregunta: string | null;
+  orden: number;
+  publicado: boolean;
+}
+
+// ========================================================================
+// NUEVOS TIPOS PARA FECHAS ESPECIALES
+// ========================================================================
+
+// Tipo para validación de fechas
+export interface FechaEspecialValidation {
+  valid: boolean;
+  errors: string[];
+}
+
+// Tipo para filtros de fechas especiales
+export interface FechaEspecialFilters {
+  fecha_desde?: string;
+  fecha_hasta?: string;
+  publicado?: boolean;
+}
+
+// Tipo para respuesta de fechas especiales agrupadas
+export interface FechasEspecialesGrouped {
+  [examenId: number]: {
+    examen: Pick<Examen, 'id' | 'titulo' | 'url'>;
+    fechas: ExamenFechaEspecial[];
+  };
 }
