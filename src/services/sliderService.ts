@@ -1,6 +1,6 @@
 import { supabase } from '../lib/supabase';
 import { StorageService, STORAGE_BUCKETS } from './storageService';
-import type { Slider, SliderFormData, SliderOrderUpdate, ReorderResult } from '../types/slider';
+import type { Slider, SliderFormData, ReorderResult } from '../types/slider';
 
 export const sliderService = {
   // Obtener todos los sliders ORDENADOS
@@ -335,7 +335,7 @@ export const sliderService = {
   },
 
   // Compactar orden (eliminar huecos en la secuencia)
-  async compactOrder(deletedOrder?: number): Promise<void> {
+  async compactOrder(_deletedOrder?: number): Promise<void> {
     try {
       const sliders = await this.getSliders();
       
