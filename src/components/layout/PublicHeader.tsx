@@ -17,16 +17,14 @@ export default function PublicHeader() {
     es: {
       home: 'Inicio',
       exams: 'Exámenes',
-      pages: 'Páginas',
-      newsletters: 'Boletines',
+      preparation_material: 'Material de preparación',
       centers: 'Centros Autorizados',
       contact: 'Contacto',
     },
     en: {
       home: 'Home',
       exams: 'Tests',
-      pages: 'Pages',
-      newsletters: 'Newsletters',
+      preparation_material: 'Preparation material',
       centers: 'Authorized Centers',
       contact: 'Contact',
     }
@@ -38,8 +36,7 @@ export default function PublicHeader() {
   const links = {
     home: generateLocalizedPath('home', language),
     examenes: generateLocalizedPath('examenes', language),
-    paginas: generateLocalizedPath('paginas', language),
-    newsletters: generateLocalizedPath('newsletters', language),
+    material_preparacion: generateLocalizedPath('material_preparacion', language),
     centros: generateLocalizedPath('centros', language),
     contacto: generateLocalizedPath('contacto', language),
   };
@@ -95,11 +92,8 @@ export default function PublicHeader() {
             <Link to={links.examenes} className="nav-item">
               {currentTexts.exams}
             </Link>
-            <Link to={links.paginas} className="nav-item">
-              {currentTexts.pages}
-            </Link>
-            <Link to={links.newsletters} className="nav-item">
-              {currentTexts.newsletters}
+            <Link to={links.material_preparacion} className="nav-item">
+              {currentTexts.preparation_material}
             </Link>
             <Link to={links.centros} className="nav-item">
               {currentTexts.centers}
@@ -146,18 +140,11 @@ export default function PublicHeader() {
                 {currentTexts.exams}
               </Link>
               <Link 
-                to={links.paginas} 
+                to={links.material_preparacion} 
                 className="block px-4 py-3 text-text-muted hover:text-primary hover:bg-bg transition-colors font-medium rounded-lg mx-2"
                 onClick={closeMenu}
               >
-                {currentTexts.pages}
-              </Link>
-              <Link 
-                to={links.newsletters} 
-                className="block px-4 py-3 text-text-muted hover:text-primary hover:bg-bg transition-colors font-medium rounded-lg mx-2"
-                onClick={closeMenu}
-              >
-                {currentTexts.newsletters}
+                {currentTexts.preparation_material}
               </Link>
               <Link 
                 to={links.centros} 

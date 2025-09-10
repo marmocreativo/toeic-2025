@@ -59,6 +59,10 @@ export const ROUTE_MAPPINGS: Record<string, RouteConfig> = {
     es: '/examen/:url',
     en: '/test/:url',
   },
+   material_preparacion: {
+    es: '/material_preparacion',
+    en: '/preparation_material',
+  },
   paginas: {
     es: '/paginas',
     en: '/pages',

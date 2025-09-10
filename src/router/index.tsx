@@ -15,6 +15,7 @@ import Newsletters from '../pages/public/Newsletters';
 import NewsletterDetalle from '../pages/public/NewsletterDetalle';
 import Paginas from '../pages/public/Paginas';
 import Contacto from '../pages/public/Contacto'; // ✅ Nueva importación
+import PreparationMaterial from '../pages/public/PreparationMaterial';
 import Login from '../pages/auth/Login';
 import ForgotPassword from '../pages/auth/ForgotPassword';
 import NotFound from '../pages/NotFound';
@@ -48,6 +49,10 @@ export const router = createBrowserRouter([
       {
         path: 'examen/:url',
         element: <ExamenDetalle />,
+      },
+      {
+        path: 'material_preparacion',
+        element: <PreparationMaterial />,
       },
       {
         path: 'paginas',
@@ -100,6 +105,10 @@ export const router = createBrowserRouter([
       {
         path: 'test/:url',
         element: <ExamenDetalle />,
+      },
+      {
+        path: 'preparation_material',
+        element: <PreparationMaterial />,
       },
       {
         path: 'pages',
