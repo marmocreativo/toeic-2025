@@ -10,7 +10,9 @@ import {
   Download,
   X,
   Shield,
-  BarChart3
+  BarChart3,
+  Users,
+  Megaphone
 } from 'lucide-react';
 
 interface AdminSidebarProps {
@@ -29,6 +31,8 @@ export default function AdminSidebar({ isOpen = true, onClose }: AdminSidebarPro
     { path: '/admin/newsletters', icon: Download, label: 'Newsletters' },
     { path: '/admin/centros', icon: Building, label: 'Centros' },
     { path: '/admin/centros-estados', icon: MapPin, label: 'Estados' },
+    { path: '/admin/anuncios', icon: Megaphone, label: 'Anuncios' },
+    { path: '/admin/usuarios', icon: Users, label: 'Usuarios' },
   ];
 
   const renderMenuItem = (item: typeof menuItems[0]) => {
@@ -50,9 +54,11 @@ export default function AdminSidebar({ isOpen = true, onClose }: AdminSidebarPro
       >
         <div className="flex items-center">
           <Icon className={`mr-3 h-5 w-5 transition-colors ${
-            isActive ? 'text-white' : 'text-text-muted group-hover:text-primary'
+            isActive ? 'text-white' : 'text-text-muted group-hover:text-white'
           }`} />
-          <span>{item.label}</span>
+          <span className={`${
+            isActive ? 'text-white' : 'text-text-muted group-hover:text-white'
+          }`} >{item.label}</span>
         </div>
       </Link>
     );

@@ -6,14 +6,11 @@ import { generateLocalizedPath } from '../../utils/languageUtils';
 import { examenService } from '../../services/examenService';
 import type { Examen } from '../../types/examen';
 import { 
-  Clock,
-  Award, 
   ArrowRight, 
   Search,
   Filter,
   Building2,
   BookOpen,
-  Target
 } from 'lucide-react';
 
 export default function Examenes() {
@@ -166,31 +163,6 @@ export default function Examenes() {
         </div>
       </section>
 
-      {/* Features Bar */}
-      <section className="hidden md:block bg-primary text-white py-4">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center divide-x-1 divide-solid divide-white">
-            <div className="flex items-center justify-center space-x-3">
-              <Award className="w-8 h-8 text-accent" />
-              <span className="text-lg font-medium text-white">
-                {currentTexts.features.global}
-              </span>
-            </div>
-            <div className="flex items-center justify-center space-x-3">
-              <Clock className="w-8 h-8 text-accent" />
-              <span className="text-lg font-medium text-white">
-                {currentTexts.features.fast}
-              </span>
-            </div>
-            <div className="flex items-center justify-center space-x-3">
-              <Target className="w-8 h-8 text-accent" />
-              <span className="text-lg font-medium text-white">
-                {currentTexts.features.reliable}
-              </span>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* Exámenes Grid */}
       <section className="py-16 bg-bg-light">

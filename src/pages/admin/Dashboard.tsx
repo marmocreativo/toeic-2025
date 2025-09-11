@@ -15,7 +15,8 @@ import {
   HelpCircle,
   List,
   Building,
-  Download
+  Download,
+  UserPlus  
 } from 'lucide-react';
 import { getDashboardStats, getQuickActions } from '../../services/dashboardService';
 import type { DashboardStats } from '../../services/dashboardService';
@@ -26,7 +27,8 @@ const iconMap = {
   FileText,
   Image,
   Building,
-  Download
+  Download,
+  UserPlus  
 };
 
 export default function AdminDashboard() {

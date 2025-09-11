@@ -5,13 +5,13 @@ import { useLanguage } from '../../hooks/useLanguage';
 import { generateLocalizedPath } from '../../utils/languageUtils';
 import { paginaService } from '../../services/paginaService';
 import type { Pagina } from '../../types/pagina';
+import  CallToAction from '../../components/public/CallToAction';
 import { 
   ArrowLeft,
   Calendar,
   FileText,
   RefreshCw,
-  Clock,
-  BookOpen
+  Clock
 } from 'lucide-react';
 
 export default function PaginaDetalle() {
@@ -231,32 +231,7 @@ export default function PaginaDetalle() {
         </div>
       </section>
 
-      {/* Call to Action */}
-      <section className="py-16 gradient-primary">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 divide-x-1 divide-solid divide-white">
-            <div>
-              <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-                {currentTexts.ctaTitle}
-              </h2>
-            </div>
-            <div className="md:col-span-2">
-              <p className="text-xl text-white/90 mb-8 max-w-2xl">
-                {currentTexts.ctaDescription}
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4">
-                <Link
-                  to={generateLocalizedPath('examenes', language)}
-                  className="inline-flex items-center px-8 py-3 bg-accent hover:bg-accent-dark text-black font-semibold rounded-lg transition-colors"
-                >
-                  <BookOpen className="mr-2 w-5 h-5" />
-                  {currentTexts.ctaButton}
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      <CallToAction />
     </div>
   );
 }

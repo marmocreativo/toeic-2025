@@ -1,20 +1,12 @@
 // src/pages/public/Contacto.tsx
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { useLanguage } from '../../hooks/useLanguage';
-import { generateLocalizedPath } from '../../utils/languageUtils';
 import { 
   MapPin, 
   Phone,
   Mail,
-  Clock,
   Send,
   CheckCircle,
-  Building2,
-  BookOpen,
-  MessageSquare,
-  Globe,
-  HeadphonesIcon
 } from 'lucide-react';
 
 export default function Contacto() {
@@ -44,12 +36,12 @@ export default function Contacto() {
       successTitle: '¡Mensaje Enviado!',
       successMessage: 'Te responderemos dentro de 24 horas.',
       contactInfo: 'Información de Contacto',
-      address: 'Dirección',
+      address: 'GAUSS NO. 9 INT. 103 C, COLONIA ANZURES, DEL. MIGUEL HIDALGO, CIUDAD DE MÉXICO, C.P. 11590.',
       addressText: 'Ciudad de México, México',
       hours: 'Horarios',
       hoursText: 'Lun-Vie: 9:00 AM - 6:00 PM',
-      phoneText: '+52 55 1234 5678',
-      emailText: 'info@toeic2025.mx',
+      phoneText: '(55) 5540 3555 - (55) 5540 3959',
+      emailText: 'recepcion@toeic.mx',
       newMessage: 'Nuevo mensaje',
       ctaTitle: '¡No lo pienses más!',
       ctaDescription: 'Explora nuestros exámenes o encuentra un centro autorizado.',
@@ -63,8 +55,8 @@ export default function Contacto() {
       placeholders: {
         name: 'Tu nombre',
         email: 'tu@email.com',
-        phone: '55 1234 5678',
-        subject: 'Información TOEIC',
+        phone: '',
+        subject: '',
         message: 'Escribe tu mensaje...'
       }
     },
@@ -82,12 +74,12 @@ export default function Contacto() {
       successTitle: 'Message Sent!',
       successMessage: 'We\'ll respond within 24 hours.',
       contactInfo: 'Contact Information',
-      address: 'Address',
+      address: 'GAUSS NO. 9 INT. 103 C, COLONIA ANZURES, DEL. MIGUEL HIDALGO, CIUDAD DE MÉXICO, C.P. 11590.',
       addressText: 'Mexico City, Mexico',
       hours: 'Hours',
       hoursText: 'Mon-Fri: 9:00 AM - 6:00 PM',
-      phoneText: '+52 55 1234 5678',
-      emailText: 'info@toeic2025.mx',
+      phoneText: '(55) 5540 3555 - (55) 5540 3959',
+      emailText: 'recepcion@toeic.mx',
       newMessage: 'New message',
       ctaTitle: 'Need Immediate Information?',
       ctaDescription: 'Explore our tests or find an authorized center.',
@@ -101,8 +93,8 @@ export default function Contacto() {
       placeholders: {
         name: 'Your name',
         email: 'your@email.com',
-        phone: '55 1234 5678',
-        subject: 'TOEIC information',
+        phone: '',
+        subject: '',
         message: 'Write your message...'
       }
     }
@@ -135,12 +127,23 @@ export default function Contacto() {
     }
   };
 
-  const contactMethods = [
+  // Aquí está la corrección - definir interfaces más claras
+  interface ContactMethod {
+    icon: any;
+    title: string;
+    color: string;
+    bgColor: string;
+    isClickable: boolean;
+    action?: () => void;
+  }
+
+  const contactMethods: ContactMethod[] = [
     {
       icon: Phone,
       title: currentTexts.phoneText,
       color: 'text-primary',
       bgColor: 'bg-primary/10',
+      isClickable: true,
       action: () => window.open(`tel:${currentTexts.phoneText}`)
     },
     {
@@ -148,62 +151,23 @@ export default function Contacto() {
       title: currentTexts.emailText,
       color: 'text-secondary',
       bgColor: 'bg-secondary/10',
+      isClickable: true,
       action: () => window.open(`mailto:${currentTexts.emailText}`)
-    },
-    {
-      icon: Clock,
-      title: currentTexts.hoursText,
-      color: 'text-accent-dark',
-      bgColor: 'bg-accent/10',
-      action: null
-    },
-    {
-      icon: MapPin,
-      title: currentTexts.addressText,
-      color: 'text-primary',
-      bgColor: 'bg-primary/10',
-      action: () => window.open('https://maps.google.com', '_blank')
     }
   ];
 
   return (
     <div className="min-h-screen bg-bg">
-      {/* Hero Section Compacto */}
-      <section className="gradient-hero text-primary py-12 -mt-16 pt-20">
+      {/* Hero Section */}
+      <section className="gradient-hero text-primary py-16 -mt-16 pt-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <h1 className="text-4xl md:text-5xl font-medium text-primary mb-3">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-medium text-primary mb-4">
               {currentTexts.title}
             </h1>
-            <p className="text-lg md:text-xl text-primary/90 mb-6 max-w-2xl mx-auto">
+            <p className="text-xl md:text-2xl text-primary/90 mb-8 max-w-3xl mx-auto">
               {currentTexts.subtitle}
             </p>
-          </div>
-        </div>
-      </section>
-
-      {/* Features Bar Compacto */}
-      <section className="bg-primary text-white py-3">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center divide-x-1 divide-solid divide-white">
-            <div className="flex items-center justify-center space-x-2">
-              <HeadphonesIcon className="w-5 h-5 text-accent" />
-              <span className="text-sm font-medium text-white">
-                {currentTexts.features.support}
-              </span>
-            </div>
-            <div className="flex items-center justify-center space-x-2">
-              <MessageSquare className="w-5 h-5 text-accent" />
-              <span className="text-sm font-medium text-white">
-                {currentTexts.features.response}
-              </span>
-            </div>
-            <div className="flex items-center justify-center space-x-2">
-              <Globe className="w-5 h-5 text-accent" />
-              <span className="text-sm font-medium text-white">
-                {currentTexts.features.multilingual}
-              </span>
-            </div>
           </div>
         </div>
       </section>
@@ -311,12 +275,12 @@ export default function Contacto() {
                     {/* Submit Button */}
                     <button 
                       type="submit" 
-                      className="btn-primary w-full h-10"
+                      className="btn-primary w-full"
                       disabled={isSubmitting}
                     >
                       {isSubmitting ? (
                         <>
-                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                          <Send className="w-4 h-4 mr-2 animate-pulse" />
                           {currentTexts.sending}
                         </>
                       ) : (
@@ -337,13 +301,13 @@ export default function Contacto() {
                 {currentTexts.contactInfo}
               </h2>
 
-              {/* Contact Methods - Compactos */}
+              {/* Contact Methods - Compactos - CORRECCIÓN AQUÍ */}
               <div className="space-y-3">
                 {contactMethods.map((method, index) => (
                   <div 
                     key={index} 
-                    className={`bg-bg-light rounded-lg border border-border p-3 hover:shadow-md transition-shadow ${method.action ? 'cursor-pointer hover:border-primary/30' : ''}`}
-                    onClick={method.action || undefined}
+                    className={`bg-bg-light rounded-lg border border-border p-3 hover:shadow-md transition-shadow ${method.isClickable ? 'cursor-pointer hover:border-primary/30' : ''}`}
+                    onClick={method.isClickable ? method.action : undefined}
                   >
                     <div className="flex items-center space-x-3">
                       <div className={`${method.bgColor} rounded-lg p-2 flex-shrink-0`}>
@@ -354,7 +318,7 @@ export default function Contacto() {
                           {method.title}
                         </p>
                       </div>
-                      {method.action && (
+                      {method.isClickable && (
                         <div className="text-text-muted">
                           <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
@@ -377,44 +341,10 @@ export default function Contacto() {
                 </p>
                 <button 
                   className="inline-flex items-center px-3 py-1 bg-accent hover:bg-accent-dark text-black text-xs font-medium rounded transition-colors"
-                  onClick={() => window.open('https://maps.google.com', '_blank')}
+                  onClick={() => window.open('https://maps.app.goo.gl/MZLm2fDhupSeJyZP7', '_blank')}
                 >
                   {language === 'es' ? 'Ver Mapa' : 'View Map'}
                 </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Call to Action Compacto */}
-      <section className="py-8 gradient-primary">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 divide-x-1 divide-solid divide-white">
-            <div className="md:flex md:items-center">
-              <h2 className="text-2xl font-bold text-white mb-3 md:mb-0">
-                {currentTexts.ctaTitle}
-              </h2>
-            </div>
-            <div className="md:col-span-2 md:pl-6">
-              <p className="text-lg text-white/90 mb-4">
-                {currentTexts.ctaDescription}
-              </p>
-              <div className="flex flex-col sm:flex-row gap-3">
-                <Link
-                  to={generateLocalizedPath('examenes', language)}
-                  className="inline-flex items-center px-6 py-2 bg-accent hover:bg-accent-dark text-black font-semibold rounded-lg transition-colors text-sm"
-                >
-                  <BookOpen className="mr-2 w-4 h-4" />
-                  {currentTexts.ctaButton}
-                </Link>
-                <Link
-                  to={generateLocalizedPath('centros', language)}
-                  className="inline-flex items-center px-6 py-2 border-2 border-white text-white font-semibold rounded-lg hover:bg-white hover:text-primary transition-colors text-sm"
-                >
-                  <Building2 className="mr-2 w-4 h-4" />
-                  {currentTexts.ctaSecondary}
-                </Link>
               </div>
             </div>
           </div>

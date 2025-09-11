@@ -1,20 +1,18 @@
 // src/pages/public/Centros.tsx
 import { useState, useEffect, useMemo } from 'react';
-import { Link } from 'react-router-dom';
 import { MapContainer, TileLayer, GeoJSON } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { useLanguage } from '../../hooks/useLanguage';
-import { generateLocalizedPath } from '../../utils/languageUtils';
 import { getCentros, getCentrosEstados } from '../../services/centroService';
 import type { CentroConEstado, CentroEstado } from '../../types/centro';
+import  CallToAction from '../../components/public/CallToAction';
 import { 
   MapPin, 
   Search, 
   Phone,
   Mail,
   Building2,
-  BookOpen,
   X,
   Navigation,
 } from 'lucide-react';
@@ -572,29 +570,7 @@ export default function Centros() {
           </div>
         </div>
       </section>
-
-      {/* Call to Action */}
-      <section className="py-16 bg-primary text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-3xl mx-auto">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              {currentTexts.ctaTitle}
-            </h2>
-            <p className="text-xl text-white/90 mb-8">
-              {currentTexts.ctaDescription}
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link
-                to={generateLocalizedPath('examenes', language)}
-                className="inline-flex items-center justify-center px-8 py-3 bg-accent hover:bg-accent/90 text-black font-semibold rounded-lg transition-colors"
-              >
-                <BookOpen className="mr-2 w-5 h-5" />
-                {currentTexts.ctaButton}
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
+      <CallToAction />
     </div>
   );
 }

@@ -6,12 +6,13 @@ import { useLanguage } from '../../hooks/useLanguage';
 import { generateLocalizedPath } from '../../utils/languageUtils';
 import { sliderService } from '../../services/sliderService';
 import { examenService } from '../../services/examenService';
+import  CallToAction from '../../components/public/CallToAction';
+import  AnuncioModal from '../../components/public/AnuncioModal';
 import type { Slider } from '../../types/slider';
 import type { Examen } from '../../types/examen';
 import { 
   ChevronLeft, 
-  ChevronRight, 
-  Building2, 
+  ChevronRight,
   ArrowRight
 } from 'lucide-react';
 
@@ -94,7 +95,17 @@ const AnimatedCounter: React.FC<AnimatedCounterProps> = ({ value, suffix = '', d
     if (isInView) {
       const startTime = Date.now();
       const startValue = 0;
-      const endValue = parseInt(value.replace(/[^0-9]/g, ''));
+      
+      // Extraer número, prefijo (+) y sufijo (K, M, etc.)
+      const hasPrefix = value.includes('+');
+      // log para evitar error tsx
+      console.log(hasPrefix);
+      const suffixMatch = value.match(/[a-zA-Z]+$/); // Captura letras al final
+      const extractedSuffix = suffixMatch ? suffixMatch[0] : '';
+      // log para evitar error tsx
+      console.log(extractedSuffix);
+      const numberPart = value.replace(/[^0-9]/g, ''); // Solo números
+      const endValue = parseInt(numberPart);
 
       const updateCount = () => {
         const now = Date.now();
@@ -116,9 +127,14 @@ const AnimatedCounter: React.FC<AnimatedCounterProps> = ({ value, suffix = '', d
     }
   }, [isInView, value, duration]);
 
+  // Construir el valor final con prefijo y sufijo
+  const hasPrefix = value.includes('+');
+  const suffixMatch = value.match(/[a-zA-Z]+$/);
+  const extractedSuffix = suffixMatch ? suffixMatch[0] : '';
+  
   return (
     <span ref={ref}>
-      {value.includes('+') ? '+' : ''}{count}{suffix}
+      {hasPrefix ? '+' : ''}{count}{extractedSuffix}{suffix}
     </span>
   );
 };
@@ -534,7 +550,7 @@ const StatsSection = () => {
       block_3: 'Usado por',
     },
     en: {
-      block_1: 'Accepted',
+      block_1: 'Accepted in',
       block_2: 'Reputation',
       block_3: 'Used by',
     }
@@ -542,14 +558,14 @@ const StatsSection = () => {
 
   const sub_texts = {
     es: {
-      block_1: 'Paises',
+      block_1: 'Países', // Corregido: agregada la tilde
       block_2: 'Años',
       block_3: 'Organizaciones',
     },
     en: {
-      block_1: 'Contries',
+      block_1: 'Countries', // Corregido: era "Contries"
       block_2: 'Years',
-      block_3: 'Organitations',
+      block_3: 'Organizations', // Corregido: era "Organitations"
     }
   };
 
@@ -568,7 +584,7 @@ const StatsSection = () => {
       sublabel: currentSubTexts.block_2,
     },
     {
-      number: '+14K',
+      number: '+14K', // La K ahora se mostrará correctamente
       label: currentTexts.block_3,
       sublabel: currentSubTexts.block_3,
     }
@@ -1116,97 +1132,6 @@ const PartnersCarousel = () => {
   );
 };
 
-// ============================================================================
-// COMPONENTE DE LLAMADA A LA ACCIÓN
-// ============================================================================
-
-const CallToActionSection = () => {
-  const { language } = useLanguage();
-  const { ref, controls } = useScrollAnimation();
-
-  const texts = {
-    es: {
-      title: '¡No lo pienses más!',
-      description: 'Desarrollando las habilidades de comunicación en inglés más efectivas para la fuerza laboral.',
-      primaryButton: 'Contáctanos'
-    },
-    en: {
-      title: 'Ready to Start Your TOEIC Assessment?',
-      description: 'Building the most effective English communication skills for the workforce.',
-      primaryButton: 'Contact Us',
-    }
-  };
-
-  const currentTexts = texts[language];
-
-  return (
-    <motion.section 
-      ref={ref}
-      className="py-16 gradient-primary relative overflow-hidden"
-      initial="initial"
-      animate={controls}
-      variants={staggerContainer}
-    >
-      {/* Background Animation */}
-      <motion.div
-        className="absolute inset-0 bg-gradient-to-br from-transparent via-white/5 to-transparent"
-        animate={{
-          x: [-100, 100],
-          opacity: [0, 1, 0]
-        }}
-        transition={{
-          duration: 3,
-          repeat: Infinity,
-          ease: "easeInOut"
-        }}
-      />
-      
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-        <motion.div 
-          className='grid grid-cols-1 md-grid-cols-3 gap-8 divide-x-1 divide-solid divide-white'
-          variants={staggerContainer}
-        >
-          <motion.div variants={fadeInLeft}>
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-              {currentTexts.title}
-            </h2>
-          </motion.div>
-          <motion.div 
-            className='md:col-span-2'
-            variants={fadeInRight}
-          >
-            <p className="text-xl text-white/90 mb-8 max-w-2xl">
-              {currentTexts.description}
-            </p>
-            <motion.div 
-              className="flex flex-col sm:flex-row gap-4"
-              variants={staggerContainer}
-            >
-              <motion.div
-                variants={staggerItem}
-                whileHover={{ scale: 1.05, y: -2 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <Link
-                  to={generateLocalizedPath('centros', language)}
-                  className="inline-flex items-center px-8 py-3 bg-accent hover:bg-accent-dark text-black font-semibold rounded-lg transition-colors"
-                >
-                  <motion.div
-                    whileHover={{ rotate: 15 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <Building2 className="mr-2 w-5 h-5" />
-                  </motion.div>
-                  {currentTexts.primaryButton}
-                </Link>
-              </motion.div>
-            </motion.div>
-          </motion.div>
-        </motion.div>
-      </div>
-    </motion.section>
-  );
-};
 
 // ============================================================================
 // COMPONENTE PRINCIPAL HOME
@@ -1224,7 +1149,8 @@ export default function Home() {
       <AboutToeicSection />
       <ExamsSection />
       <PartnersCarousel />
-      <CallToActionSection />
+      <CallToAction />
+      <AnuncioModal />
     </motion.div>
   );
 }

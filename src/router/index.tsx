@@ -1,4 +1,4 @@
-// src/router/index.tsx - Versión actualizada con contacto
+// src/router/index.tsx - Versión actualizada con usuarios
 
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import PublicLayout from '../layouts/PublicLayout';
@@ -14,7 +14,7 @@ import PaginaDetalle from '../pages/public/PaginaDetalle';
 import Newsletters from '../pages/public/Newsletters';
 import NewsletterDetalle from '../pages/public/NewsletterDetalle';
 import Paginas from '../pages/public/Paginas';
-import Contacto from '../pages/public/Contacto'; // ✅ Nueva importación
+import Contacto from '../pages/public/Contacto';
 import PreparationMaterial from '../pages/public/PreparationMaterial';
 import Login from '../pages/auth/Login';
 import ForgotPassword from '../pages/auth/ForgotPassword';
@@ -31,6 +31,10 @@ import AdminCentrosEstados from '../pages/admin/CentrosEstados';
 import AdminNewsletters from '../pages/admin/AdminNewsletters';
 import AdminPaginas from '../pages/admin/Paginas';
 import PaginaForm from '../pages/admin/PaginaForm';
+import AdminUsuarios from '../pages/admin/Usuarios'; 
+import UsuarioForm from '../pages/admin/UsuarioForm';
+import AdminAnuncios from '../pages/admin/Anuncios';
+import AnuncioForm from '../pages/admin/AnuncioForm';
 
 export const router = createBrowserRouter([
   // Rutas públicas en español (por defecto)
@@ -75,7 +79,7 @@ export const router = createBrowserRouter([
         element: <Centros />,
       },
       {
-        path: 'contacto', // ✅ Nueva ruta en español
+        path: 'contacto',
         element: <Contacto />,
       },
       {
@@ -131,7 +135,7 @@ export const router = createBrowserRouter([
         element: <Centros />,
       },
       {
-        path: 'contact', // ✅ Nueva ruta en inglés
+        path: 'contact',
         element: <Contacto />,
       },
       {
@@ -215,6 +219,30 @@ export const router = createBrowserRouter([
       {
         path: 'paginas/:id/editar',
         element: <PaginaForm />,
+      },
+      {
+        path: 'anuncios',
+        element: <AdminAnuncios />,
+      },
+      {
+        path: 'anuncios/nuevo',
+        element: <AnuncioForm />,
+      },
+      {
+        path: 'anuncios/:id/editar',
+        element: <AnuncioForm />,
+      },
+      {
+        path: 'usuarios',
+        element: <AdminUsuarios />,
+      },
+      {
+        path: 'usuarios/nuevo',
+        element: <UsuarioForm />,
+      },
+      {
+        path: 'usuarios/:id/editar',
+        element: <UsuarioForm />,
       },
     ],
   },

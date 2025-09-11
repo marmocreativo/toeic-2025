@@ -5,13 +5,12 @@ import { useLanguage } from '../../hooks/useLanguage';
 import { generateLocalizedPath } from '../../utils/languageUtils';
 import { paginaService } from '../../services/paginaService';
 import type { Pagina } from '../../types/pagina';
+import  CallToAction from '../../components/public/CallToAction';
 import { 
   FileText, 
   Search, 
   ArrowRight, 
   Calendar,
-  BookOpen,
-  RefreshCw,
   Clock
 } from 'lucide-react';
 
@@ -175,32 +174,6 @@ export default function Paginas() {
         </div>
       </section>
 
-      {/* Features Bar */}
-      <section className="hidden md:block bg-primary text-white py-4">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center divide-x-1 divide-solid divide-white">
-            <div className="flex items-center justify-center space-x-3">
-              <FileText className="w-8 h-8 text-accent" />
-              <span className="text-lg font-medium text-white">
-                {currentTexts.features.comprehensive}
-              </span>
-            </div>
-            <div className="flex items-center justify-center space-x-3">
-              <RefreshCw className="w-8 h-8 text-accent" />
-              <span className="text-lg font-medium text-white">
-                {currentTexts.features.updated}
-              </span>
-            </div>
-            <div className="flex items-center justify-center space-x-3">
-              <BookOpen className="w-8 h-8 text-accent" />
-              <span className="text-lg font-medium text-white">
-                {currentTexts.features.multilingual}
-              </span>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* Páginas Grid */}
       <section className="py-16 bg-bg-light">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -293,32 +266,7 @@ export default function Paginas() {
         </div>
       </section>
 
-      {/* Call to Action */}
-      <section className="py-16 gradient-primary">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 divide-x-1 divide-solid divide-white">
-            <div>
-              <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-                {currentTexts.ctaTitle}
-              </h2>
-            </div>
-            <div className="md:col-span-2">
-              <p className="text-xl text-white/90 mb-8 max-w-2xl">
-                {currentTexts.ctaDescription}
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4">
-                <Link
-                  to={generateLocalizedPath('examenes', language)}
-                  className="inline-flex items-center px-8 py-3 bg-accent hover:bg-accent-dark text-black font-semibold rounded-lg transition-colors"
-                >
-                  <BookOpen className="mr-2 w-5 h-5" />
-                  {currentTexts.ctaButton}
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      <CallToAction />
     </div>
   );
 }

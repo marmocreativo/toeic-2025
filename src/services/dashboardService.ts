@@ -1,6 +1,7 @@
-// src/services/dashboardService.ts
+// src/services/dashboardService.ts - Actualizado con usuarios
 
 import { supabase } from '../lib/supabase';
+import { usuarioService } from './usuarioService';
 
 export interface DashboardStats {
   examenes: {
@@ -38,11 +39,21 @@ export interface DashboardStats {
     borradores: number;
     recientes: number;
   };
+  // ✅ Nuevas estadísticas de usuarios
+  usuarios: {
+    total: number;
+    confirmados: number;
+    pendientes: number;
+    activos: number;
+    administradores: number;
+    usuariosNormales: number;
+  };
   actividad: {
     examenesRecientes: any[];
     centrosRecientes: any[];
     paginasRecientes: any[];
     newslettersRecientes: any[];
+    usuariosRecientes: any[]; // ✅ Nueva actividad
   };
 }
 
@@ -92,6 +103,50 @@ export const getDashboardStats = async (): Promise<DashboardStats> => {
       .select('id, titulo, publicado, created_at, fecha_publicacion');
 
     if (newslettersError) throw newslettersError;
+
+    // ✅ Obtener estadísticas de usuarios
+    let usuariosStats = {
+      total: 0,
+      confirmados: 0,
+      pendientes: 0,
+      activos: 0,
+      administradores: 0,
+      usuariosNormales: 0
+    };
+
+    let usuariosRecientes: any[] = [];
+
+    try {
+      // Solo obtener estadísticas de usuarios si el usuario actual es admin
+      const isAdmin = await usuarioService.checkCurrentUserAdminPermissions();
+      if (isAdmin) {
+        const statsUsuarios = await usuarioService.getStats();
+        usuariosStats = {
+          total: statsUsuarios.total,
+          confirmados: statsUsuarios.confirmados,
+          pendientes: statsUsuarios.pendientes,
+          activos: statsUsuarios.activos,
+          administradores: 0,
+          usuariosNormales: 0
+        };
+
+        // Obtener usuarios recientes
+        const usuarios = await usuarioService.getUsuarios();
+        usuariosRecientes = usuarios
+          .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+          .slice(0, 5)
+          .map(user => ({
+            id: user.id,
+            email: user.email,
+            nombre: usuarioService.getFullName(user),
+            created_at: user.created_at,
+            confirmado: !!user.email_confirmed_at
+          }));
+      }
+    } catch (error) {
+      console.warn('No se pudieron obtener estadísticas de usuarios:', error);
+      // Continuar sin estadísticas de usuarios
+    }
 
     // Obtener estadísticas adicionales de exámenes
     const { data: horarios, error: horariosError } = await supabase
@@ -210,11 +265,14 @@ export const getDashboardStats = async (): Promise<DashboardStats> => {
         borradores: newslettersTotal - newslettersPublicados,
         recientes: newslettersRecientes,
       },
+      // ✅ Estadísticas de usuarios
+      usuarios: usuariosStats,
       actividad: {
         examenesRecientes,
         centrosRecientes,
         paginasRecientes,
         newslettersRecientes: newslettersRecentesData,
+        usuariosRecientes, // ✅ Nueva actividad
       },
     };
   } catch (error) {
@@ -259,6 +317,14 @@ export const getQuickActions = () => {
       href: '/admin/newsletters',
       icon: 'FileText',
       color: 'red',
+    },
+    // ✅ Nueva acción rápida
+    {
+      title: 'Nuevo Usuario',
+      description: 'Crear cuenta de usuario',
+      href: '/admin/usuarios/nuevo',
+      icon: 'UserPlus',
+      color: 'indigo',
     },
   ];
 };

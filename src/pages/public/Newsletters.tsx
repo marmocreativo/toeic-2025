@@ -5,13 +5,12 @@ import { useLanguage } from '../../hooks/useLanguage';
 import { generateLocalizedPath } from '../../utils/languageUtils';
 import { getNewsletters } from '../../services/newsletterService';
 import type { Newsletter } from '../../types/newsletter';
+import  CallToAction from '../../components/public/CallToAction';
 import { 
   FileText, 
   Search, 
   Download,
   Calendar,
-  BookOpen,
-  RefreshCw,
   Clock,
   ArrowRight
 } from 'lucide-react';
@@ -173,32 +172,6 @@ export default function Newsletters() {
         </div>
       </section>
 
-      {/* Features Bar */}
-      <section className="hidden md:block bg-primary text-white py-4">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center divide-x-1 divide-solid divide-white">
-            <div className="flex items-center justify-center space-x-3">
-              <RefreshCw className="w-8 h-8 text-accent" />
-              <span className="text-lg font-medium text-white">
-                {currentTexts.features.updated}
-              </span>
-            </div>
-            <div className="flex items-center justify-center space-x-3">
-              <FileText className="w-8 h-8 text-accent" />
-              <span className="text-lg font-medium text-white">
-                {currentTexts.features.official}
-              </span>
-            </div>
-            <div className="flex items-center justify-center space-x-3">
-              <Download className="w-8 h-8 text-accent" />
-              <span className="text-lg font-medium text-white">
-                {currentTexts.features.free}
-              </span>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* Newsletters Grid */}
       <section className="py-16 bg-bg-light">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -218,7 +191,7 @@ export default function Newsletters() {
                   className="bg-bg-light rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300 group border border-border"
                 >
                   {/* Header con icono PDF */}
-                  <div className="h-48 gradient-accent flex items-center justify-center relative">
+                  <div className="h-48 bg-gray-100 flex items-center justify-center relative">
                     <FileText className="w-20 h-20 text-black opacity-80" />
                     <div className="absolute top-4 right-4 bg-black/20 backdrop-blur-sm rounded-full p-2">
                       <Download className="w-5 h-5 text-black" />
@@ -300,32 +273,7 @@ export default function Newsletters() {
         </div>
       </section>
 
-      {/* Call to Action */}
-      <section className="py-16 gradient-primary">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 divide-x-1 divide-solid divide-white">
-            <div>
-              <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-                {currentTexts.ctaTitle}
-              </h2>
-            </div>
-            <div className="md:col-span-2">
-              <p className="text-xl text-white/90 mb-8 max-w-2xl">
-                {currentTexts.ctaDescription}
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4">
-                <Link
-                  to={generateLocalizedPath('examenes', language)}
-                  className="inline-flex items-center px-8 py-3 bg-accent hover:bg-accent-dark text-black font-semibold rounded-lg transition-colors"
-                >
-                  <BookOpen className="mr-2 w-5 h-5" />
-                  {currentTexts.ctaButton}
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      <CallToAction />
     </div>
   );
 }
