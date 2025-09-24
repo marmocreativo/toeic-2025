@@ -18,6 +18,7 @@ import MuestrasTab from '../../components/public/MuestrasTab';
 import FaqTab from '../../components/public/FaqTab';
 import OtrosExamenes from '../../components/public/OtrosExamenes';
 import CallToAction from '../../components/public/CallToAction';
+import WhatsAppFloat from '../../components/common/WhatsAppFloat';
 
 import {
   RefreshCw,
@@ -35,6 +36,10 @@ export default function ExamenDetalle() {
   const [activeTab, setActiveTab] = useState('content');
   const [openRegistro, setOpenRegistro] = useState(false);
   const { language } = useLanguage();
+
+  const customMessage = language === 'es' 
+    ? `Me gustaría información específica sobre el examen ${examen?.titulo}`
+    : `I would like specific information about the ${examen?.en_titulo} exam`;
 
   const texts = {
     es: {
@@ -214,6 +219,7 @@ export default function ExamenDetalle() {
           />
         </DialogContent>
       </Dialog>
+      <WhatsAppFloat customMessage={customMessage} />
     </div>
   );
 }

@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 //import { Calendar, dateFns } from "@/components/ui/calendar";
-import { X, CheckCircle, AlertCircle, Clock, AlertTriangle, ChevronLeft, ChevronRight } from "lucide-react";
+import { X, CheckCircle, AlertCircle, Clock, AlertTriangle, ChevronLeft, ChevronRight, MessageCircle } from "lucide-react";
 
 import { useLanguage } from "@/hooks/useLanguage";
 
@@ -139,8 +139,10 @@ const [showCalendar, setShowCalendar] = useState<boolean>(true);
       next: "Siguiente",
       finish: "Finalizar registro",
       close: "Cerrar",
+      whatsappButton: "Registrar por WhatsApp",
+      whatsappButtonDesc: "Enviar datos por WhatsApp para registro manual",
       
-      // Paso 1
+      // ... resto de textos existentes
       tipoDocumento: "Tipo de documento *",
       documento: "Número de documento *",
       nombre: "Nombre *",
@@ -180,8 +182,10 @@ const [showCalendar, setShowCalendar] = useState<boolean>(true);
       next: "Next",
       finish: "Finish registration",
       close: "Close",
+      whatsappButton: "Register via WhatsApp",
+      whatsappButtonDesc: "Send data via WhatsApp for manual registration",
       
-      // Paso 1
+      // ... resto de textos existentes
       tipoDocumento: "Document type *",
       documento: "Document number *",
       nombre: "First name *",
@@ -561,6 +565,75 @@ const loadContactos = async (empresaId: number) => {
     }
   };
 
+   const generateWhatsAppMessage = (): string => {
+    const empresaNombre = empresas.find(e => e.id === examData.empresaId)?.nombre || '';
+    const examenNombre = examenes.find(e => e.id === examData.examenId)?.nombre || '';
+    const contactoNombre = contactos.find(c => c.id === examData.contactoId)?.nombre || '';
+    const fechaFormateada = selectedDate ? new Date(selectedDate).toLocaleDateString('es-MX', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    }) : '';
+
+    const mensaje = language === 'es' ? 
+      `🎯 SOLICITUD DE REGISTRO EXAMEN TOEIC
+
+📋 DATOS PERSONALES:
+• Tipo de documento: ${personalData.tipoDocumento.toUpperCase()}
+• Número: ${personalData.documento}
+• Nombre completo: ${personalData.nombre} ${personalData.apellidoPaterno} ${personalData.apellidoMaterno}
+• Correo electrónico: ${personalData.correo}
+• Teléfono: ${personalData.telefono}
+
+🏢 DATOS DEL EXAMEN:
+• Tipo de registro: ${empresaNombre}
+• Examen: ${examenNombre}${examData.llave ? `\n• Llave: ${examData.llave}` : ''}
+• Contacto: ${contactoNombre}
+
+📅 FECHA Y HORA SOLICITADA:
+• Fecha: ${fechaFormateada}
+• Hora: ${selectedTime}
+
+Por favor, confirmen la disponibilidad y procedan con mi registro. ¡Gracias!` :
+      `🎯 TOEIC EXAM REGISTRATION REQUEST
+
+📋 PERSONAL DATA:
+• Document type: ${personalData.tipoDocumento.toUpperCase()}
+• Number: ${personalData.documento}
+• Full name: ${personalData.nombre} ${personalData.apellidoPaterno} ${personalData.apellidoMaterno}
+• Email: ${personalData.correo}
+• Phone: ${personalData.telefono}
+
+🏢 EXAM DATA:
+• Registration type: ${empresaNombre}
+• Exam: ${examenNombre}${examData.llave ? `\n• Key: ${examData.llave}` : ''}
+• Contact: ${contactoNombre}
+
+📅 REQUESTED DATE AND TIME:
+• Date: ${fechaFormateada}
+• Time: ${selectedTime}
+
+Please confirm availability and proceed with my registration. Thank you!`;
+
+    return mensaje;
+  };
+
+  // Función para manejar el registro por WhatsApp
+  const handleWhatsAppRegistration = (): void => {
+    const message = generateWhatsAppMessage();
+    const encodedMessage = encodeURIComponent(message);
+    const whatsappUrl = `https://wa.me/525581008950?text=${encodedMessage}`;
+    
+    // Abrir WhatsApp en nueva ventana
+    window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
+    
+    // Opcional: cerrar el modal después de un breve delay
+    setTimeout(() => {
+      onFinish?.();
+    }, 1000);
+  };
+
  const submitRegistration = async () => {
   setSubmitting(true);
   
@@ -774,11 +847,11 @@ useEffect(() => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="curp">CURP</SelectItem>
-                    <SelectItem value="ife">IFE</SelectItem>
+                    <SelectItem value="ife">INE / IFE</SelectItem>
                     <SelectItem value="pasaporte">PASAPORTE</SelectItem>
                     <SelectItem value="cedula">CEDULA</SelectItem>
                     <SelectItem value="cartilla">CARTILLA</SelectItem>
-                    <SelectItem value="other">Other ID</SelectItem>
+                    <SelectItem value="other">FM2/FM3</SelectItem>
                   </SelectContent>
                 </Select>
                   {getFieldError('tipoDocumento') && (
@@ -1419,12 +1492,28 @@ case 3:
           {step === 0 ? t.close : t.back}
         </Button>
 
-        <Button 
-          onClick={goNext} 
-          disabled={!canGoNext() || submitting}
-        >
-          {step === totalSteps - 1 ? t.finish : t.next}
-        </Button>
+        <div className="flex items-center gap-3">
+          {/* Botón de WhatsApp - solo mostrar en el paso de confirmación */}
+          {step === totalSteps - 1 && (
+            <Button 
+              variant="outline"
+              onClick={handleWhatsAppRegistration}
+              disabled={!canGoNext() || submitting}
+              className="bg-green-50 border-green-200 text-green-700 hover:bg-green-100 hover:border-green-300"
+            >
+              <MessageCircle className="w-4 h-4 mr-2" />
+              {t.whatsappButton}
+            </Button>
+          )}
+
+          {/* Botón principal */}
+          <Button 
+            onClick={goNext} 
+            disabled={!canGoNext() || submitting}
+          >
+            {step === totalSteps - 1 ? t.finish : t.next}
+          </Button>
+        </div>
       </div>
     </div>
   );

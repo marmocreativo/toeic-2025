@@ -8,6 +8,7 @@ import { sliderService } from '../../services/sliderService';
 import { examenService } from '../../services/examenService';
 import  CallToAction from '../../components/public/CallToAction';
 import  AnuncioModal from '../../components/public/AnuncioModal';
+import WhatsAppFloat from '../../components/common/WhatsAppFloat';
 import type { Slider } from '../../types/slider';
 import type { Examen } from '../../types/examen';
 import { 
@@ -1128,6 +1129,7 @@ const PartnersCarousel = () => {
           </motion.button>
         </div>
       </div>
+      <WhatsAppFloat />
     </motion.section>
   );
 };

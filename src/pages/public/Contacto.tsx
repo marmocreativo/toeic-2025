@@ -1,6 +1,7 @@
 // src/pages/public/Contacto.tsx
 import { useState } from 'react';
 import { useLanguage } from '../../hooks/useLanguage';
+import WhatsAppFloat from '../../components/common/WhatsAppFloat';
 import { 
   MapPin, 
   Phone,
@@ -350,6 +351,7 @@ export default function Contacto() {
           </div>
         </div>
       </section>
+      <WhatsAppFloat/>
     </div>
   );
 }
