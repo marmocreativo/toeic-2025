@@ -846,7 +846,6 @@ useEffect(() => {
                     <SelectValue placeholder="Seleccionar..." />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="curp">CURP</SelectItem>
                     <SelectItem value="ife">INE / IFE</SelectItem>
                     <SelectItem value="pasaporte">PASAPORTE</SelectItem>
                     <SelectItem value="cedula">CEDULA</SelectItem>
