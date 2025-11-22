@@ -1,13 +1,16 @@
 // src/components/public/HorariosGrid.tsx
-import { Calendar, Clock, Building2 } from 'lucide-react';
+import { Calendar, Clock, Building2, AlertTriangle } from 'lucide-react';
 import { useLanguage } from '../../hooks/useLanguage';
+import { Link } from 'react-router-dom'; 
 
 interface HorariosGridProps {
   horarios: any[];
+  requisitos?: string | null;
+  en_requisitos?: string | null;
   onRegisterClick: () => void;
 }
 
-export default function HorariosGrid({ horarios, onRegisterClick }: HorariosGridProps) {
+export default function HorariosGrid({ horarios, requisitos, en_requisitos, onRegisterClick }: HorariosGridProps) {
   const { language } = useLanguage();
 
   const texts = {
@@ -17,7 +20,8 @@ export default function HorariosGrid({ horarios, onRegisterClick }: HorariosGrid
       contact: 'Contacta para más información',
       available: 'Disponible',
       notAvailable: 'No disponible',
-      registerNow: 'Registrarte Ahora'
+      registerNow: 'Registrarte Ahora',
+      requirements: 'Requisitos Importantes'
     },
     en: {
       title: 'Available Schedules',
@@ -25,11 +29,13 @@ export default function HorariosGrid({ horarios, onRegisterClick }: HorariosGrid
       contact: 'Contact for more information',
       available: 'Available',
       notAvailable: 'Not available',
-      registerNow: 'Register Now'
+      registerNow: 'Register Now',
+      requirements: 'Important Requirements'
     }
   };
 
   const currentTexts = texts[language];
+  const requisitosText = language === 'es' ? requisitos : en_requisitos;
   const horariosPublicados = horarios?.filter(h => h.publicado) || [];
 
   // Días de la semana en orden (solo una letra)
@@ -133,9 +139,12 @@ export default function HorariosGrid({ horarios, onRegisterClick }: HorariosGrid
           <div className="text-center py-6">
             <Calendar className="w-12 h-12 text-border mx-auto mb-3" />
             <p className="text-text-muted text-sm mb-4">{currentTexts.noSchedules}</p>
-            <button className="btn-outline-primary text-sm px-4 py-2">
+            <Link 
+              to="/contacto" 
+              className="btn-outline-primary text-sm px-4 py-2 inline-block text-center"
+            >
               {currentTexts.contact}
-            </button>
+            </Link>
           </div>
         </div>
       </div>
@@ -231,6 +240,24 @@ export default function HorariosGrid({ horarios, onRegisterClick }: HorariosGrid
                   </div>
                 </div>
               ))}
+            </div>
+          </div>
+        )}
+
+        {/* Alert de Requisitos - ANTES del botón */}
+        {requisitosText && (
+          <div className="mt-6 bg-amber-50 border border-amber-200 rounded-lg p-4">
+            <div className="flex gap-3">
+              <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+              <div>
+                <h4 className="font-medium text-amber-900 mb-2">
+                  {currentTexts.requirements}
+                </h4>
+                <div 
+                  className="prose prose-sm text-amber-800 max-w-none"
+                  dangerouslySetInnerHTML={{ __html: requisitosText }}
+                />
+              </div>
             </div>
           </div>
         )}

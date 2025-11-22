@@ -109,6 +109,21 @@ export function useAuth() {
     }
   };
 
+  // Agregar este método antes del return, después de resetPassword
+  const updatePassword = async (newPassword: string) => {
+    try {
+      const { data, error } = await supabase.auth.updateUser({
+        password: newPassword
+      });
+      
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Update password error:', error);
+      throw error;
+    }
+  };
+
   return {
     isAuthenticated,
     isLoading,
@@ -117,5 +132,7 @@ export function useAuth() {
     logout,
     signUp,
     resetPassword,
+    updatePassword,
+    supabase,
   };
 }

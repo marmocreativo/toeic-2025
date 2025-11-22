@@ -10,7 +10,7 @@ interface WhatsAppFloatProps {
 }
 
 export default function WhatsAppFloat({ 
-  phoneNumber = '525581008950', 
+  phoneNumber = '525544120209', 
   customMessage 
 }: WhatsAppFloatProps) {
   const [isExpanded, setIsExpanded] = useState(false);

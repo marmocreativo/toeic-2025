@@ -35,6 +35,7 @@ import {
   getEstadisticasCentros,
   publicarTodosCentros
 } from '../../services/centroService';
+import { ImageUpload } from '../../components/ui/ImageUpload';
 
 export default function AdminCentros() {
   const [centros, setCentros] = useState<CentroConEstado[]>([]);
@@ -330,16 +331,12 @@ export default function AdminCentros() {
 
                 <div className="space-y-2">
                   <Label htmlFor="imagen" className="text-sm font-medium text-text">Imagen del Centro</Label>
-                  <Input
-                    id="imagen"
+                  <ImageUpload
                     value={formData.imagen}
-                    onChange={(e) => setFormData(prev => ({ ...prev, imagen: e.target.value }))}
-                    placeholder="Ej: centro-cdmx-norte.jpg o ruta completa"
-                    className="border-border focus:border-primary"
+                    onChange={(url) => setFormData(prev => ({ ...prev, imagen: url }))}
+                    onClear={() => setFormData(prev => ({ ...prev, imagen: '' }))}
+                    placeholder="Subir imagen del centro"
                   />
-                  <p className="text-xs text-text-muted">
-                    Puedes ingresar solo el nombre del archivo (debe estar en /public/images/centros/) o la ruta completa
-                  </p>
                 </div>
                 
                 <div className="flex items-center space-x-3 p-4 bg-bg rounded-lg border border-border">
@@ -442,6 +439,33 @@ export default function AdminCentros() {
           <Card key={centro.id} className="bg-bg-light rounded-lg border border-border hover:shadow-lg transition-all duration-300 hover:border-primary/30">
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
+                {/* Vista previa de imagen */}
+                <div className="flex-shrink-0 mr-6">
+                  <div className="w-20 h-20 rounded-lg overflow-hidden border border-border bg-gray-50">
+                    {centro.imagen ? (
+                      <>
+                        <img
+                          src={centro.imagen}
+                          alt={`Imagen de ${centro.nombre}`}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.style.display = 'none';
+                            target.nextElementSibling?.classList.remove('hidden');
+                          }}
+                        />
+                        <div className="hidden w-full h-full flex items-center justify-center bg-gray-100">
+                          <Image className="w-6 h-6 text-gray-400" />
+                        </div>
+                      </>
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-gray-100">
+                        <Building2 className="w-6 h-6 text-gray-400" />
+                      </div>
+                    )}
+                  </div>
+                </div>
+
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center space-x-3 mb-4">
                     <h3 className="font-semibold text-xl text-primary truncate">{centro.nombre}</h3>
@@ -478,15 +502,6 @@ export default function AdminCentros() {
                         <div className="flex items-center space-x-2">
                           <Mail className="w-4 h-4 text-text-muted" />
                           <span className="text-sm text-text-muted">{centro.correo}</span>
-                        </div>
-                      )}
-
-                      {centro.imagen && (
-                        <div className="flex items-center space-x-2">
-                          <Image className="w-4 h-4 text-text-muted" />
-                          <span className="text-sm text-text-muted">
-                            {centro.imagen.includes('/') ? centro.imagen.split('/').pop() : centro.imagen}
-                          </span>
                         </div>
                       )}
                     </div>

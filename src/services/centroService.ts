@@ -2,6 +2,85 @@
 
 import { supabase } from '../lib/supabase';
 import type { Centro, CentroForm, CentroEstado, CentroEstadoForm, CentroConEstado } from '../types/centro';
+import { StorageService, STORAGE_BUCKETS } from './storageService';
+
+// ============ FUNCIONES PARA MANEJO DE IMÁGENES ============
+
+// Subir imagen del centro
+export const uploadCentroImage = async (file: File, centroId?: number): Promise<string> => {
+  console.log(centroId);
+  try {
+    // Validar archivo
+    const validation = StorageService.validateImageFile(file);
+    if (!validation.valid) {
+      throw new Error(validation.error);
+    }
+
+    // Generar nombre único
+    const fileName = StorageService.generateFileName(file.name, 'centro');
+    const filePath = `centros/${fileName}`;
+
+    // Subir archivo
+    const url = await StorageService.uploadFile(STORAGE_BUCKETS.CENTROS, filePath, file);
+    
+    console.log('Imagen de centro subida exitosamente:', url);
+    return url;
+  } catch (error) {
+    console.error('Error subiendo imagen del centro:', error);
+    throw error;
+  }
+};
+
+// Eliminar imagen anterior del centro
+export const deleteOldCentroImage = async (imageUrl: string): Promise<void> => {
+  try {
+    if (!imageUrl || !StorageService.isSupabaseStorageUrl(imageUrl)) {
+      return; // No es una URL de Supabase o está vacía
+    }
+
+    const filePath = StorageService.extractFilePathFromUrl(imageUrl);
+    if (filePath) {
+      await StorageService.deleteFile(STORAGE_BUCKETS.CENTROS, filePath);
+      console.log('Imagen anterior eliminada:', filePath);
+    }
+  } catch (error) {
+    console.warn('No se pudo eliminar la imagen anterior:', error);
+    // No lanzar error, es solo una limpieza
+  }
+};
+
+// Función auxiliar para verificar si una URL es de Supabase Storage
+const isSupabaseStorageUrl = (url: string): boolean => {
+  try {
+    const urlObj = new URL(url);
+    return urlObj.pathname.includes('/storage/v1/object/public/');
+  } catch (error) {
+    return false;
+  }
+};
+
+// Extraer path del archivo desde URL pública
+/* comentado para que no genere error por no uso
+const extractPathFromUrl = (url: string): string | null => {
+  try {
+    const urlObj = new URL(url);
+    const pathParts = urlObj.pathname.split('/');
+    
+    const publicIndex = pathParts.indexOf('public');
+    const bucketIndex = publicIndex + 1;
+    const filePathIndex = bucketIndex + 1;
+    
+    if (pathParts[bucketIndex] === STORAGE_BUCKETS.CENTROS && filePathIndex < pathParts.length) {
+      return pathParts.slice(filePathIndex).join('/');
+    }
+    
+    return null;
+  } catch (error) {
+    console.warn('No se pudo extraer path de URL:', url, error);
+    return null;
+  }
+};
+*/
 
 // ============ CENTROS ESTADOS ============
 
@@ -151,28 +230,59 @@ export const createCentro = async (centroData: CentroForm): Promise<Centro> => {
 };
 
 export const updateCentro = async (id: number, centroData: CentroForm): Promise<Centro> => {
-  const { data, error } = await supabase
-    .from('centros')
-    .update(centroData)
-    .eq('id', id)
-    .select()
-    .single();
+  try {
+    // Obtener centro actual para comparar imágenes
+    const centroActual = await getCentro(id);
+    
+    const { data, error } = await supabase
+      .from('centros')
+      .update(centroData)
+      .eq('id', id)
+      .select()
+      .single();
 
-  if (error) {
+    if (error) {
+      console.error('Error updating centro:', error);
+      throw error;
+    }
+
+    // Si la imagen cambió, eliminar la anterior
+    if (centroActual && 
+        centroActual.imagen && 
+        centroData.imagen !== centroActual.imagen &&
+        isSupabaseStorageUrl(centroActual.imagen)) {
+      
+      await deleteOldCentroImage(centroActual.imagen);
+    }
+
+    return data;
+  } catch (error) {
     console.error('Error updating centro:', error);
     throw error;
   }
-
-  return data;
 };
 
 export const deleteCentro = async (id: number): Promise<void> => {
-  const { error } = await supabase
-    .from('centros')
-    .delete()
-    .eq('id', id);
+  try {
+    // Obtener el centro para conocer su imagen
+    const centro = await getCentro(id);
+    
+    const { error } = await supabase
+      .from('centros')
+      .delete()
+      .eq('id', id);
 
-  if (error) {
+    if (error) {
+      console.error('Error deleting centro:', error);
+      throw error;
+    }
+
+    // Eliminar imagen si existe y es de Supabase
+    if (centro && centro.imagen && isSupabaseStorageUrl(centro.imagen)) {
+      await deleteOldCentroImage(centro.imagen);
+    }
+
+  } catch (error) {
     console.error('Error deleting centro:', error);
     throw error;
   }

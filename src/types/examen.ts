@@ -11,7 +11,9 @@ export interface Examen {
   en_resumen: string | null;
   en_contenido: string | null;
   imagen: string | null;
-  texto_fechas_especiales: string | null; // ← NUEVA COLUMNA
+  texto_fechas_especiales: string | null;
+  requisitos: string | null;
+  en_requisitos: string | null;
   publicado: boolean;
   created_at: string;
   updated_at: string;
@@ -103,7 +105,9 @@ export interface ExamenFormData {
   en_resumen?: string;
   en_contenido?: string;
   imagen?: string;
-  texto_fechas_especiales?: string; // ← NUEVO CAMPO
+  texto_fechas_especiales?: string;
+  requisitos?: string;
+  en_requisitos?: string;
   publicado?: boolean;
 }
 

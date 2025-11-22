@@ -471,7 +471,7 @@ Please confirm availability and proceed with my registration. Thank you!`;
   const handleWhatsAppRegistration = (): void => {
     const message = generateWhatsAppMessage();
     const encodedMessage = encodeURIComponent(message);
-    const whatsappUrl = `https://wa.me/525581008950?text=${encodedMessage}`;
+    const whatsappUrl = `https://wa.me/525544120209?text=${encodedMessage}`;
     
     window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
     

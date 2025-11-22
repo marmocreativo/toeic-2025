@@ -61,6 +61,8 @@ export default function ExamenForm() {
     en_contenido: '',
     imagen: '',
     texto_fechas_especiales: '',
+    requisitos: '', // ← NUEVA LÍNEA
+    en_requisitos: '', // ← NUEVA LÍNEA
     publicado: false,
     horarios: [],
     fechas_especiales: [],
@@ -87,6 +89,8 @@ export default function ExamenForm() {
       en_contenido: examenData.en_contenido || '',
       imagen: examenData.imagen || '',
       texto_fechas_especiales: examenData.texto_fechas_especiales || '',
+      requisitos: examenData.requisitos || '',
+      en_requisitos: examenData.en_requisitos || '',
       publicado: examenData.publicado,
       horarios: (examenData.horarios || []).map(h => ({
         dia: h.dia || '',
@@ -448,10 +452,18 @@ export default function ExamenForm() {
                   <div>
                     <Label htmlFor="contenido">Contenido</Label>
                     <LexicalEditor
-                      label="Contenido"
                       content={formData.contenido}
                       onChange={(content) => handleInputChange('contenido', content)}
                       placeholder=""
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="requisitos">Requisitos</Label>
+                    <LexicalEditor
+                      content={formData.requisitos}
+                      onChange={(content) => handleInputChange('requisitos', content)}
+                      placeholder="Requisitos para tomar el examen..."
                     />
                   </div>
                 </TabsContent>
@@ -481,10 +493,18 @@ export default function ExamenForm() {
                   <div>
                     <Label htmlFor="en_contenido">Content</Label>
                     <LexicalEditor
-                      label="Content"
                       content={formData.en_contenido}
                       onChange={(content) => handleInputChange('en_contenido', content)}
                       placeholder="Detailed exam content..."
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="en_requisitos">Requirements</Label>
+                    <LexicalEditor
+                      content={formData.en_requisitos}
+                      onChange={(content) => handleInputChange('en_requisitos', content)}
+                      placeholder="Requirements to take the exam..."
                     />
                   </div>
                 </TabsContent>

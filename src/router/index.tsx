@@ -18,6 +18,8 @@ import Contacto from '../pages/public/Contacto';
 import PreparationMaterial from '../pages/public/PreparationMaterial';
 import Login from '../pages/auth/Login';
 import ForgotPassword from '../pages/auth/ForgotPassword';
+import ResetPassword from '../pages/auth/ResetPassword';
+import Confirm from '../pages/auth/Confirm';
 import NotFound from '../pages/NotFound';
 
 // Páginas de administrador
@@ -35,6 +37,7 @@ import AdminUsuarios from '../pages/admin/Usuarios';
 import UsuarioForm from '../pages/admin/UsuarioForm';
 import AdminAnuncios from '../pages/admin/Anuncios';
 import AnuncioForm from '../pages/admin/AnuncioForm';
+
 
 export const router = createBrowserRouter([
   // Rutas públicas en español (por defecto)
@@ -89,6 +92,14 @@ export const router = createBrowserRouter([
       {
         path: 'forgot-password',
         element: <ForgotPassword />,
+      },
+      {
+        path: '/reset-password',
+        element: <ResetPassword />,
+      },
+      {
+        path: '/auth/confirm',
+        element: <Confirm  />,
       },
     ],
   },

@@ -222,6 +222,8 @@ export const examenService = {
         oldContent = [
           existingExamen.contenido || '',
           existingExamen.en_contenido || '',
+          existingExamen.requisitos || '', 
+          existingExamen.en_requisitos || '', 
           ...(existingExamen.extras || []).map(e => `${e.contenido || ''} ${e.en_contenido || ''}`),
           ...(existingExamen.faqs || []).map(f => `${f.respuesta || ''} ${f.en_respuesta || ''}`),
           ...(existingExamen.muestras || []).map(m => m.pregunta || '')

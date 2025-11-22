@@ -239,7 +239,7 @@ export default function FechasEspecialesSection({ fechasEspeciales, onChange }: 
                     <ReorderItem
                       key={index}
                       id={index}
-                      title={fecha.fecha ? new Date(fecha.fecha).toLocaleDateString('es-ES', { 
+                      title={fecha.fecha ? new Date(fecha.fecha+ 'T00:00:00').toLocaleDateString('es-ES', { 
                         weekday: 'long', 
                         year: 'numeric', 
                         month: 'long', 
@@ -347,7 +347,7 @@ export default function FechasEspecialesSection({ fechasEspeciales, onChange }: 
                       {fecha.fecha && (
                         <div className="mt-3 p-2 bg-gray-50 rounded text-sm text-gray-600">
                           <strong>Vista previa:</strong>{' '}
-                          {new Date(fecha.fecha).toLocaleDateString('es-ES', { 
+                          {new Date(fecha.fecha+ 'T00:00:00').toLocaleDateString('es-ES', { 
                             weekday: 'long', 
                             year: 'numeric', 
                             month: 'long', 

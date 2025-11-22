@@ -48,6 +48,7 @@
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "framer-motion": "^12.23.6",
+    "gtag": "^1.0.1",
     "leaflet": "^1.9.4",
     "lexical": "^0.33.1",
     "lodash": "^4.17.21",

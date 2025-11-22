@@ -188,6 +188,8 @@ export default function ExamenDetalle() {
             <div className="lg:col-span-1 space-y-6">
               <HorariosGrid 
                 horarios={examen.horarios || []} 
+                requisitos={examen.requisitos} 
+                en_requisitos={examen.en_requisitos} 
                 onRegisterClick={() => setOpenRegistro(true)} 
               />
               <FechasEspecialesCalendar 

@@ -4,7 +4,8 @@ import { supabase } from '../lib/supabase';
 export const STORAGE_BUCKETS = {
   SLIDERS: 'sliders',
   EXAMENES: 'examenes', 
-  GENERAL: 'general'
+  GENERAL: 'general',
+  CENTROS: 'centros'
 } as const;
 
 export class StorageService {
@@ -311,6 +312,8 @@ static async deleteFileByUrl(url: string): Promise<boolean> {
       bucket = STORAGE_BUCKETS.SLIDERS;
     } else if (filePath.startsWith('general/')) {
       bucket = STORAGE_BUCKETS.GENERAL;
+    } else if (filePath.startsWith('centros/')) { 
+      bucket = STORAGE_BUCKETS.CENTROS;
     }
     
     console.log('🗑️ Eliminando archivo:', { bucket, path: filePath, url });
@@ -378,6 +381,16 @@ static async handleContentUpdate(oldContent: string, newContent: string): Promis
   setTimeout(async () => {
     await this.cleanupOrphanedFiles(oldContent, newContent);
   }, 1000);
+}
+
+// Función auxiliar para verificar si una URL es de Supabase Storage
+static isSupabaseStorageUrl(url: string): boolean {
+  try {
+    const urlObj = new URL(url);
+    return urlObj.pathname.includes('/storage/v1/object/public/');
+  } catch (error) {
+    return false;
+  }
 }
 
 }
