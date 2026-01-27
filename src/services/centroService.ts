@@ -183,7 +183,7 @@ export const getCentros = async (search?: string): Promise<CentroConEstado[]> =>
     .order('nombre');
 
   if (search) {
-    query = query.or(`nombre.ilike.%${search}%,direccion.ilike.%${search}%,telefono.ilike.%${search}%,correo.ilike.%${search}%`);
+    query = query.or(`nombre.ilike.%${search}%,direccion.ilike.%${search}%,telefono.ilike.%${search}%,correo.ilike.%${search}%,telefono_alter.ilike.%${search}%,correo_alter.ilike.%${search}%`);
   }
 
   const { data, error } = await query;
@@ -389,6 +389,8 @@ export interface CentroCSVRow {
   CENTRO_DIRECCION: string;
   CENTRO_TELEFONO: string;
   CENTRO_CORREO: string;
+  CENTRO_TELEFONO_ALTER: string;
+  CENTRO_CORREO_ALTER: string;
   CENTRO_IMAGEN: string;
 }
 
@@ -488,7 +490,9 @@ export const importarCentrosCSV = async (csvData: CentroCSVRow[]): Promise<Impor
         nombre: fila.CENTRO_NOMBRE.trim(),
         direccion: fila.CENTRO_DIRECCION?.trim() || '',
         telefono: fila.CENTRO_TELEFONO?.trim() || '',
+        telefono_alter: fila.CENTRO_TELEFONO_ALTER?.trim() || '',
         correo: fila.CENTRO_CORREO?.trim() || '',
+        correo_alter: fila.CENTRO_CORREO_ALTER?.trim() || '',
         imagen: imagenPath || '',
         publicado: false // Por defecto como borrador
       };

@@ -55,6 +55,8 @@ export default function AdminCentros() {
     direccion: '',
     telefono: '',
     correo: '',
+    telefono_alter: '',
+    correo_alter: '',
     imagen: '',
     publicado: false
   });
@@ -103,6 +105,8 @@ export default function AdminCentros() {
       centro.direccion.toLowerCase().includes(searchTerm.toLowerCase()) ||
       centro.telefono.includes(searchTerm) ||
       centro.correo.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (centro.telefono_alter?.includes(searchTerm) || false) ||
+      (centro.correo_alter?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
       centro.estado?.nombre.toLowerCase().includes(searchTerm.toLowerCase())
     );
     setFilteredCentros(filtered);
@@ -134,6 +138,8 @@ export default function AdminCentros() {
       direccion: centro.direccion,
       telefono: centro.telefono,
       correo: centro.correo,
+      telefono_alter: centro.telefono_alter,
+      correo_alter: centro.correo_alter,
       imagen: centro.imagen || '',
       publicado: centro.publicado
     });
@@ -160,6 +166,8 @@ export default function AdminCentros() {
       direccion: '',
       telefono: '',
       correo: '',
+      telefono_alter: '',
+      correo_alter: '',
       imagen: '',
       publicado: false
     });
@@ -323,6 +331,30 @@ export default function AdminCentros() {
                       type="email"
                       value={formData.correo}
                       onChange={(e) => setFormData(prev => ({ ...prev, correo: e.target.value }))}
+                      placeholder="contacto@centro.com"
+                      className="border-border focus:border-primary"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="telefono_alter" className="text-sm font-medium text-text">Teléfono Alter</Label>
+                    <Input
+                      id="telefono_alter"
+                      value={formData.telefono_alter}
+                      onChange={(e) => setFormData(prev => ({ ...prev, telefono_alter: e.target.value }))}
+                      placeholder="Ej: +52 55 1234 5678"
+                      className="border-border focus:border-primary"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="correo_alter" className="text-sm font-medium text-text">Correo Electrónico Alter</Label>
+                    <Input
+                      id="correo_alter"
+                      type="email"
+                      value={formData.correo_alter}
+                      onChange={(e) => setFormData(prev => ({ ...prev, correo_alter: e.target.value }))}
                       placeholder="contacto@centro.com"
                       className="border-border focus:border-primary"
                     />
@@ -502,6 +534,19 @@ export default function AdminCentros() {
                         <div className="flex items-center space-x-2">
                           <Mail className="w-4 h-4 text-text-muted" />
                           <span className="text-sm text-text-muted">{centro.correo}</span>
+                        </div>
+                      )}
+                      {centro.telefono_alter && (
+                        <div className="flex items-center space-x-2">
+                          <Phone className="w-4 h-4 text-text-muted" />
+                          <span className="text-sm text-text-muted">{centro.telefono_alter}</span>
+                        </div>
+                      )}
+                      
+                      {centro.correo_alter && (
+                        <div className="flex items-center space-x-2">
+                          <Mail className="w-4 h-4 text-text-muted" />
+                          <span className="text-sm text-text-muted">{centro.correo_alter}</span>
                         </div>
                       )}
                     </div>

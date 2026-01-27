@@ -1,6 +1,8 @@
 // src/components/admin/ExtrasSection.tsx
 import { useState } from 'react';
 import { Button } from '../ui/button';
+import { StorageService, STORAGE_BUCKETS } from '../../services/storageService';
+import { RefreshCw, Upload } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
@@ -45,6 +47,8 @@ interface Props {
 
 export default function ExtrasSection({ extras, onChange }: Props) {
   const [isReordering, setIsReordering] = useState(false);
+  const [uploadingIndex, setUploadingIndex] = useState<number | null>(null);
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
   // Configuración de sensores para drag & drop
   const sensors = useSensors(
@@ -83,6 +87,39 @@ export default function ExtrasSection({ extras, onChange }: Props) {
     const updatedExtras = extras.filter((_, i) => i !== index);
     onChange(updatedExtras);
   };
+
+const handleFileUpload = async (index: number, file: File) => {
+  try {
+    setUploadingIndex(index);
+    setUploadError(null);
+    
+    // Validar archivo
+    const validation = StorageService.validateFile(file);
+    if (!validation.valid) {
+      throw new Error(validation.error);
+    }
+
+    // Generar nombre único para el archivo
+    const fileName = StorageService.generateFileName(file.name, 'extra');
+    
+    // Subir archivo al storage
+    const fileUrl = await StorageService.uploadFile(
+      STORAGE_BUCKETS.EXAMENES,
+      `extras/${fileName}`, // Organizar en subcarpeta
+      file
+    );
+
+    // Actualizar el campo boton_enlace con la URL del archivo
+    updateExtra(index, 'boton_enlace', fileUrl);
+    
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Error subiendo archivo';
+    setUploadError(errorMessage);
+    console.error('Error subiendo archivo:', error);
+  } finally {
+    setUploadingIndex(null);
+  }
+};
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
@@ -312,14 +349,69 @@ export default function ExtrasSection({ extras, onChange }: Props) {
                       </TabsContent>
                     </Tabs>
 
-                    <div className="mt-4">
-                      <Label>Enlace del Botón</Label>
+                    <div className="mt-4 space-y-3">
+                    <Label>Enlace del Botón</Label>
+                    {uploadError && (
+                      <div className="text-sm text-red-600 bg-red-50 p-2 rounded">
+                        {uploadError}
+                      </div>
+                    )}
+                    <div className="space-y-3">
                       <Input
                         value={extra.boton_enlace || ''}
                         onChange={(e) => updateExtra(index, 'boton_enlace', e.target.value)}
                         placeholder="https://ejemplo.com/recurso"
                       />
+                      
+                      <div className="flex items-center gap-2 text-sm text-gray-500">
+                        <span>o</span>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          disabled={uploadingIndex === index}
+                          onClick={() => {
+                            const input = document.createElement('input');
+                            input.type = 'file';
+                            input.accept = '.pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.zip,.rar,.txt';
+                            input.onchange = (e) => {
+                              const file = (e.target as HTMLInputElement).files?.[0];
+                              if (file) {
+                                handleFileUpload(index, file);
+                              }
+                            };
+                            input.click();
+                          }}
+                        >
+                          {uploadingIndex === index ? (
+                            <>
+                              <RefreshCw className="h-4 w-4 mr-1 animate-spin" />
+                              Subiendo...
+                            </>
+                          ) : (
+                            <>
+                              <Upload className="h-4 w-4 mr-1" />
+                              Subir Archivo
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                      
+                      {extra.boton_enlace && (
+                        <div className="text-xs bg-gray-50 p-2 rounded border">
+                          {StorageService.isSupabaseStorageUrl(extra.boton_enlace) ? (
+                            <span className="text-green-600">
+                              📁 Archivo: {extra.boton_enlace.split('/').pop()}
+                            </span>
+                          ) : (
+                            <span className="text-blue-600">
+                              🔗 Enlace: {extra.boton_enlace}
+                            </span>
+                          )}
+                        </div>
+                      )}
                     </div>
+                  </div>
                   </div>
                 ))}
 

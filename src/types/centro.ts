@@ -22,6 +22,8 @@ export interface Centro {
   direccion: string;
   telefono: string;
   correo: string;
+  telefono_alter: string;
+  correo_alter: string;
   imagen: string;
   publicado: boolean;
   created_at: string;
@@ -36,6 +38,8 @@ export interface CentroForm {
   direccion: string;
   telefono: string;
   correo: string;
+  telefono_alter: string;
+  correo_alter: string;
   imagen: string;
   publicado: boolean;
 }

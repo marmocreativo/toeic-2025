@@ -152,6 +152,8 @@ export default function Centros() {
         centro.direccion.toLowerCase().includes(searchText) ||
         (centro.telefono && centro.telefono.toLowerCase().includes(searchText)) ||
         (centro.correo && centro.correo.toLowerCase().includes(searchText)) ||
+        (centro.telefono_alter && centro.telefono_alter.toLowerCase().includes(searchText)) ||
+        (centro.correo_alter && centro.correo_alter.toLowerCase().includes(searchText)) ||
         (centro.estado && centro.estado.nombre.toLowerCase().includes(searchText))
       );
     }
@@ -526,6 +528,31 @@ export default function Centros() {
                                             className="text-xs text-primary hover:underline truncate"
                                           >
                                             {centro.correo}
+                                          </a>
+                                        </div>
+                                      )}
+                                      {/* Teléfono Alter */}
+                                      {centro.telefono_alter && (
+                                        <div className="flex items-center gap-2">
+                                          <Phone className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                                          <a 
+                                            href={`tel:${centro.telefono_alter}`}
+                                            className="text-xs text-primary hover:underline"
+                                          >
+                                            {centro.telefono_alter}
+                                          </a>
+                                        </div>
+                                      )}
+
+                                      {/* Email Alter */}
+                                      {centro.correo_alter && (
+                                        <div className="flex items-center gap-2">
+                                          <Mail className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                                          <a 
+                                            href={`mailto:${centro.correo_alter}`}
+                                            className="text-xs text-primary hover:underline truncate"
+                                          >
+                                            {centro.correo_alter}
                                           </a>
                                         </div>
                                       )}

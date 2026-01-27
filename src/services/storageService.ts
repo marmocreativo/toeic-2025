@@ -176,6 +176,39 @@ export class StorageService {
   return { valid: true };
 }
 
+// Validar archivos generales (documentos, etc.)
+static validateFile(file: File): { valid: boolean; error?: string } {
+  const validTypes = [
+    'application/pdf',
+    'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'application/vnd.ms-powerpoint', 
+    'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+    'application/zip',
+    'application/x-rar-compressed',
+    'application/vnd.ms-excel',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'text/plain'
+  ];
+  const maxSize = 10 * 1024 * 1024; // 10MB
+
+  if (!validTypes.includes(file.type)) {
+    return {
+      valid: false,
+      error: 'Tipo de archivo no válido. Solo se permiten: PDF, Word, Excel, PowerPoint, ZIP, RAR, TXT'
+    };
+  }
+
+  if (file.size > maxSize) {
+    return {
+      valid: false,
+      error: 'El archivo es demasiado grande. Máximo 10MB'
+    };
+  }
+
+  return { valid: true };
+}
+
   // Verificar estado del storage (útil para debugging)
   static async checkStorageStatus(): Promise<{
     isAuthenticated: boolean;
