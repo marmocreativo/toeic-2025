@@ -137,7 +137,7 @@ export default function RegistroWizard({ onClose, onFinish }: RegistroWizardProp
       whatsappButtonDesc: "Enviar datos por WhatsApp para registro manual",
       submitting: "Procesando tu registro...",
       successTitle: "¡Registro exitoso!",
-      successMessage: "Muchas gracias, tu registro ha sido exitoso. Nos comunicaremos contigo a la brevedad.",
+      successMessage: "Muchas gracias, tu registro ha sido exitoso, debería llegarte un correo de confirmación, en caso contrario o si no nos comunicamos contigo por favor envía un WhatsApp a este número +52 55 4412 0209",
       tipoDocumento: "Tipo de documento *",
       documento: "Número de documento *",
       nombre: "Nombre *",
@@ -173,7 +173,7 @@ export default function RegistroWizard({ onClose, onFinish }: RegistroWizardProp
       whatsappButtonDesc: "Send data via WhatsApp for manual registration",
       submitting: "Processing your registration...",
       successTitle: "Registration successful!",
-      successMessage: "Thank you very much, your registration has been successful. We will contact you shortly.",
+      successMessage: "Thank you very much, your registration has been successful. You should receive a confirmation email, otherwise or if we don't contact you please send a WhatsApp to this number +52 55 4412 0209",
       tipoDocumento: "Document type *",
       documento: "Document number *",
       nombre: "First name *",
@@ -1162,9 +1162,33 @@ Please confirm availability and proceed with my registration. Thank you!`;
                   </div>
                   <div className="text-center space-y-2">
                     <h3 className="text-xl font-semibold text-green-900">{t.successTitle}</h3>
-                    <p className="text-sm text-green-700 max-w-md">
-                      {registrationMessage}
-                    </p>
+                    <div className="text-sm text-green-700 max-w-md text-center">
+                      {language === 'es' ? (
+                        <p>
+                          Muchas gracias, tu registro ha sido exitoso, debería llegarte un correo de confirmación, en caso contrario o si no nos comunicamos contigo por favor envía un WhatsApp a este número{' '}
+                          <a 
+                            href="https://wa.me/525544120209?text=Hola,%20necesito%20ayuda%20con%20mi%20registro%20TOEIC"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="font-semibold text-green-800 hover:text-green-900 underline"
+                          >
+                            +52 55 4412 0209
+                          </a>
+                        </p>
+                      ) : (
+                        <p>
+                          Thank you very much, your registration has been successful. You should receive a confirmation email, otherwise or if we don't contact you please send a WhatsApp to this number{' '}
+                          <a 
+                            href="https://wa.me/525544120209?text=Hello,%20I%20need%20help%20with%20my%20TOEIC%20registration"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="font-semibold text-green-800 hover:text-green-900 underline"
+                          >
+                            +52 55 4412 0209
+                          </a>
+                        </p>
+                      )}
+                    </div>
                   </div>
                 </div>
               </CardContent>

@@ -86,6 +86,36 @@ export default function PreparationMaterial() {
                 </div>
             </section>
 
+            {/* Sample Test CTA Section */}
+                <section className="py-8 mt-8">
+                    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <div className="bg-gradient-to-r from-primary-600 to-primary-700 rounded-xl shadow-lg p-6 md:p-8">
+                            <div className="text-center">
+                                <h3 className="text-2xl md:text-3xl font-bold text-white mb-3">
+                                    {language === 'es' ? '¿Tienes 30 minutos?' : 'Do you have 30 min?'}
+                                </h3>
+                                <p className="text-lg text-white/90 mb-6">
+                                    {language === 'es' 
+                                        ? 'Toma el examen de ejemplo para conocer tu nivel actual'
+                                        : 'Take the sample test to know your current level'
+                                    }
+                                </p>
+                                <a 
+                                    href="http://ets.toeicolpc.com/Intro.aspx?Uid=723100991001"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center bg-white text-primary-700 hover:bg-gray-50 font-semibold py-3 px-8 rounded-lg transition-colors duration-200 shadow-md"
+                                >
+                                    {language === 'es' ? 'COMENZAR EXAMEN DE EJEMPLO' : 'START SAMPLE TEST'}
+                                    <svg className="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                    </svg>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
             {/* Official Course Section */}
             <section className="py-16">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
