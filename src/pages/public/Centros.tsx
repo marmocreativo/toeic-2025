@@ -1,5 +1,6 @@
 // src/pages/public/Centros.tsx
 import { useState, useEffect, useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import { MapContainer, TileLayer, GeoJSON } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -15,6 +16,7 @@ import {
   Building2,
   X,
   Navigation,
+  Calendar,
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -49,7 +51,7 @@ export default function Centros() {
   const texts = {
     es: {
       title: 'Centros Autorizados',
-      subtitle: 'Encuentra el centro TOEIC más cercano para realizar tu examen',
+      subtitle: 'Encuentra el centro TOEIC® más cercano para realizar tu examen',
       searchPlaceholder: 'Buscar por nombre, dirección, teléfono...',
       mapInstruction: 'Haz clic en un estado para filtrar los centros',
       clearSelection: 'Limpiar selección',
@@ -81,7 +83,7 @@ export default function Centros() {
     },
     en: {
       title: 'Authorized Centers',
-      subtitle: 'Find the nearest TOEIC center to take your exam',
+      subtitle: 'Find the nearest TOEIC® center to take your exam',
       searchPlaceholder: 'Search by name, address, phone...',
       mapInstruction: 'Click on a state to filter centers',
       clearSelection: 'Clear selection',
@@ -100,7 +102,7 @@ export default function Centros() {
       center: 'center',
       selectedState: 'Selected state',
       allStates: 'All states',
-      ctaTitle: 'Ready for Your TOEIC Exam?',
+      ctaTitle: 'Ready for Your TOEIC® Exam?',
       ctaDescription: 'Explore our available tests and schedule your assessment.',
       ctaButton: 'View Tests',
       ctaSecondary: 'View Schedules',
@@ -290,27 +292,104 @@ export default function Centros() {
 
   // Componente de carga
   if (loading) {
-    return (
-      <div className="min-h-screen bg-background">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <Skeleton className="h-12 w-1/3 mb-4" />
-          <Skeleton className="h-6 w-2/3 mb-8" />
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-            <Skeleton className="h-[400px]" />
-            <div className="space-y-4">
-              <Skeleton className="h-10 w-full" />
-              <Skeleton className="h-20" />
+  return (
+    <div className="min-h-screen bg-background">
+      {/* Hero skeleton */}
+      <section className="gradient-hero text-primary py-16 -mt-16 pt-24">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <Skeleton className="h-14 w-1/2 mx-auto mb-4" />
+          <Skeleton className="h-7 w-2/3 mx-auto" />
+        </div>
+      </section>
+
+      {/* Map and Search skeleton */}
+      <section className="py-8 bg-muted/50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
+            {/* Columna izquierda */}
+            <div>
+              {/* Search card */}
+              <Card className="mb-4">
+                <CardContent className="p-6 py-2 space-y-4">
+                  <Skeleton className="h-10 w-full" />
+                  <div className="grid grid-cols-2 gap-4">
+                    <Skeleton className="h-16 rounded-lg" />
+                    <Skeleton className="h-16 rounded-lg" />
+                  </div>
+                  <div className="flex items-center justify-between pt-4 border-t">
+                    <Skeleton className="h-4 w-32" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Map card */}
+              <Card className="overflow-hidden">
+                <CardContent className="p-0">
+                  <div className="bg-primary/5 px-4 py-3 border-b">
+                    <Skeleton className="h-5 w-48" />
+                  </div>
+                  <Skeleton className="h-[400px] w-full rounded-none" />
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Columna derecha - lista de centros */}
+            <div className="max-w-7xl mx-auto px-4">
+              <div className="h-[700px] w-full rounded-md border p-4 space-y-8 overflow-hidden">
+                {/* Grupo estado 1 */}
+                <div>
+                  <div className="flex items-center gap-2 mb-6">
+                    <Skeleton className="h-6 w-6 rounded-full" />
+                    <Skeleton className="h-7 w-40" />
+                    <Skeleton className="h-5 w-16 rounded-full" />
+                  </div>
+                  <div className="space-y-4">
+                    {[...Array(2)].map((_, i) => (
+                      <Card key={i} className="overflow-hidden py-2">
+                        <CardContent className="grid grid-cols-1 md:grid-cols-4 gap-4 p-2">
+                          <Skeleton className="h-32 rounded-md" />
+                          <div className="md:col-span-3 p-4 space-y-3">
+                            <Skeleton className="h-4 w-3/4" />
+                            <Skeleton className="h-3 w-full" />
+                            <Skeleton className="h-3 w-1/2" />
+                            <Skeleton className="h-3 w-2/3" />
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Grupo estado 2 */}
+                <div>
+                  <div className="flex items-center gap-2 mb-6">
+                    <Skeleton className="h-6 w-6 rounded-full" />
+                    <Skeleton className="h-7 w-52" />
+                    <Skeleton className="h-5 w-16 rounded-full" />
+                  </div>
+                  <div className="space-y-4">
+                    {[...Array(1)].map((_, i) => (
+                      <Card key={i} className="overflow-hidden py-2">
+                        <CardContent className="grid grid-cols-1 md:grid-cols-4 gap-4 p-2">
+                          <Skeleton className="h-32 rounded-md" />
+                          <div className="md:col-span-3 p-4 space-y-3">
+                            <Skeleton className="h-4 w-3/4" />
+                            <Skeleton className="h-3 w-full" />
+                            <Skeleton className="h-3 w-1/2" />
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {[...Array(8)].map((_, i) => (
-              <Skeleton key={i} className="h-48" />
-            ))}
-          </div>
         </div>
-      </div>
-    );
-  }
+      </section>
+    </div>
+  );
+}
 
   return (
     <div className="min-h-screen bg-background">
@@ -451,6 +530,14 @@ export default function Centros() {
 
             <div>
               <div className="max-w-7xl mx-auto px-4">
+                {/* Link a fechas */}
+                <Link
+                  to={language === 'en' ? '/en/application-dates' : '/fechas-aplicacion'}
+                  className="flex mb-4 items-center justify-center gap-2 w-full rounded-md border border-primary/30 bg-primary/5 hover:bg-primary/10 text-primary text-sm font-medium py-2.5 transition-colors"
+                >
+                  <Calendar className="w-4 h-4" />
+                  {language === 'es' ? 'Ver Fechas de Aplicación' : 'View Application Dates'}
+                </Link>
                 <ScrollArea className="h-[700px] w-full rounded-md border p-4">
                 {/* Centros agrupados por estado */}
                 {Object.keys(centrosPorEstado).length > 0 ? (

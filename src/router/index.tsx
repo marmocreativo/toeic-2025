@@ -10,11 +10,13 @@ import Home from '../pages/public/Home';
 import Examenes from '../pages/public/Examenes';
 import ExamenDetalle from '../pages/public/ExamenDetalle';
 import Centros from '../pages/public/Centros';
+import FechasAplicacion from '../pages/public/FechasAplicacion';
 import PaginaDetalle from '../pages/public/PaginaDetalle';
 import Newsletters from '../pages/public/Newsletters';
 import NewsletterDetalle from '../pages/public/NewsletterDetalle';
 import Paginas from '../pages/public/Paginas';
 import Contacto from '../pages/public/Contacto';
+import AcercaDe from '../pages/public/AcercaDe';
 import PreparationMaterial from '../pages/public/PreparationMaterial';
 import Login from '../pages/auth/Login';
 import ForgotPassword from '../pages/auth/ForgotPassword';
@@ -37,6 +39,7 @@ import AdminUsuarios from '../pages/admin/Usuarios';
 import UsuarioForm from '../pages/admin/UsuarioForm';
 import AdminAnuncios from '../pages/admin/Anuncios';
 import AnuncioForm from '../pages/admin/AnuncioForm';
+import AdminFechasAplicaciones from '../pages/admin/AdminFechasAplicaciones';
 
 
 export const router = createBrowserRouter([
@@ -82,8 +85,16 @@ export const router = createBrowserRouter([
         element: <Centros />,
       },
       {
+        path: 'fechas-aplicacion',
+        element: <FechasAplicacion />,
+      },
+      {
         path: 'contacto',
         element: <Contacto />,
+      },
+      {
+        path: 'acerca-de',
+        element: <AcercaDe />,
       },
       {
         path: 'login',
@@ -146,8 +157,16 @@ export const router = createBrowserRouter([
         element: <Centros />,
       },
       {
+        path: 'application-dates',
+        element: <FechasAplicacion />,
+      },
+      {
         path: 'contact',
         element: <Contacto />,
+      },
+      {
+        path: 'about',
+        element: <AcercaDe />,
       },
       {
         path: 'login',
@@ -214,6 +233,10 @@ export const router = createBrowserRouter([
       {
         path: 'centros-estados',
         element: <AdminCentrosEstados />,
+      },
+      {
+        path: 'fechas-aplicaciones',
+        element: <AdminFechasAplicaciones />,
       },
       {
         path: 'newsletters',

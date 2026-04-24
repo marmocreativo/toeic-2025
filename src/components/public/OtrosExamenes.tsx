@@ -20,11 +20,11 @@ export default function OtrosExamenes({ currentExamenId }: OtrosExamenesProps) {
 
   const texts = {
     es: {
-      title: 'Otros Exámenes TOEIC',
+      title: 'Otros Exámenes TOEIC®',
       viewDetails: 'Ver Detalles'
     },
     en: {
-      title: 'Other TOEIC Tests',
+      title: 'Other TOEIC® Tests',
       viewDetails: 'View Details'
     }
   };

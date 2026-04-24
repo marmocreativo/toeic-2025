@@ -87,6 +87,10 @@ export const ROUTE_MAPPINGS: Record<string, RouteConfig> = {
     es: '/contacto',
     en: '/contact',
   },
+  acerca: {
+    es: '/acerca-de',
+    en: '/about',
+  },
 };
 
 // Generar URL para un idioma específico

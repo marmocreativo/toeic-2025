@@ -587,7 +587,7 @@ export const generarCSVEjemplo = (): string => {
   const ejemplos = [
     [
       'CDMX',
-      'Centro TOEIC Ciudad de México Norte',
+      'Centro TOEIC® Ciudad de México Norte',
       'Av. Insurgentes Norte 123, Col. Roma Norte, 06700 Ciudad de México',
       '+52 55 1234 5678',
       'cdmx.norte@toeic.mx',
@@ -595,7 +595,7 @@ export const generarCSVEjemplo = (): string => {
     ],
     [
       'JAL',
-      'Centro TOEIC Guadalajara Centro',
+      'Centro TOEIC® Guadalajara Centro',
       'Calle Morelos 456, Col. Centro, 44100 Guadalajara, Jalisco',
       '+52 33 2345 6789',
       'gdl.centro@toeic.mx',
@@ -603,7 +603,7 @@ export const generarCSVEjemplo = (): string => {
     ],
     [
       'NL',
-      'Centro TOEIC Monterrey San Pedro',
+      'Centro TOEIC® Monterrey San Pedro',
       'Ave. Vasconcelos 789, Col. San Pedro, 66260 Monterrey, Nuevo León',
       '+52 81 3456 7890',
       'mty.sanpedro@toeic.mx',

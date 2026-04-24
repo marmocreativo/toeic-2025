@@ -427,7 +427,7 @@ export default function RegistroWizard({ onClose, onFinish }: RegistroWizardProp
     }) : '';
 
     const mensaje = language === 'es' ? 
-      `SOLICITUD DE REGISTRO EXAMEN TOEIC
+      `SOLICITUD DE REGISTRO EXAMEN TOEIC®
 
 📋 DATOS PERSONALES:
 - Tipo de documento: ${personalData.tipoDocumento.toUpperCase()}
@@ -445,7 +445,7 @@ export default function RegistroWizard({ onClose, onFinish }: RegistroWizardProp
 - Hora: ${selectedTime}
 
 Por favor, confirmen la disponibilidad y procedan con mi registro. ¡Gracias!` :
-      `TOEIC EXAM REGISTRATION REQUEST
+      `TOEIC®EXAM REGISTRATION REQUEST
 
 📋 PERSONAL DATA:
 - Document type: ${personalData.tipoDocumento.toUpperCase()}

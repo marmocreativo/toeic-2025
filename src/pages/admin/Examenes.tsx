@@ -402,7 +402,7 @@ export default function AdminExamenes() {
             Gestión de Exámenes
           </h1>
           <p className="text-gray-600">
-            Administra los exámenes TOEIC con horarios, FAQs, extras y muestras
+            Administra los exámenes TOEIC®con horarios, FAQs, extras y muestras
           </p>
         </div>
         
@@ -602,7 +602,7 @@ export default function AdminExamenes() {
               <p className="text-gray-500 mb-6 max-w-md mx-auto">
                 {searchQuery 
                   ? 'Intenta con otros términos de búsqueda o revisa la ortografía' 
-                  : 'Comienza creando tu primer examen TOEIC con horarios, FAQs y material de muestra'
+                  : 'Comienza creando tu primer examen TOEIC® con horarios, FAQs y material de muestra'
                 }
               </p>
               {!searchQuery && (

@@ -25,7 +25,7 @@ export default function Contacto() {
   const texts = {
     es: {
       title: 'Contáctanos',
-      subtitle: 'Estamos aquí para ayudarte con todas tus dudas sobre TOEIC',
+      subtitle: 'Estamos aquí para ayudarte con todas tus dudas sobre TOEIC®',
       formTitle: 'Envíanos un Mensaje',
       name: 'Nombre',
       email: 'Email',
@@ -63,7 +63,7 @@ export default function Contacto() {
     },
     en: {
       title: 'Contact Us',
-      subtitle: 'We\'re here to help you with all your TOEIC questions',
+      subtitle: 'We\'re here to help you with all your TOEIC® questions',
       formTitle: 'Send us a Message',
       name: 'Name',
       email: 'Email',

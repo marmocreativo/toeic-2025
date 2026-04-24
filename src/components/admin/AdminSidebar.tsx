@@ -12,7 +12,8 @@ import {
   Shield,
   BarChart3,
   Users,
-  Megaphone
+  Megaphone, 
+  Calendar
 } from 'lucide-react';
 
 interface AdminSidebarProps {
@@ -31,6 +32,7 @@ export default function AdminSidebar({ isOpen = true, onClose }: AdminSidebarPro
     { path: '/admin/newsletters', icon: Download, label: 'Newsletters' },
     { path: '/admin/centros', icon: Building, label: 'Centros' },
     { path: '/admin/centros-estados', icon: MapPin, label: 'Estados' },
+    { path: '/admin/fechas-aplicaciones', icon: Calendar, label: 'Fechas Aplicación' },
     { path: '/admin/anuncios', icon: Megaphone, label: 'Anuncios' },
     { path: '/admin/usuarios', icon: Users, label: 'Usuarios' },
   ];
@@ -88,7 +90,7 @@ export default function AdminSidebar({ isOpen = true, onClose }: AdminSidebarPro
               <Shield className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-primary">TOEIC Admin</h2>
+              <h2 className="text-lg font-semibold text-primary">TOEIC®Admin</h2>
               <p className="text-xs text-text-muted">Panel de Control</p>
             </div>
           </div>

@@ -25,7 +25,7 @@ export default function Paginas() {
   const texts = {
     es: {
       title: 'Páginas de Información',
-      subtitle: 'Encuentra toda la información que necesitas sobre TOEIC',
+      subtitle: 'Encuentra toda la información que necesitas sobre TOEIC®',
       searchPlaceholder: 'Buscar páginas...',
       noResults: 'No se encontraron páginas',
       noResultsDesc: 'Intenta con otros términos de búsqueda',
@@ -46,7 +46,7 @@ export default function Paginas() {
     },
     en: {
       title: 'Information Pages',
-      subtitle: 'Find all the information you need about TOEIC',
+      subtitle: 'Find all the information you need about TOEIC®',
       searchPlaceholder: 'Search pages...',
       noResults: 'No pages found',
       noResultsDesc: 'Try different search terms',

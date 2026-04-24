@@ -300,13 +300,8 @@ const HeroSlider = () => {
         <motion.div 
           className="absolute inset-0 bg-gradient-radial from-bg-light from-40% to-bg-dark to-90%" 
           animate={{
-            background: [
-              "radial-gradient(circle at 20% 50%, hsl(0 0% 100%) 40%, hsl(0 0% 95%) 90%)",
-              "radial-gradient(circle at 80% 50%, hsl(0 0% 100%) 40%, hsl(0 0% 95%) 90%)",
-              "radial-gradient(circle at 20% 50%, hsl(0 0% 100%) 40%, hsl(0 0% 95%) 90%)"
-            ]
+            background: "linear-gradient(to bottom, #ffffff, #d4d4d4)"
           }}
-          transition={{ duration: 6, repeat: Infinity }}
         />
         
         <div className="relative h-full flex items-center z-10">
@@ -316,7 +311,7 @@ const HeroSlider = () => {
                 <motion.div className="mb-8" variants={staggerItem}>
                   <img 
                     src="./images/logo.png" 
-                    alt="TOEIC Logo" 
+                    alt="TOEIC®Logo" 
                     className="h-12 md:h-16 w-auto"
                   />
                 </motion.div>
@@ -324,7 +319,7 @@ const HeroSlider = () => {
                   className="text-3xl md:text-4xl lg:text-5xl font-bold text-text leading-tight"
                   variants={staggerItem}
                 >
-                  TOEIC 2025
+                  TOEIC®2025
                 </motion.h1>
                 <motion.p 
                   className="text-lg md:text-xl text-text-muted leading-relaxed"
@@ -352,14 +347,9 @@ const HeroSlider = () => {
       <motion.div 
         className="absolute inset-0" 
         animate={{
-          background: [
-            "radial-gradient(ellipse at center, #f4f4f5, #d4d4d4)",
-            "radial-gradient(ellipse at 30% 40%, #f4f4f5, #d4d4d4)",
-            "radial-gradient(ellipse at 70% 60%, #f4f4f5, #d4d4d4)",
-            "radial-gradient(ellipse at center, #f4f4f5, #d4d4d4)"
-          ]
+          background: "linear-gradient(to bottom, #ffffff, #d4d4d4)"
         }}
-        transition={{ duration: 10, repeat: Infinity }}
+        transition={{ duration: 0 }}
       />
       
       {/* Indicador de pausa */}
@@ -414,7 +404,7 @@ const HeroSlider = () => {
                     <motion.div className="mb-8 lg:mb-10" variants={fadeInLeft}>
                       <img 
                         src={currentSlider.logo}
-                        alt="TOEIC Logo" 
+                        alt="TOEIC®Logo" 
                         className="h-12 md:h-14 lg:h-16 w-auto"
                       />
                     </motion.div>
@@ -549,11 +539,13 @@ const StatsSection = () => {
       block_1: 'Aceptado en',
       block_2: 'Reputación',
       block_3: 'Usado por',
+      disclaimer: 'Cifras correspondientes al examen TOEIC® (ETS).'
     },
     en: {
       block_1: 'Accepted in',
       block_2: 'Reputation',
       block_3: 'Used by',
+      disclaimer: 'Figures correspond to the TOEIC® exam (ETS).'
     }
   };
 
@@ -638,6 +630,9 @@ const StatsSection = () => {
           ))}
         </motion.div>
       </div>
+      <p className="text-center text-white/60 text-xs mt-4">
+        {currentTexts.disclaimer}
+      </p>
     </motion.section>
   );
 };
@@ -652,16 +647,16 @@ const AboutToeicSection = () => {
 
   const texts = {
     es: {
-      title: '¿Qué es TOEIC?',
-      paragraph_1: 'TOEIC® (Test of English for International Communication) es una certificación internacional que evalúa tu dominio del inglés en situaciones reales de trabajo. Es aceptada por más de 14,000 organizaciones en todo el mundo.',
-      subtitle: 'Ventajas del exámen',
-      paragraph_2: 'Evalúa inglés real en contextos laborales. No se reprueba: se mide tu nivel (escala de 10 a 990 puntos). Certificación válida por 2 años. Resultados rápidos y confiables. Alineado al Marco Común Europeo de Referencia (MCER).'
+      title: '¿Quiénes somos?',
+      paragraph_1: 'En Review Quality nos especializamos en la evaluación objetiva y confiable del nivel de inglés, ofreciendo soluciones tanto para el sector académico como corporativo. Nuestro enfoque se basa en proporcionar mediciones precisas que faciliten la toma de decisiones estratégicas.',
+      subtitle: 'Nuestro compromiso',
+      paragraph_2: 'Nos comprometemos con la calidad, precisión y confidencialidad en cada evaluación, posicionándonos como un aliado estratégico para organizaciones que buscan desarrollar talento y potenciar la comunicación efectiva en inglés.'
     },
     en: {
-      title: '¿Qué es TOEIC?',
-      paragraph_1: 'TOEIC® (Test of English for International Communication) es una certificación internacional que evalúa tu dominio del inglés en situaciones reales de trabajo. Es aceptada por más de 14,000 organizaciones en todo el mundo.',
-      subtitle: 'Ventajas del exámen',
-      paragraph_2: 'Evalúa inglés real en contextos laborales. No se reprueba: se mide tu nivel (escala de 10 a 990 puntos). Certificación válida por 2 años. Resultados rápidos y confiables. Alineado al Marco Común Europeo de Referencia (MCER).'
+      title: 'Who we are',
+      paragraph_1: 'At Review Quality we specialize in the objective and reliable assessment of English proficiency, offering solutions for both the academic and corporate sectors. Our approach is based on providing precise measurements that facilitate strategic decision-making.',
+      subtitle: 'Our commitment',
+      paragraph_2: 'We are committed to quality, precision and confidentiality in every assessment, positioning ourselves as a strategic ally for organizations seeking to develop talent and enhance effective communication in English.'
     }
   };
 
@@ -685,16 +680,10 @@ const AboutToeicSection = () => {
               whileHover={{ scale: 1.02 }}
               transition={{ duration: 0.3 }}
             >
-              <iframe 
-                width="100%" 
-                height="315" 
-                src="https://www.youtube.com/embed/dEuxSF1Ylgs?si=dxa3KVGOdz4-Luhg" 
-                title="YouTube video player" 
-                frameBorder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-                referrerPolicy="strict-origin-when-cross-origin" 
-                allowFullScreen
-                className="rounded-lg shadow-lg"
+              <img 
+                src="/images/logo.png" 
+                alt="TOEIC.MX Logo"
+                className="rounded-lg shadow-lg w-full h-[315px] object-contain"
               />
             </motion.div>
           </motion.div>
@@ -933,11 +922,11 @@ const PartnersCarousel = () => {
   const texts = {
     es: {
       title: '¿Qué industrias utilizan TOEIC®?',
-      subtitle: '80% de las compañías listadas en la FORTUNE GLOBAL 500 usan TOEIC.'
+      subtitle: 'El 80% de las compañías de la FORTUNE GLOBAL 500 usan TOEIC® (ETS) para evaluar el inglés de sus colaboradores.'
     },
     en: {
-      title: 'Wich industries use TOEIC®',
-      subtitle: '80% of the companies listed in the FORTUNE GLOBAL 500 use TOEIC'
+      title: 'Which industries use TOEIC®?',
+      subtitle: '80% of FORTUNE GLOBAL 500 companies use TOEIC® (ETS) to assess their employees\' English proficiency.'
     }
   };
 

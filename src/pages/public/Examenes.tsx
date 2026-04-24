@@ -23,8 +23,8 @@ export default function Examenes() {
   // Textos según el idioma
   const texts = {
     es: {
-      title: 'Exámenes TOEIC',
-      subtitle: 'Encuentra el examen TOEIC perfecto para tus necesidades profesionales',
+      title: 'Exámenes TOEIC®',
+      subtitle: 'Encuentra el examen TOEIC® perfecto para tus necesidades profesionales',
       searchPlaceholder: 'Buscar exámenes...',
       noResults: 'No se encontraron exámenes',
       noResultsDesc: 'Intenta con otros términos de búsqueda',
@@ -44,14 +44,14 @@ export default function Examenes() {
       }
     },
     en: {
-      title: 'TOEIC Tests',
-      subtitle: 'Find the perfect TOEIC test for your professional needs',
+      title: 'TOEIC®Tests',
+      subtitle: 'Find the perfect TOEIC®test for your professional needs',
       searchPlaceholder: 'Search tests...',
       noResults: 'No tests found',
       noResultsDesc: 'Try different search terms',
       learnMore: 'Learn More',
       viewDetails: 'View Details',
-      ctaTitle: 'Ready to Start Your TOEIC Assessment?',
+      ctaTitle: 'Ready to Start Your TOEIC®Assessment?',
       ctaDescription: 'Schedule your test at one of our authorized centers and take the next step in your professional career.',
       ctaButton: 'Find Centers',
       ctaSecondary: 'View Schedules',

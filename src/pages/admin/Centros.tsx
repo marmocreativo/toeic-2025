@@ -294,7 +294,7 @@ export default function AdminCentros() {
                       id="nombre"
                       value={formData.nombre}
                       onChange={(e) => setFormData(prev => ({ ...prev, nombre: e.target.value }))}
-                      placeholder="Ej: Centro TOEIC Ciudad de México"
+                      placeholder="Ej: Centro TOEIC® Ciudad de México"
                       className="border-border focus:border-primary"
                       required
                     />
@@ -592,7 +592,7 @@ export default function AdminCentros() {
                 <p className="text-text-muted">
                   {searchTerm 
                     ? 'Intenta modificar los términos de búsqueda o crear un nuevo centro.' 
-                    : 'Comienza agregando tu primer centro de examen TOEIC.'
+                    : 'Comienza agregando tu primer centro de examen TOEIC®.'
                   }
                 </p>
               </div>

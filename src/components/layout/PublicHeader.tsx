@@ -16,6 +16,7 @@ export default function PublicHeader() {
   const texts = {
     es: {
       home: 'Inicio',
+      about: 'Acerca de RQ',
       exams: 'Exámenes',
       preparation_material: 'Material de preparación',
       centers: 'Centros Autorizados',
@@ -23,6 +24,7 @@ export default function PublicHeader() {
     },
     en: {
       home: 'Home',
+      about: 'About RQ',
       exams: 'Tests',
       preparation_material: 'Preparation material',
       centers: 'Authorized Centers',
@@ -35,6 +37,7 @@ export default function PublicHeader() {
   // Generar enlaces según el idioma actual
   const links = {
     home: generateLocalizedPath('home', language),
+    about: generateLocalizedPath('acerca', language),
     examenes: generateLocalizedPath('examenes', language),
     material_preparacion: generateLocalizedPath('material_preparacion', language),
     centros: generateLocalizedPath('centros', language),
@@ -81,13 +84,17 @@ export default function PublicHeader() {
             to={links.home} 
             className="flex items-center space-x-3 text-xl font-bold text-primary hover:text-primary-dark transition-colors group"
           >
-            <img src='/images/logo.png' className='h-8' alt="TOEIC Logo" />
+            <img src='/images/logo_menu.svg' className='h-18' alt="Review Quality" />
+            <img src='/images/epa_logo.png' className='h-9' alt="EPA" />
           </Link>
           
           {/* Desktop Menu */}
           <nav className="hidden lg:flex items-center space-x-1">
             <Link to={links.home} className="nav-item">
               {currentTexts.home}
+            </Link>
+            <Link to={links.about} className="nav-item">
+              {currentTexts.about}
             </Link>
             <Link to={links.examenes} className="nav-item">
               {currentTexts.exams}
@@ -131,6 +138,13 @@ export default function PublicHeader() {
                 onClick={closeMenu}
               >
                 {currentTexts.home}
+              </Link>
+              <Link 
+                to={links.about} 
+                className="block px-4 py-3 text-text-muted hover:text-primary hover:bg-bg transition-colors font-medium rounded-lg mx-2"
+                onClick={closeMenu}
+              >
+                {currentTexts.about}
               </Link>
               <Link 
                 to={links.examenes} 

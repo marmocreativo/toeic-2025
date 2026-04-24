@@ -25,8 +25,8 @@ export default function Newsletters() {
   // Textos según el idioma
   const texts = {
     es: {
-      title: 'Boletines TOEIC',
-      subtitle: 'Mantente actualizado con las últimas noticias y recursos de TOEIC',
+      title: 'Boletines TOEIC®',
+      subtitle: 'Mantente actualizado con las últimas noticias y recursos de TOEIC®',
       searchPlaceholder: 'Buscar boletines...',
       noResults: 'No se encontraron boletines',
       noResultsDesc: 'Intenta con otros términos de búsqueda',
@@ -47,8 +47,8 @@ export default function Newsletters() {
       }
     },
     en: {
-      title: 'TOEIC Newsletters',
-      subtitle: 'Stay updated with the latest TOEIC news and resources',
+      title: 'TOEIC® Newsletters',
+      subtitle: 'Stay updated with the latest TOEIC® news and resources',
       searchPlaceholder: 'Search newsletters...',
       noResults: 'No newsletters found',
       noResultsDesc: 'Try different search terms',

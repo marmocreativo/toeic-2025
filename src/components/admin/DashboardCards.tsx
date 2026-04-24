@@ -164,7 +164,7 @@ export const RecentActivity = () => {
   const activities = [
     {
       action: 'Nuevo examen creado',
-      item: 'TOEIC Listening & Reading',
+      item: 'TOEIC®Listening & Reading',
       time: 'Hace 2 horas',
       user: 'Admin',
       type: 'create'

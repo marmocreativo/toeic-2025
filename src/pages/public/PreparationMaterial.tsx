@@ -7,7 +7,7 @@ export default function PreparationMaterial() {
 
     const texts = {
         es: {
-            title: 'Materiales de preparación para el exámen TOEIC',
+            title: 'Materiales de preparación para el exámen TOEIC®',
             subtitle: 'Prepárate para el éxito con manuales oficiales para examinandos, exámenes de muestra y otros materiales de preparación para el examen',
             officialCourse: {
                 title: 'CURSO OFICIAL DE PREPARACIÓN TOEIC® EN LÍNEA',
@@ -37,7 +37,7 @@ export default function PreparationMaterial() {
             }
         },
         en: {
-            title: 'TOEIC Test Preparation Materials',
+            title: 'TOEIC®Test Preparation Materials',
             subtitle: 'Prepare for success with official examinee handbooks, sample tests and other test prep materials.',
             officialCourse: {
                 title: 'OFFICIAL TOEIC® ONLINE PREPARATION COURSE',

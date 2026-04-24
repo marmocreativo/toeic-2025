@@ -265,7 +265,7 @@ export default function ExamenForm() {
               {isEditing ? 'Editar Examen' : 'Nuevo Examen'}
             </h1>
             <p className="text-gray-600 mt-1">
-              {isEditing ? 'Modifica la información del examen' : 'Crea un nuevo examen TOEIC con todas sus secciones'}
+              {isEditing ? 'Modifica la información del examen' : 'Crea un nuevo examen TOEIC® con todas sus secciones'}
             </p>
           </div>
         </div>
@@ -434,7 +434,7 @@ export default function ExamenForm() {
                       id="titulo"
                       value={formData.titulo}
                       onChange={(e) => handleInputChange('titulo', e.target.value)}
-                      placeholder="ej: TOEIC Listening & Reading"
+                      placeholder="ej: TOEIC® Listening & Reading"
                     />
                   </div>
 
@@ -475,7 +475,7 @@ export default function ExamenForm() {
                       id="en_titulo"
                       value={formData.en_titulo}
                       onChange={(e) => handleInputChange('en_titulo', e.target.value)}
-                      placeholder="e.g: TOEIC Listening & Reading"
+                      placeholder="e.g: TOEIC®Listening & Reading"
                     />
                   </div>
 
@@ -528,7 +528,7 @@ export default function ExamenForm() {
                   id="texto_fechas_especiales"
                   value={formData.texto_fechas_especiales}
                   onChange={(e) => handleInputChange('texto_fechas_especiales', e.target.value)}
-                  placeholder="ej: Fechas especiales del examen TOEIC 2025"
+                  placeholder="ej: Fechas especiales del examen TOEIC® 2025"
                 />
                 <p className="text-sm text-gray-500 mt-1">
                   Texto explicativo que aparecerá antes de las fechas especiales

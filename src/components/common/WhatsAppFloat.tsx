@@ -45,18 +45,18 @@ export default function WhatsAppFloat({
 
     const defaultMessages = {
       es: {
-        default: 'Me gustarían informes sobre los exámenes TOEIC',
-        examenes: 'Me gustaría información específica sobre el examen TOEIC',
-        centros: 'Me gustaría conocer los centros autorizados para el examen TOEIC',
-        newsletters: 'Me interesa recibir información sobre los boletines TOEIC',
-        paginas: 'Me gustaría más información sobre los servicios TOEIC',
+        default: 'Me gustarían informes sobre los exámenes TOEIC®',
+        examenes: 'Me gustaría información específica sobre el examen TOEIC®',
+        centros: 'Me gustaría conocer los centros autorizados para el examen TOEIC®',
+        newsletters: 'Me interesa recibir información sobre los boletines TOEIC®',
+        paginas: 'Me gustaría más información sobre los servicios TOEIC®',
       },
       en: {
-        default: 'I would like information about TOEIC exams',
-        examenes: 'I would like specific information about the TOEIC exam',
-        centros: 'I would like to know about authorized TOEIC centers',
-        newsletters: 'I am interested in receiving information about TOEIC newsletters',
-        paginas: 'I would like more information about TOEIC services',
+        default: 'I would like information about TOEIC®exams',
+        examenes: 'I would like specific information about the TOEIC®exam',
+        centros: 'I would like to know about authorized TOEIC®centers',
+        newsletters: 'I am interested in receiving information about TOEIC®newsletters',
+        paginas: 'I would like more information about TOEIC®services',
       }
     };
 

@@ -85,7 +85,7 @@ const CallToAction: React.FC<CallToActionProps> = ({
       primaryButton: 'Contáctanos'
     },
     en: {
-      title: 'Ready to Start Your TOEIC Assessment?',
+      title: 'Ready to Start Your TOEIC®Assessment?',
       description: 'Building the most effective English communication skills for the workforce.',
       primaryButton: 'Contact Us',
     }
