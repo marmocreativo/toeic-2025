@@ -782,6 +782,35 @@ Please confirm availability and proceed with my registration. Thank you!`;
                 )}
               </>
             )}
+
+            {/* Aviso de privacidad */}
+              <p className="text-xs text-muted-foreground">
+                {language === 'es' ? (
+                  <>
+                    Al continuar, aceptas nuestro{' '}
+                    <a
+                      href="https://toeic.mx/pagina/aviso-de-privacidad"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline hover:text-foreground transition-colors"
+                    >
+                      Aviso de Privacidad
+                    </a>
+                  </>
+                ) : (
+                  <>
+                    By continuing, you accept our{' '}
+                    <a
+                      href="https://toeic.mx/en/page/privacy-notice"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline hover:text-foreground transition-colors"
+                    >
+                      Privacy Notice
+                    </a>
+                  </>
+                )}
+              </p>
           </div>
         );
 

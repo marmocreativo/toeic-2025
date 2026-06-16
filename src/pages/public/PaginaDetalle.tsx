@@ -1,6 +1,6 @@
 // src/pages/public/PaginaDetalle.tsx
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate  } from 'react-router-dom';
 import { useLanguage } from '../../hooks/useLanguage';
 import { generateLocalizedPath } from '../../utils/languageUtils';
 import { paginaService } from '../../services/paginaService';
@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 
 export default function PaginaDetalle() {
+  const navigate = useNavigate();
   const { url } = useParams<{ url: string }>();
   const [pagina, setPagina] = useState<Pagina | null>(null);
   const [loading, setLoading] = useState(true);
@@ -88,7 +89,22 @@ export default function PaginaDetalle() {
     };
 
     loadPagina();
-  }, [url, language]);
+    }, [url]);
+
+    useEffect(() => {
+    if (!pagina) return;
+
+    const slugCorrecto = language === 'es' 
+      ? pagina.url 
+      : (pagina.en_url || pagina.url);
+
+    if (slugCorrecto && slugCorrecto !== url) {
+      const newPath = language === 'es'
+        ? `/pagina/${slugCorrecto}`
+        : `/en/page/${slugCorrecto}`;
+      navigate(newPath, { replace: true });
+    }
+  }, [language, pagina]);
 
   // Formato de fecha
   const formatDate = (dateString: string) => {
@@ -202,23 +218,9 @@ export default function PaginaDetalle() {
           <article className="prose prose-lg max-w-none">
             {contenido ? (
               <div 
-                className="whitespace-pre-wrap leading-relaxed text-text"
-                style={{
-                  lineHeight: '1.8',
-                  fontSize: '1.125rem'
-                }}
-              >
-                {contenido.split('\n').map((paragraph, index) => {
-                  if (paragraph.trim() === '') {
-                    return <br key={index} />;
-                  }
-                  return (
-                    <p key={index} className="mb-6 text-text">
-                      {paragraph}
-                    </p>
-                  );
-                })}
-              </div>
+                className="prose prose-lg max-w-none text-text"
+                dangerouslySetInnerHTML={{ __html: contenido }}
+              />
             ) : (
               <div className="text-center py-12">
                 <FileText className="w-16 h-16 text-border mx-auto mb-4" />
