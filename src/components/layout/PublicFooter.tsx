@@ -89,7 +89,7 @@ export default function PublicFooter() {
               <div className="space-y-3">
                 <div className="flex items-center space-x-3 text-gray-300">
                   <Mail className="w-5 h-5 text-white flex-shrink-0" />
-                  <span>recepcion@reviewquality.mx</span>
+                  <span>recepcion@toeic.mx</span>
                 </div>
                 <div className="flex items-center space-x-3 text-gray-300">
                   <Phone className="w-5 h-5 text-white flex-shrink-0" />
