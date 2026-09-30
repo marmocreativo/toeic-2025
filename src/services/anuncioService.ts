@@ -310,20 +310,24 @@ export const anuncioService = {
   // FUNCIONES AUXILIARES
   // =============================================
 
-  // Extraer path del archivo desde URL
+  // Extraer path del archivo desde URL (toeic.mx/buckets/)
   extractPathFromUrl(url: string): string | null {
     try {
       const urlObj = new URL(url);
-      const pathParts = urlObj.pathname.split('/');
-      
-      const publicIndex = pathParts.indexOf('public');
-      const bucketIndex = publicIndex + 1;
+      const pathParts = urlObj.pathname.split('/').filter(Boolean);
+
+      const bucketsIndex = pathParts.indexOf('buckets');
+      const bucketIndex = bucketsIndex + 1;
       const filePathIndex = bucketIndex + 1;
-      
-      if (pathParts[bucketIndex] === STORAGE_BUCKETS.GENERAL && filePathIndex < pathParts.length) {
+
+      if (
+        bucketsIndex !== -1 &&
+        pathParts[bucketIndex] === STORAGE_BUCKETS.GENERAL &&
+        filePathIndex < pathParts.length
+      ) {
         return pathParts.slice(filePathIndex).join('/');
       }
-      
+
       return null;
     } catch (error) {
       console.warn('No se pudo extraer path de URL:', url, error);

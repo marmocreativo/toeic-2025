@@ -378,20 +378,24 @@ export const sliderService = {
   // FUNCIONES EXISTENTES (sin cambios)
   // ========================================================================
 
-  // Función auxiliar para extraer el path del archivo desde la URL pública
+  // Función auxiliar para extraer el path del archivo desde la URL pública (toeic.mx/buckets/)
   extractPathFromUrl(url: string): string | null {
     try {
       const urlObj = new URL(url);
-      const pathParts = urlObj.pathname.split('/');
-      
-      const publicIndex = pathParts.indexOf('public');
-      const bucketIndex = publicIndex + 1;
+      const pathParts = urlObj.pathname.split('/').filter(Boolean);
+
+      const bucketsIndex = pathParts.indexOf('buckets');
+      const bucketIndex = bucketsIndex + 1;
       const filePathIndex = bucketIndex + 1;
-      
-      if (pathParts[bucketIndex] === STORAGE_BUCKETS.SLIDERS && filePathIndex < pathParts.length) {
+
+      if (
+        bucketsIndex !== -1 &&
+        pathParts[bucketIndex] === STORAGE_BUCKETS.SLIDERS &&
+        filePathIndex < pathParts.length
+      ) {
         return pathParts.slice(filePathIndex).join('/');
       }
-      
+
       return null;
     } catch (error) {
       console.warn('No se pudo extraer path de URL:', url, error);
@@ -399,11 +403,11 @@ export const sliderService = {
     }
   },
 
-  // Función auxiliar para verificar si una URL es del storage de Supabase
+  // Función auxiliar para verificar si una URL apunta a nuestro storage propio (toeic.mx/buckets/)
   isSupabaseStorageUrl(url: string): boolean {
     try {
       const urlObj = new URL(url);
-      return urlObj.pathname.includes('/storage/v1/object/public/');
+      return urlObj.pathname.includes('/buckets/');
     } catch (error) {
       return false;
     }

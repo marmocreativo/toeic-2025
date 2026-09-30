@@ -196,20 +196,24 @@ export const paginaService = {
     return data || [];
   },
 
-  // Función auxiliar para extraer el path del archivo desde la URL pública
+  // Función auxiliar para extraer el path del archivo desde la URL pública (toeic.mx/buckets/)
   extractPathFromUrl(url: string): string | null {
     try {
       const urlObj = new URL(url);
-      const pathParts = urlObj.pathname.split('/');
-      
-      const publicIndex = pathParts.indexOf('public');
-      const bucketIndex = publicIndex + 1;
+      const pathParts = urlObj.pathname.split('/').filter(Boolean);
+
+      const bucketsIndex = pathParts.indexOf('buckets');
+      const bucketIndex = bucketsIndex + 1;
       const filePathIndex = bucketIndex + 1;
-      
-      if (pathParts[bucketIndex] === STORAGE_BUCKETS.GENERAL && filePathIndex < pathParts.length) {
+
+      if (
+        bucketsIndex !== -1 &&
+        pathParts[bucketIndex] === STORAGE_BUCKETS.GENERAL &&
+        filePathIndex < pathParts.length
+      ) {
         return pathParts.slice(filePathIndex).join('/');
       }
-      
+
       return null;
     } catch (error) {
       console.warn('No se pudo extraer path de URL:', url, error);
@@ -220,18 +224,18 @@ export const paginaService = {
   // Extraer imágenes del contenido HTML/Markdown
   extractImagesFromContent(content: string): string[] {
     const images: string[] = [];
-    
-    // Buscar URLs de Supabase en el contenido
-    const supabaseUrlRegex = /https:\/\/[^\/]+\.supabase\.co\/storage\/v1\/object\/public\/general\/[^\s\)"\]>]+/g;
-    const matches = content.match(supabaseUrlRegex);
-    
+
+    // Buscar URLs de nuestro storage propio (toeic.mx/buckets/general/...) en el contenido
+    const storageUrlRegex = /https:\/\/[^\/]+\/buckets\/general\/[^\s\)"\]>]+/g;
+    const matches = content.match(storageUrlRegex);
+
     if (matches) {
       matches.forEach(url => {
         const path = this.extractPathFromUrl(url);
         if (path) images.push(path);
       });
     }
-    
+
     return images;
   },
 

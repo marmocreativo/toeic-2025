@@ -25,79 +25,86 @@ export class StorageService {
     return user;
   }
 
-  // Subir archivo
+  // Subir archivo (ahora vía endpoint PHP propio, no Supabase Storage)
   static async uploadFile(
-    bucket: string, 
-    path: string, 
+    bucket: string,
+    path: string,
     file: File,
-    options?: { upsert?: boolean }
+    _options?: { upsert?: boolean }
   ): Promise<string> {
     try {
-      // Verificar autenticación primero
-      const user = await this.verifyAuth();
-      
-      console.log('Subiendo archivo:', {
-        bucket,
-        path,
-        fileSize: file.size,
-        fileType: file.type,
-        userId: user.id
-      });
+      // Verificar autenticación primero (seguimos exigiendo sesión de Supabase)
+      await this.verifyAuth();
 
-      const { data, error } = await supabase.storage
-        .from(bucket)
-        .upload(path, file, {
-          cacheControl: '3600',
-          upsert: options?.upsert || false
-        });
+      // path puede venir como "centros/nombre.png" o solo "nombre.png";
+      // separamos para mandar bucket y subfolder por separado si aplica
+      const pathParts = path.split('/');
+      const fileNameOrSubfolder = pathParts.length > 1 ? pathParts.slice(0, -1).join('/') : '';
+      const subfolder = fileNameOrSubfolder && fileNameOrSubfolder !== bucket
+        ? fileNameOrSubfolder.replace(new RegExp(`^${bucket}/?`), '')
+        : '';
 
-      if (error) {
-        console.error('Error detallado de Supabase:', error);
-        
-        // Mensajes de error más específicos
-        if (error.message.includes('row-level security')) {
-          throw new Error('Error de permisos: Verifica las políticas RLS del storage');
-        }
-        if (error.message.includes('Bucket not found')) {
-          throw new Error(`Bucket '${bucket}' no encontrado`);
-        }
-        if (error.message.includes('already exists')) {
-          throw new Error('El archivo ya existe. Usa upsert: true para sobrescribir');
-        }
-        
-        throw new Error(`Error subiendo archivo: ${error.message}`);
+      const formData = new FormData();
+      formData.append('bucket', bucket);
+      formData.append('file', file);
+      if (subfolder) {
+        formData.append('subfolder', subfolder);
       }
 
-      // Obtener URL pública
-      const { data: urlData } = supabase.storage
-        .from(bucket)
-        .getPublicUrl(data.path);
+      const uploadUrl = `${import.meta.env.VITE_UPLOAD_API_URL}/upload.php`;
 
-      console.log('Upload exitoso:', {
-        path: data.path,
-        url: urlData.publicUrl
+      const response = await fetch(uploadUrl, {
+        method: 'POST',
+        headers: {
+          'X-Upload-Token': import.meta.env.VITE_UPLOAD_TOKEN,
+        },
+        body: formData,
       });
 
-      return urlData.publicUrl;
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        console.error('Error detallado del servidor:', result);
+        throw new Error(result.error || 'Error subiendo archivo');
+      }
+
+      console.log('Upload exitoso:', {
+        path: result.path,
+        url: result.url,
+      });
+
+      return result.url;
     } catch (error) {
       console.error('Error en uploadFile:', error);
       throw error;
     }
   }
 
-  // Eliminar archivo
+  // Eliminar archivo (ahora vía endpoint PHP propio, no Supabase Storage)
   static async deleteFile(bucket: string, path: string): Promise<void> {
     try {
       // Verificar autenticación
       await this.verifyAuth();
 
-      const { error } = await supabase.storage
-        .from(bucket)
-        .remove([path]);
+      // path puede venir con o sin el bucket como prefijo; normalizamos
+      const relativePath = path.startsWith(`${bucket}/`) ? path : `${bucket}/${path}`;
 
-      if (error) {
-        console.error('Error eliminando archivo:', error);
-        throw new Error(`Error eliminando archivo: ${error.message}`);
+      const deleteUrl = `${import.meta.env.VITE_UPLOAD_API_URL}/delete.php`;
+
+      const response = await fetch(deleteUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Upload-Token': import.meta.env.VITE_UPLOAD_TOKEN,
+        },
+        body: JSON.stringify({ path: relativePath }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        console.error('Error eliminando archivo:', result);
+        throw new Error(result.error || 'Error eliminando archivo');
       }
     } catch (error) {
       console.error('Error en deleteFile:', error);
@@ -105,13 +112,10 @@ export class StorageService {
     }
   }
 
-  // Obtener URL pública (no requiere autenticación)
+  // Obtener URL pública (construida directo, sin llamar a Supabase)
   static getPublicUrl(bucket: string, path: string): string {
-    const { data } = supabase.storage
-      .from(bucket)
-      .getPublicUrl(path);
-    
-    return data.publicUrl;
+    const relativePath = path.startsWith(`${bucket}/`) ? path : `${bucket}/${path}`;
+    return `${import.meta.env.VITE_UPLOAD_API_URL.replace('/api', '')}/buckets/${relativePath}`;
   }
 
   // Generar nombre único para archivo
@@ -303,19 +307,19 @@ static validateFile(file: File): { valid: boolean; error?: string } {
 
   // Agregar estas funciones al StorageService.ts
 
-// Extraer nombre de archivo desde URL de Supabase
+// Extraer path relativo (bucket/archivo) desde una URL de toeic.mx/buckets/
 static extractFilePathFromUrl(url: string): string | null {
   try {
     const urlObj = new URL(url);
-    // Formato: /storage/v1/object/public/bucket/path/to/file.ext
-    const pathParts = urlObj.pathname.split('/');
-    const publicIndex = pathParts.indexOf('public');
-    
-    if (publicIndex !== -1 && publicIndex + 2 < pathParts.length) {
-      // Omitir 'public' y 'bucket', tomar el resto como path
-      return pathParts.slice(publicIndex + 2).join('/');
+    // Formato nuevo: /buckets/bucket/path/to/file.ext
+    const pathParts = urlObj.pathname.split('/').filter(Boolean);
+    const bucketsIndex = pathParts.indexOf('buckets');
+
+    if (bucketsIndex !== -1 && bucketsIndex + 1 < pathParts.length) {
+      // Tomar todo después de 'buckets' (incluye el nombre del bucket)
+      return pathParts.slice(bucketsIndex + 1).join('/');
     }
-    
+
     return null;
   } catch (error) {
     console.warn('Error extrayendo path de URL:', url, error);
@@ -416,11 +420,11 @@ static async handleContentUpdate(oldContent: string, newContent: string): Promis
   }, 1000);
 }
 
-// Función auxiliar para verificar si una URL es de Supabase Storage
+// Función auxiliar para verificar si una URL apunta a nuestro storage propio (toeic.mx/buckets/)
 static isSupabaseStorageUrl(url: string): boolean {
   try {
     const urlObj = new URL(url);
-    return urlObj.pathname.includes('/storage/v1/object/public/');
+    return urlObj.pathname.includes('/buckets/');
   } catch (error) {
     return false;
   }

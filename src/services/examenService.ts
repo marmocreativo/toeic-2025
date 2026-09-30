@@ -1201,20 +1201,24 @@ export const examenService = {
     return data || [];
   },
 
-  // Extraer path de URL de Supabase
+  // Extraer path de URL (toeic.mx/buckets/)
   extractPathFromUrl(url: string): string | null {
     try {
       const urlObj = new URL(url);
-      const pathParts = urlObj.pathname.split('/');
-      
-      const publicIndex = pathParts.indexOf('public');
-      const bucketIndex = publicIndex + 1;
+      const pathParts = urlObj.pathname.split('/').filter(Boolean);
+
+      const bucketsIndex = pathParts.indexOf('buckets');
+      const bucketIndex = bucketsIndex + 1;
       const filePathIndex = bucketIndex + 1;
-      
-      if (pathParts[bucketIndex] === STORAGE_BUCKETS.EXAMENES && filePathIndex < pathParts.length) {
+
+      if (
+        bucketsIndex !== -1 &&
+        pathParts[bucketIndex] === STORAGE_BUCKETS.EXAMENES &&
+        filePathIndex < pathParts.length
+      ) {
         return pathParts.slice(filePathIndex).join('/');
       }
-      
+
       return null;
     } catch (error) {
       console.warn('No se pudo extraer path de URL:', url, error);
@@ -1225,17 +1229,17 @@ export const examenService = {
   // Extraer imágenes del contenido
   extractImagesFromContent(content: string): string[] {
     const images: string[] = [];
-    
-    const supabaseUrlRegex = /https:\/\/[^\/]+\.supabase\.co\/storage\/v1\/object\/public\/examenes\/[^\s\)"\]>]+/g;
-    const matches = content.match(supabaseUrlRegex);
-    
+
+    const storageUrlRegex = /https:\/\/[^\/]+\/buckets\/examenes\/[^\s\)"\]>]+/g;
+    const matches = content.match(storageUrlRegex);
+
     if (matches) {
       matches.forEach(url => {
         const path = this.extractPathFromUrl(url);
         if (path) images.push(path);
       });
     }
-    
+
     return images;
   },
 

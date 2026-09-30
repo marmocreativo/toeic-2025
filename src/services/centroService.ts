@@ -49,11 +49,11 @@ export const deleteOldCentroImage = async (imageUrl: string): Promise<void> => {
   }
 };
 
-// Función auxiliar para verificar si una URL es de Supabase Storage
+// Función auxiliar para verificar si una URL apunta a nuestro storage propio (toeic.mx/buckets/)
 const isSupabaseStorageUrl = (url: string): boolean => {
   try {
     const urlObj = new URL(url);
-    return urlObj.pathname.includes('/storage/v1/object/public/');
+    return urlObj.pathname.includes('/buckets/');
   } catch (error) {
     return false;
   }
