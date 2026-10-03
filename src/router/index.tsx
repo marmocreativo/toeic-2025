@@ -18,6 +18,7 @@ import Paginas from '../pages/public/Paginas';
 import Contacto from '../pages/public/Contacto';
 import AcercaDe from '../pages/public/AcercaDe';
 import PreparationMaterial from '../pages/public/PreparationMaterial';
+import ComentariosExaminado from '../pages/public/ComentariosExaminado';
 import Login from '../pages/auth/Login';
 import ForgotPassword from '../pages/auth/ForgotPassword';
 import ResetPassword from '../pages/auth/ResetPassword';
@@ -40,6 +41,7 @@ import UsuarioForm from '../pages/admin/UsuarioForm';
 import AdminAnuncios from '../pages/admin/Anuncios';
 import AnuncioForm from '../pages/admin/AnuncioForm';
 import AdminFechasAplicaciones from '../pages/admin/AdminFechasAplicaciones';
+import AdminComentariosExaminado from '../pages/admin/AdminComentariosExaminado';
 
 
 export const router = createBrowserRouter([
@@ -188,6 +190,16 @@ export const router = createBrowserRouter([
     path: '/centros/:estado',
     element: <Navigate to="/centros-autorizados" replace />,
   },
+
+    // Formulario público de comentarios del examinado (link/QR, sin header/footer)
+  {
+    path: '/comentarios-examinado',
+    element: <ComentariosExaminado />,
+  },
+  {
+    path: '/en/candidate-comment-form',
+    element: <ComentariosExaminado />,
+  },
   
   // Rutas de administrador (protegidas) - Solo en español
   {
@@ -237,6 +249,10 @@ export const router = createBrowserRouter([
       {
         path: 'fechas-aplicaciones',
         element: <AdminFechasAplicaciones />,
+      },
+      {
+        path: 'comentarios-examinado',
+        element: <AdminComentariosExaminado />,
       },
       {
         path: 'newsletters',

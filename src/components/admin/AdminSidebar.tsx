@@ -13,7 +13,8 @@ import {
   BarChart3,
   Users,
   Megaphone, 
-  Calendar
+  Calendar,
+  MessageSquareText
 } from 'lucide-react';
 
 interface AdminSidebarProps {
@@ -33,6 +34,7 @@ export default function AdminSidebar({ isOpen = true, onClose }: AdminSidebarPro
     { path: '/admin/centros', icon: Building, label: 'Centros' },
     { path: '/admin/centros-estados', icon: MapPin, label: 'Estados' },
     { path: '/admin/fechas-aplicaciones', icon: Calendar, label: 'Fechas Aplicación' },
+    { path: '/admin/comentarios-examinado', icon: MessageSquareText, label: 'Comentarios' },
     { path: '/admin/anuncios', icon: Megaphone, label: 'Anuncios' },
     { path: '/admin/usuarios', icon: Users, label: 'Usuarios' },
   ];

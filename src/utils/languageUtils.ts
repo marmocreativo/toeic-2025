@@ -91,6 +91,10 @@ export const ROUTE_MAPPINGS: Record<string, RouteConfig> = {
     es: '/acerca-de',
     en: '/about',
   },
+  comentarios: {
+    es: '/comentarios-examinado',
+    en: '/candidate-comment-form',
+  },
 };
 
 // Generar URL para un idioma específico
