@@ -36,7 +36,10 @@ import {
   SelectValue,
 } from '../../components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/tabs';
+import ComentariosQrDialog from '../../components/admin/ComentariosQrDialog';
+import ComentariosTextosEditor from '../../components/admin/ComentariosTextosEditor';
 import {
+  CAMPO_LABELS,
   EXAMENES,
   EXAMEN_LABELS,
   GRUPOS_TIPO,
@@ -61,7 +64,6 @@ import {
 } from '../../services/comentarioExaminadoService';
 import type { ComentarioFiltros } from '../../services/comentarioExaminadoService';
 import { exportComentariosExcel } from '../../utils/exportComentariosExcel';
-import ComentariosQrDialog from '../../components/admin/ComentariosQrDialog';
 
 const PAGE_SIZE = 20;
 
@@ -127,7 +129,7 @@ function Dato({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div className="space-y-0.5">
       <p className="text-xs font-medium uppercase tracking-wide text-text-muted">{label}</p>
-      <p className="text-sm text-text">{value}</p>
+      <p className="text-sm text-text break-words">{value}</p>
     </div>
   );
 }
@@ -143,6 +145,9 @@ export default function AdminComentariosExaminado() {
   const [error, setError] = useState<string | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
 
+  // Pestaña activa
+  const [tab, setTab] = useState('respuestas');
+
   // Filtros
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
@@ -153,7 +158,7 @@ export default function AdminComentariosExaminado() {
   const [filterMomento, setFilterMomento] = useState('all');
   const [filterTipo, setFilterTipo] = useState('all');
 
-  // Paginación y detalle
+  // Paginación, detalle y QR
   const [page, setPage] = useState(1);
   const [selected, setSelected] = useState<ComentarioExaminado | null>(null);
   const [qrOpen, setQrOpen] = useState(false);
@@ -250,7 +255,7 @@ export default function AdminComentariosExaminado() {
     }
   };
 
-    const handleExport = () => {
+  const handleExport = () => {
     try {
       exportComentariosExcel(rows, stats, hasFilters);
     } catch (err) {
@@ -271,6 +276,7 @@ export default function AdminComentariosExaminado() {
   }
 
   const tipoMasFrecuente = stats.porTipo[0]?.total ? stats.porTipo[0] : null;
+  const enTextos = tab === 'textos';
 
   return (
     <div className="space-y-8">
@@ -279,11 +285,11 @@ export default function AdminComentariosExaminado() {
         <div>
           <h1 className="text-4xl font-medium text-primary mb-2">Comentarios del Examinado</h1>
           <p className="text-secondary">
-            Respuestas del Candidate Comment Form enviadas desde el formulario público
+            Respuestas del formulario público de incidencias y textos del formulario
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-        <Button
+          <Button
             variant="outline"
             onClick={handleExport}
             disabled={loading || rows.length === 0}
@@ -292,7 +298,7 @@ export default function AdminComentariosExaminado() {
             <Download className="w-4 h-4 mr-2" />
             Exportar a Excel ({rows.length})
           </Button>
-        <Button
+          <Button
             variant="outline"
             onClick={() => setQrOpen(true)}
             className="border-border hover:bg-primary/10 hover:border-primary/30"
@@ -303,120 +309,126 @@ export default function AdminComentariosExaminado() {
         </div>
       </div>
 
-      {/* Filtros */}
-      <Card className="bg-bg-light rounded-lg border border-border">
-        <CardContent className="p-6 space-y-4">
-          <div className="relative">
-            <Search className="absolute left-3 top-3 h-4 w-4 text-text-muted" />
-            <Input
-              placeholder="Buscar por examinado, centro, TCA, ID/asiento, institución o descripción..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 border-border focus:border-primary"
-            />
-          </div>
+      {/* Filtros (no aplican a la pestaña de textos) */}
+      {!enTextos && (
+        <Card className="bg-bg-light rounded-lg border border-border">
+          <CardContent className="p-6 space-y-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-3 h-4 w-4 text-text-muted" />
+              <Input
+                placeholder="Buscar por examinado, ciudad, aplicador, ID/asiento, institución, correo, teléfono o descripción..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 border-border focus:border-primary"
+              />
+            </div>
 
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <div className="space-y-1.5">
-              <Label className="text-xs text-text-muted">Fecha del examen (desde)</Label>
-              <Input
-                type="date"
-                value={desde}
-                max={hasta || undefined}
-                onChange={(e) => setDesde(e.target.value)}
-                className="border-border focus:border-primary"
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-xs text-text-muted">Fecha del examen (hasta)</Label>
-              <Input
-                type="date"
-                value={hasta}
-                min={desde || undefined}
-                onChange={(e) => setHasta(e.target.value)}
-                className="border-border focus:border-primary"
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-xs text-text-muted">Modalidad</Label>
-              <Select value={filterModalidad} onValueChange={setFilterModalidad}>
-                <SelectTrigger className="border-border focus:border-primary">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todas</SelectItem>
-                  {MODALIDADES.map((m) => (
-                    <SelectItem key={m} value={m}>
-                      {MODALIDAD_LABELS[m].es}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-xs text-text-muted">Examen</Label>
-              <Select value={filterExamen} onValueChange={setFilterExamen}>
-                <SelectTrigger className="border-border focus:border-primary">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos</SelectItem>
-                  {EXAMENES.map((x) => (
-                    <SelectItem key={x} value={x}>
-                      {EXAMEN_LABELS[x].es}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-xs text-text-muted">¿Cuándo ocurrió?</Label>
-              <Select value={filterMomento} onValueChange={setFilterMomento}>
-                <SelectTrigger className="border-border focus:border-primary">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos</SelectItem>
-                  {MOMENTOS.map((m) => (
-                    <SelectItem key={m} value={m}>
-                      {MOMENTO_LABELS[m].es}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-1.5 md:col-span-2">
-              <Label className="text-xs text-text-muted">Tipo de comentario</Label>
-              <Select value={filterTipo} onValueChange={setFilterTipo}>
-                <SelectTrigger className="border-border focus:border-primary">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos</SelectItem>
-                  {TIPOS_COMENTARIO.map((t) => (
-                    <SelectItem key={t} value={t}>
-                      {getTipoLabel(t, 'es')}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            {hasFilters && (
-              <div className="flex items-end">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={clearFilters}
-                  className="border-border hover:bg-bg"
-                >
-                  <X className="w-4 h-4 mr-2" />
-                  Limpiar filtros
-                </Button>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+              <div className="space-y-1.5">
+                <Label className="text-xs text-text-muted">
+                  {CAMPO_LABELS.fecha.es} (desde)
+                </Label>
+                <Input
+                  type="date"
+                  value={desde}
+                  max={hasta || undefined}
+                  onChange={(e) => setDesde(e.target.value)}
+                  className="border-border focus:border-primary"
+                />
               </div>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+              <div className="space-y-1.5">
+                <Label className="text-xs text-text-muted">
+                  {CAMPO_LABELS.fecha.es} (hasta)
+                </Label>
+                <Input
+                  type="date"
+                  value={hasta}
+                  min={desde || undefined}
+                  onChange={(e) => setHasta(e.target.value)}
+                  className="border-border focus:border-primary"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs text-text-muted">{CAMPO_LABELS.modalidad.es}</Label>
+                <Select value={filterModalidad} onValueChange={setFilterModalidad}>
+                  <SelectTrigger className="border-border focus:border-primary">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todas</SelectItem>
+                    {MODALIDADES.map((m) => (
+                      <SelectItem key={m} value={m}>
+                        {MODALIDAD_LABELS[m].es}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs text-text-muted">{CAMPO_LABELS.examen.es}</Label>
+                <Select value={filterExamen} onValueChange={setFilterExamen}>
+                  <SelectTrigger className="border-border focus:border-primary">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos</SelectItem>
+                    {EXAMENES.map((x) => (
+                      <SelectItem key={x} value={x}>
+                        {EXAMEN_LABELS[x].es}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs text-text-muted">{CAMPO_LABELS.momento.es}</Label>
+                <Select value={filterMomento} onValueChange={setFilterMomento}>
+                  <SelectTrigger className="border-border focus:border-primary">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos</SelectItem>
+                    {MOMENTOS.map((m) => (
+                      <SelectItem key={m} value={m}>
+                        {MOMENTO_LABELS[m].es}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5 md:col-span-2">
+                <Label className="text-xs text-text-muted">Problemática</Label>
+                <Select value={filterTipo} onValueChange={setFilterTipo}>
+                  <SelectTrigger className="border-border focus:border-primary">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todas</SelectItem>
+                    {TIPOS_COMENTARIO.map((t) => (
+                      <SelectItem key={t} value={t}>
+                        {getTipoLabel(t, 'es')}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              {hasFilters && (
+                <div className="flex items-end">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={clearFilters}
+                    className="border-border hover:bg-bg"
+                  >
+                    <X className="w-4 h-4 mr-2" />
+                    Limpiar filtros
+                  </Button>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {error && (
         <Alert variant="destructive" className="border-red-200 bg-red-50">
@@ -424,17 +436,16 @@ export default function AdminComentariosExaminado() {
         </Alert>
       )}
 
-      <Tabs defaultValue="respuestas" className="space-y-6">
+      <Tabs value={tab} onValueChange={setTab} className="space-y-6">
         <TabsList>
           <TabsTrigger value="respuestas">Respuestas ({rows.length})</TabsTrigger>
           <TabsTrigger value="estadisticas">Estadísticas</TabsTrigger>
+          <TabsTrigger value="textos">Textos del formulario</TabsTrigger>
         </TabsList>
 
         {/* ================= RESPUESTAS ================= */}
         <TabsContent value="respuestas" className="space-y-4">
-          {loading && (
-            <p className="text-sm text-text-muted">Actualizando resultados...</p>
-          )}
+          {loading && <p className="text-sm text-text-muted">Actualizando resultados...</p>}
 
           {pageRows.map((r) => (
             <Card
@@ -475,11 +486,11 @@ export default function AdminComentariosExaminado() {
                         </div>
                         <div className="flex items-center gap-1">
                           <CalendarDays className="w-3.5 h-3.5" />
-                          <span>Examen: {formatFecha(r.fecha_examen)}</span>
+                          <span>Aplicación: {formatFecha(r.fecha_examen)}</span>
                         </div>
                         <span>
                           {r.tipos_comentario.length}{' '}
-                          {r.tipos_comentario.length === 1 ? 'tipo' : 'tipos'} de comentario
+                          {r.tipos_comentario.length === 1 ? 'problemática' : 'problemáticas'}
                         </span>
                       </div>
 
@@ -595,21 +606,21 @@ export default function AdminComentariosExaminado() {
             <Card className="bg-bg-light rounded-lg border border-border">
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm font-medium text-text-muted">
-                  Centros con comentarios
+                  Ciudades con comentarios
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="text-3xl font-bold text-secondary mb-1">
                   {stats.porCentro.length}
                 </div>
-                <div className="text-sm text-text-muted">centros distintos</div>
+                <div className="text-sm text-text-muted">ciudades distintas</div>
               </CardContent>
             </Card>
 
             <Card className="bg-bg-light rounded-lg border border-border">
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm font-medium text-text-muted">
-                  Tipo más reportado
+                  Problemática más reportada
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -626,11 +637,9 @@ export default function AdminComentariosExaminado() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card className="bg-bg-light rounded-lg border border-border lg:col-span-2">
               <CardHeader>
-                <CardTitle className="text-lg font-medium text-primary">
-                  Tipo de comentario
-                </CardTitle>
+                <CardTitle className="text-lg font-medium text-primary">Problemática</CardTitle>
                 <p className="text-xs text-text-muted">
-                  Un comentario puede tener varios tipos; el porcentaje es sobre el total de
+                  Un comentario puede tener varias; el porcentaje es sobre el total de
                   comentarios.
                 </p>
               </CardHeader>
@@ -646,7 +655,9 @@ export default function AdminComentariosExaminado() {
 
             <Card className="bg-bg-light rounded-lg border border-border">
               <CardHeader>
-                <CardTitle className="text-lg font-medium text-primary">Modalidad</CardTitle>
+                <CardTitle className="text-lg font-medium text-primary">
+                  {CAMPO_LABELS.modalidad.es}
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <BarList
@@ -661,7 +672,9 @@ export default function AdminComentariosExaminado() {
 
             <Card className="bg-bg-light rounded-lg border border-border">
               <CardHeader>
-                <CardTitle className="text-lg font-medium text-primary">Examen</CardTitle>
+                <CardTitle className="text-lg font-medium text-primary">
+                  {CAMPO_LABELS.examen.es}
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <BarList
@@ -677,7 +690,7 @@ export default function AdminComentariosExaminado() {
             <Card className="bg-bg-light rounded-lg border border-border">
               <CardHeader>
                 <CardTitle className="text-lg font-medium text-primary">
-                  ¿Cuándo ocurrió?
+                  {CAMPO_LABELS.momento.es}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -694,7 +707,7 @@ export default function AdminComentariosExaminado() {
             <Card className="bg-bg-light rounded-lg border border-border">
               <CardHeader>
                 <CardTitle className="text-lg font-medium text-primary">
-                  Centros (top 10)
+                  Ciudades (top 10)
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -707,6 +720,13 @@ export default function AdminComentariosExaminado() {
               </CardContent>
             </Card>
           </div>
+        </TabsContent>
+
+        {/* ================= TEXTOS DEL FORMULARIO =================
+            forceMount: se mantiene montado al cambiar de pestaña para no perder
+            lo que se esté editando sin guardar. */}
+        <TabsContent value="textos" forceMount className="data-[state=inactive]:hidden">
+          <ComentariosTextosEditor />
         </TabsContent>
       </Tabs>
 
@@ -728,20 +748,59 @@ export default function AdminComentariosExaminado() {
                     1. Datos del examen y del examinado
                   </h3>
                   <div className="grid gap-4 sm:grid-cols-2 rounded-lg border border-border bg-bg p-4">
-                    <Dato label="Cliente / Institución" value={dash(selected.cliente_institucion)} />
-                    <Dato label="Fecha del examen" value={formatFecha(selected.fecha_examen)} />
-                    <Dato label="Centro / Ubicación" value={selected.centro_ubicacion} />
-                    <Dato label="TCA / aplicador" value={dash(selected.nombre_tca)} />
-                    <Dato label="Modalidad" value={MODALIDAD_LABELS[selected.modalidad].es} />
-                    <Dato label="Examen" value={EXAMEN_LABELS[selected.examen].es} />
-                    <Dato label="Nombre del examinado" value={dash(selected.nombre_examinado)} />
-                    <Dato label="ID / asiento" value={dash(selected.id_asiento)} />
+                    <Dato
+                      label={CAMPO_LABELS.institucion.es}
+                      value={dash(selected.cliente_institucion)}
+                    />
+                    <Dato
+                      label={CAMPO_LABELS.fecha.es}
+                      value={formatFecha(selected.fecha_examen)}
+                    />
+                    <Dato label={CAMPO_LABELS.ciudad.es} value={selected.centro_ubicacion} />
+                    <Dato label={CAMPO_LABELS.aplicador.es} value={dash(selected.nombre_tca)} />
+                    <Dato
+                      label={CAMPO_LABELS.modalidad.es}
+                      value={MODALIDAD_LABELS[selected.modalidad].es}
+                    />
+                    <Dato
+                      label={CAMPO_LABELS.examen.es}
+                      value={EXAMEN_LABELS[selected.examen].es}
+                    />
+                    <Dato
+                      label={CAMPO_LABELS.nombre.es}
+                      value={dash(selected.nombre_examinado)}
+                    />
+                    <Dato label={CAMPO_LABELS.idAsiento.es} value={dash(selected.id_asiento)} />
+                    <Dato
+                      label={CAMPO_LABELS.telefono.es}
+                      value={
+                        selected.telefono ? (
+                          <a href={`tel:${selected.telefono}`} className="text-primary hover:underline">
+                            {selected.telefono}
+                          </a>
+                        ) : (
+                          '—'
+                        )
+                      }
+                    />
+                    <Dato
+                      label={CAMPO_LABELS.correo.es}
+                      value={
+                        selected.correo ? (
+                          <a href={`mailto:${selected.correo}`} className="text-primary hover:underline">
+                            {selected.correo}
+                          </a>
+                        ) : (
+                          '—'
+                        )
+                      }
+                    />
                   </div>
                 </section>
 
-                {/* 2. Tipo de comentario */}
+                {/* 2. Problemática */}
                 <section className="space-y-3">
-                  <h3 className="text-sm font-semibold text-primary">2. Tipo de comentario</h3>
+                  <h3 className="text-sm font-semibold text-primary">2. Problemática</h3>
                   <div className="grid gap-3 sm:grid-cols-3">
                     {GRUPOS_TIPO.map((g) => {
                       const marcados = g.tipos.filter((t) =>
@@ -775,7 +834,10 @@ export default function AdminComentariosExaminado() {
                       );
                     })}
                   </div>
-                  <Dato label="¿Cuándo ocurrió?" value={MOMENTO_LABELS[selected.momento].es} />
+                  <Dato
+                    label={CAMPO_LABELS.momento.es}
+                    value={MOMENTO_LABELS[selected.momento].es}
+                  />
                 </section>
 
                 {/* 3. Descripción */}
@@ -790,7 +852,8 @@ export default function AdminComentariosExaminado() {
                 <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-4">
                   <p className="text-xs text-text-muted">
                     Enviado el {formatFechaHora(selected.created_at)} · Idioma:{' '}
-                    {selected.idioma === 'es' ? 'Español' : 'English'} · Declaración aceptada
+                    {selected.idioma === 'es' ? 'Español' : 'English'}
+                    {selected.acepta_declaracion ? ' · Declaración aceptada' : ''}
                   </p>
                   <Button
                     variant="outline"
@@ -807,7 +870,8 @@ export default function AdminComentariosExaminado() {
           )}
         </DialogContent>
       </Dialog>
-    <ComentariosQrDialog open={qrOpen} onOpenChange={setQrOpen} />
+
+      <ComentariosQrDialog open={qrOpen} onOpenChange={setQrOpen} />
     </div>
   );
 }

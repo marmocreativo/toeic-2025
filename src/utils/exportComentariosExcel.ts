@@ -1,6 +1,7 @@
 // src/utils/exportComentariosExcel.ts
 import * as XLSX from 'xlsx';
 import {
+  CAMPO_LABELS,
   EXAMEN_LABELS,
   GRUPOS_TIPO,
   MODALIDAD_LABELS,
@@ -46,20 +47,23 @@ export function exportComentariosExcel(
     ID: r.id,
     'Fecha de envío': aFechaHora(new Date(r.created_at)),
     Idioma: r.idioma === 'es' ? 'Español' : 'English',
-    'Cliente / Institución': r.cliente_institucion ?? '',
-    'Fecha del examen': aFecha(r.fecha_examen),
-    'Centro / Ubicación': r.centro_ubicacion,
-    'TCA / Aplicador': r.nombre_tca ?? '',
-    Modalidad: MODALIDAD_LABELS[r.modalidad].es,
-    Examen: EXAMEN_LABELS[r.examen].es,
-    'Nombre del examinado': r.nombre_examinado ?? '',
-    'ID / Asiento': r.id_asiento ?? '',
+    [CAMPO_LABELS.institucion.es]: r.cliente_institucion ?? '',
+    [CAMPO_LABELS.fecha.es]: aFecha(r.fecha_examen),
+    [CAMPO_LABELS.ciudad.es]: r.centro_ubicacion,
+    [CAMPO_LABELS.aplicador.es]: r.nombre_tca ?? '',
+    [CAMPO_LABELS.modalidad.es]: MODALIDAD_LABELS[r.modalidad].es,
+    [CAMPO_LABELS.examen.es]: EXAMEN_LABELS[r.examen].es,
+    [CAMPO_LABELS.nombre.es]: r.nombre_examinado ?? '',
+    [CAMPO_LABELS.idAsiento.es]: r.id_asiento ?? '',
+    [CAMPO_LABELS.telefono.es]: r.telefono ?? '',
+    [CAMPO_LABELS.correo.es]: r.correo ?? '',
     // Una columna por grupo: Ambiente / Audio, materiales y equipo / Procedimiento y personal
     ...Object.fromEntries(
       GRUPOS_TIPO.map((g) => [g.titulo.es, textoGrupo(r, g)])
     ),
-    '¿Cuándo ocurrió?': MOMENTO_LABELS[r.momento].es,
+    [CAMPO_LABELS.momento.es]: MOMENTO_LABELS[r.momento].es,
     Descripción: r.descripcion,
+    'Declaración aceptada': r.acepta_declaracion ? 'Sí' : 'No',
   }));
 
   const wsRespuestas = XLSX.utils.json_to_sheet(filas, { dateNF: 'dd/mm/yyyy' });
@@ -67,19 +71,22 @@ export function exportComentariosExcel(
     { wch: 6 }, // ID
     { wch: 18 }, // Fecha de envío
     { wch: 10 }, // Idioma
-    { wch: 26 }, // Cliente
-    { wch: 14 }, // Fecha del examen
-    { wch: 28 }, // Centro
-    { wch: 24 }, // TCA
+    { wch: 26 }, // Institución
+    { wch: 18 }, // Fecha de aplicación
+    { wch: 24 }, // Ciudad
+    { wch: 24 }, // Nombre del aplicador
     { wch: 13 }, // Modalidad
     { wch: 12 }, // Examen
-    { wch: 28 }, // Nombre
-    { wch: 14 }, // ID / Asiento
+    { wch: 28 }, // Nombre del examinado
+    { wch: 14 }, // ID / asiento
+    { wch: 16 }, // Teléfono
+    { wch: 28 }, // Correo electrónico
     { wch: 36 }, // Ambiente
-    { wch: 36 }, // Audio
-    { wch: 36 }, // Procedimiento
-    { wch: 18 }, // Cuándo
+    { wch: 36 }, // Audio, materiales y equipo
+    { wch: 36 }, // Procedimiento y personal
+    { wch: 18 }, // ¿Cuándo ocurrió?
     { wch: 70 }, // Descripción
+    { wch: 14 }, // Declaración aceptada
   ];
   XLSX.utils.book_append_sheet(wb, wsRespuestas, 'Respuestas');
 
@@ -103,7 +110,7 @@ export function exportComentariosExcel(
     [],
     ['Total de comentarios', stats.total],
     ['Últimos 7 días', stats.ultimos7Dias],
-    ['Centros distintos', stats.porCentro.length]
+    ['Ciudades distintas', stats.porCentro.length]
   );
 
   const bloque = (titulo: string, items: { label: string; total: number }[]) => {
@@ -112,23 +119,23 @@ export function exportComentariosExcel(
   };
 
   bloque(
-    'Modalidad',
+    CAMPO_LABELS.modalidad.es,
     stats.porModalidad.map((m) => ({ label: MODALIDAD_LABELS[m.clave].es, total: m.total }))
   );
   bloque(
-    'Examen',
+    CAMPO_LABELS.examen.es,
     stats.porExamen.map((x) => ({ label: EXAMEN_LABELS[x.clave].es, total: x.total }))
   );
   bloque(
-    '¿Cuándo ocurrió?',
+    CAMPO_LABELS.momento.es,
     stats.porMomento.map((m) => ({ label: MOMENTO_LABELS[m.clave].es, total: m.total }))
   );
   bloque(
-    'Tipo de comentario (un comentario puede tener varios)',
+    'Problemática (un comentario puede tener varias)',
     stats.porTipo.map((t) => ({ label: getTipoLabel(t.clave, 'es'), total: t.total }))
   );
   bloque(
-    'Centro / Ubicación',
+    CAMPO_LABELS.ciudad.es,
     stats.porCentro.map((c) => ({ label: c.clave, total: c.total }))
   );
 

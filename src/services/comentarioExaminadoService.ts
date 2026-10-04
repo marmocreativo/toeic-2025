@@ -1,12 +1,15 @@
 // src/services/comentarioExaminadoService.ts
 import { supabase } from '../lib/supabase';
 import {
+  CLAVES_TEXTO,
   EXAMENES,
   MODALIDADES,
   MOMENTOS,
+  TEXTOS_DEFAULT,
   TIPOS_COMENTARIO,
 } from '../types/comentarioExaminado';
 import type {
+  ClaveTexto,
   ComentarioExaminado,
   ComentarioExaminadoInput,
   ComentarioExaminadoStats,
@@ -14,10 +17,12 @@ import type {
   Examen,
   Modalidad,
   Momento,
+  TextoFormulario,
   TipoComentario,
 } from '../types/comentarioExaminado';
 
 const TABLE = 'comentarios_examinado';
+const TABLE_TEXTOS = 'comentarios_formulario_textos';
 const BATCH_SIZE = 1000; // límite por request de Supabase
 
 // ============================================================================
@@ -54,6 +59,8 @@ function aplicarFiltros(query: any, f: ComentarioFiltros = {}) {
         `nombre_tca.ilike.${p}`,
         `id_asiento.ilike.${p}`,
         `cliente_institucion.ilike.${p}`,
+        `correo.ilike.${p}`,
+        `telefono.ilike.${p}`,
         `descripcion.ilike.${p}`,
       ].join(',')
     );
@@ -165,7 +172,7 @@ export function calcularStats(
 ): ComentarioExaminadoStats {
   const hace7Dias = Date.now() - 7 * 24 * 60 * 60 * 1000;
 
-  // Centros: texto libre, se agrupa sin distinguir mayúsculas ni espacios extra
+  // Ciudades: texto libre, se agrupa sin distinguir mayúsculas ni espacios extra
   const centros = new Map<string, { clave: string; total: number }>();
   rows.forEach((r) => {
     const original = (r.centro_ubicacion || '').trim();
@@ -206,4 +213,66 @@ export async function getComentarioStats(
 ): Promise<ComentarioExaminadoStats> {
   const rows = await getTodosLosComentarios(filtros);
   return calcularStats(rows);
+}
+
+// ============================================================================
+// TEXTOS EDITABLES DEL FORMULARIO
+// ============================================================================
+
+export type TextosFormulario = Record<ClaveTexto, { es: string; en: string }>;
+
+/** Copia de los textos por defecto (para no mutar la constante original) */
+function copiarDefaults(): TextosFormulario {
+  const copia = {} as TextosFormulario;
+  CLAVES_TEXTO.forEach((clave) => {
+    copia[clave] = { ...TEXTOS_DEFAULT[clave] };
+  });
+  return copia;
+}
+
+/**
+ * Lee los textos de la BD y los mezcla sobre los valores por defecto:
+ * - Fila inexistente o error de consulta -> se usa el texto por defecto.
+ * - Fila con texto vacío -> se respeta el vacío (la página oculta ese bloque).
+ *
+ * Nunca lanza error: el formulario público siempre debe poder mostrarse.
+ */
+export async function getTextosFormulario(): Promise<TextosFormulario> {
+  const textos = copiarDefaults();
+
+  try {
+    const { data, error } = await supabase
+      .from(TABLE_TEXTOS)
+      .select('clave, texto_es, texto_en');
+    if (error) throw error;
+
+    (data ?? []).forEach((fila: Pick<TextoFormulario, 'clave' | 'texto_es' | 'texto_en'>) => {
+      if ((CLAVES_TEXTO as readonly string[]).includes(fila.clave)) {
+        textos[fila.clave] = {
+          es: fila.texto_es ?? '',
+          en: fila.texto_en ?? '',
+        };
+      }
+    });
+  } catch (err) {
+    console.error('No se pudieron cargar los textos del formulario:', err);
+  }
+
+  return textos;
+}
+
+/** ADMIN: guarda todos los textos (crea las filas que falten y actualiza las demás) */
+export async function guardarTextos(textos: TextosFormulario): Promise<void> {
+  const ahora = new Date().toISOString();
+  const filas = CLAVES_TEXTO.map((clave) => ({
+    clave,
+    texto_es: textos[clave].es.trim(),
+    texto_en: textos[clave].en.trim(),
+    updated_at: ahora,
+  }));
+
+  const { error } = await supabase
+    .from(TABLE_TEXTOS)
+    .upsert(filas, { onConflict: 'clave' });
+  if (error) throw error;
 }

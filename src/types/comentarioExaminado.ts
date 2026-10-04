@@ -2,6 +2,8 @@
 
 export type Idioma = 'es' | 'en';
 
+type Etiqueta = { es: string; en: string };
+
 // ============================================================================
 // CATÁLOGOS (valores guardados en BD)
 // ============================================================================
@@ -37,8 +39,6 @@ export type TipoComentario = (typeof TIPOS_COMENTARIO)[number];
 // ============================================================================
 // ETIQUETAS BILINGÜES
 // ============================================================================
-
-type Etiqueta = { es: string; en: string };
 
 export const MODALIDAD_LABELS: Record<Modalidad, Etiqueta> = {
   papel: { es: 'Papel', en: 'Paper' },
@@ -80,8 +80,8 @@ export const TIPO_COMENTARIO_LABELS: Record<TipoComentario, Etiqueta> = {
 
   registro_id: { es: 'Registro / verificación de ID', en: 'Check-in / ID verification' },
   instrucciones_proctor: {
-    es: 'Instrucciones del Proctor/TCA',
-    en: 'Proctor/TCA instructions',
+    es: 'Instrucciones del aplicador',
+    en: 'Test administrator instructions',
   },
   trato_personal: { es: 'Trato del personal', en: 'Staff treatment' },
   procedimiento_otro: { es: 'Otro', en: 'Other' },
@@ -128,6 +128,24 @@ export const GRUPOS_TIPO: GrupoTipo[] = [
 ];
 
 // ============================================================================
+// ETIQUETAS DE CAMPOS (formulario, detalle del admin y Excel)
+// ============================================================================
+
+export const CAMPO_LABELS = {
+  institucion: { es: 'Institución', en: 'Institution' },
+  fecha: { es: 'Fecha de aplicación', en: 'Test date' },
+  ciudad: { es: 'Ciudad', en: 'City' },
+  aplicador: { es: 'Nombre del aplicador', en: 'Administrator name' },
+  modalidad: { es: 'Modalidad', en: 'Mode' },
+  examen: { es: 'Examen', en: 'Test' },
+  nombre: { es: 'Nombre del examinado', en: 'Candidate name' },
+  idAsiento: { es: 'ID / asiento', en: 'ID / seat' },
+  telefono: { es: 'Teléfono', en: 'Phone' },
+  correo: { es: 'Correo electrónico', en: 'Email' },
+  momento: { es: '¿Cuándo ocurrió?', en: 'When did it happen?' },
+} as const satisfies Record<string, Etiqueta>;
+
+// ============================================================================
 // ENTIDADES
 // ============================================================================
 
@@ -142,6 +160,8 @@ export interface ComentarioExaminado {
   examen: Examen;
   nombre_examinado: string | null;
   id_asiento: string | null;
+  telefono: string | null;
+  correo: string | null;
   tipos_comentario: TipoComentario[];
   otro_ambiente: string | null;
   otro_audio: string | null;
@@ -163,13 +183,15 @@ export interface ComentarioExaminadoInput {
   examen: Examen;
   nombre_examinado: string | null;
   id_asiento: string | null;
+  telefono: string | null;
+  correo: string | null;
   tipos_comentario: TipoComentario[];
   otro_ambiente: string | null;
   otro_audio: string | null;
   otro_procedimiento: string | null;
   momento: Momento;
   descripcion: string;
-  acepta_declaracion: true;
+  acepta_declaracion: boolean;
   idioma: Idioma;
 }
 
@@ -198,3 +220,123 @@ export const getTipoLabel = (tipo: TipoComentario, lang: Idioma): string => {
   const base = TIPO_COMENTARIO_LABELS[tipo][lang];
   return grupo ? `${base} (${grupo.titulo[lang]})` : base;
 };
+
+// ============================================================================
+// TEXTOS EDITABLES DEL FORMULARIO (tabla comentarios_formulario_textos)
+// ============================================================================
+
+export const CLAVES_TEXTO = [
+  'programa',
+  'titulo',
+  'subtitulo',
+  'intro',
+  'aviso',
+  'seccion1',
+  'seccion2',
+  'seccion3',
+  'descripcion_ayuda',
+  'declaracion',
+  'confidencial',
+  'exito_titulo',
+  'exito_texto',
+] as const;
+export type ClaveTexto = (typeof CLAVES_TEXTO)[number];
+
+/** Fila de la tabla */
+export interface TextoFormulario {
+  clave: ClaveTexto;
+  texto_es: string;
+  texto_en: string;
+  updated_at?: string | null;
+}
+
+/** Respaldo si la fila no existe o la consulta falla (igual al SQL inicial) */
+export const TEXTOS_DEFAULT: Record<ClaveTexto, Etiqueta> = {
+  programa: { es: 'TOEIC® PROGRAM', en: 'TOEIC® PROGRAM' },
+  titulo: {
+    es: 'Candidato-Reporte de incidencias TOEIC®',
+    en: 'Candidate Incident Report – TOEIC®',
+  },
+  subtitulo: { es: '', en: '' },
+  intro: {
+    es: 'Use este formato para comentar las condiciones del examen (ambiente, audio, materiales, procedimientos o personal).',
+    en: 'Use this form to comment on test conditions (environment, audio, materials, procedures or staff).',
+  },
+  aviso: {
+    es: 'IMPORTANTE: NO escriba preguntas, respuestas ni contenido del examen. Este formato no sustituye al Reporte de Irregularidad.',
+    en: 'IMPORTANT: DO NOT write test questions, answers or test content. This form does not replace the Irregularity Report.',
+  },
+  seccion1: {
+    es: '1. Datos del examen y del examinado',
+    en: '1. Test and candidate information',
+  },
+  seccion2: {
+    es: '2. Problemática (marque todos los que apliquen)',
+    en: '2. Issues (check all that apply)',
+  },
+  seccion3: { es: '3. Descripción', en: '3. Description' },
+  descripcion_ayuda: {
+    es: 'Describa qué ocurrió, cuándo y dónde.',
+    en: 'Describe what happened, when and where.',
+  },
+  declaracion: {
+    es: 'Confirmo que la información proporcionada es verídica y que no incluí preguntas, respuestas ni contenido del examen.',
+    en: 'I confirm that the information provided is true and that I did not include test questions, answers or test content.',
+  },
+  confidencial: {
+    es: 'CONFIDENCIAL: Uso interno del EPN/Centro Evaluador únicamente.',
+    en: 'CONFIDENTIAL: For internal use of the EPN/Test Center only.',
+  },
+  exito_titulo: {
+    es: '¡Gracias por sus comentarios!',
+    en: 'Thank you for your feedback!',
+  },
+  exito_texto: {
+    es: 'Su comentario fue enviado correctamente.',
+    en: 'Your comment was submitted successfully.',
+  },
+};
+
+/** Cómo se presenta cada texto en el editor del admin (en orden de aparición en el formulario) */
+export interface TextoMeta {
+  clave: ClaveTexto;
+  nombre: string;
+  ayuda?: string;
+  multilinea: boolean;
+}
+
+export const TEXTOS_META: TextoMeta[] = [
+  { clave: 'programa', nombre: 'Programa (texto superior)', multilinea: false },
+  { clave: 'titulo', nombre: 'Título', multilinea: false },
+  {
+    clave: 'subtitulo',
+    nombre: 'Subtítulo',
+    ayuda: 'Déjalo vacío para ocultarlo.',
+    multilinea: false,
+  },
+  { clave: 'intro', nombre: 'Instrucciones', multilinea: true },
+  {
+    clave: 'aviso',
+    nombre: 'Aviso importante',
+    ayuda: 'Se muestra resaltado. Déjalo vacío para ocultarlo.',
+    multilinea: true,
+  },
+  { clave: 'seccion1', nombre: 'Título de la sección 1', multilinea: false },
+  { clave: 'seccion2', nombre: 'Título de la sección 2', multilinea: false },
+  { clave: 'seccion3', nombre: 'Título de la sección 3', multilinea: false },
+  { clave: 'descripcion_ayuda', nombre: 'Ayuda del campo de descripción', multilinea: false },
+  {
+    clave: 'declaracion',
+    nombre: 'Declaración del examinado',
+    ayuda: 'Si la dejas vacía, el checkbox de confirmación no se muestra.',
+    multilinea: true,
+  },
+  {
+    clave: 'confidencial',
+    nombre: 'Pie de página (confidencialidad)',
+    ayuda: 'Déjalo vacío para ocultarlo.',
+    multilinea: true,
+  },
+  { clave: 'exito_titulo', nombre: 'Mensaje de éxito: título', multilinea: false },
+  { clave: 'exito_texto', nombre: 'Mensaje de éxito: texto', multilinea: true },
+];

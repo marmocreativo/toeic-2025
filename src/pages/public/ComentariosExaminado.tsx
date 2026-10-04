@@ -1,9 +1,16 @@
 // src/pages/public/ComentariosExaminado.tsx
 import { useEffect, useState } from 'react';
-import { AlertTriangle, CheckCircle2, Loader2, ShieldAlert } from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
+import { AlertTriangle, CheckCircle2, Info, Loader2, ShieldAlert } from 'lucide-react';
 import { useLanguage } from '../../hooks/useLanguage';
-import { enviarComentario } from '../../services/comentarioExaminadoService';
+import { getAlternateLanguagePath } from '../../utils/languageUtils';
 import {
+  enviarComentario,
+  getTextosFormulario,
+} from '../../services/comentarioExaminadoService';
+import type { TextosFormulario } from '../../services/comentarioExaminadoService';
+import {
+  CAMPO_LABELS,
   EXAMENES,
   EXAMEN_LABELS,
   GRUPOS_TIPO,
@@ -15,6 +22,7 @@ import {
   TIPO_COMENTARIO_LABELS,
 } from '../../types/comentarioExaminado';
 import type {
+  ClaveTexto,
   ComentarioExaminadoInput,
   Examen,
   GrupoTipo,
@@ -32,91 +40,44 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
 
 // ============================================================================
-// TEXTOS BILINGÜES
+// TEXTOS FIJOS DE LA INTERFAZ (no editables: botones, errores, placeholders)
+// Los textos editables (título, instrucciones, avisos...) vienen de la BD.
 // ============================================================================
 
-const texts = {
+const ui = {
   es: {
-    program: 'TOEIC® PROGRAM',
-    title: 'Formato de comentarios del examinado',
-    subtitle: 'Candidate Comment Form',
-    intro:
-      'Use este formato para comentar las condiciones del examen (ambiente, audio, materiales, procedimientos o personal).',
-    importantLabel: 'IMPORTANTE:',
-    importantText:
-      'NO escriba preguntas, respuestas ni contenido del examen. Este formato no sustituye al Reporte de Irregularidad.',
-    s1: '1. Datos del examen y del examinado',
-    cliente: 'Cliente / Institución',
-    fecha: 'Fecha',
-    centro: 'Centro / Ubicación',
-    tca: 'Nombre del TCA / aplicador',
-    modalidad: 'Modalidad',
-    examen: 'Examen',
-    nombre: 'Nombre del examinado',
-    idAsiento: 'ID / asiento',
-    s2: '2. Tipo de comentario (marque todos los que apliquen)',
     otroPlaceholder: 'Especifique',
-    cuando: '¿Cuándo ocurrió?',
-    s3: '3. Descripción',
-    s3Hint: 'Describa qué ocurrió, cuándo y dónde.',
-    declaracion:
-      'Confirmo que la información proporcionada es verídica y que no incluí preguntas, respuestas ni contenido del examen.',
-    confidencial:
-      'CONFIDENCIAL: Uso interno del EPN/Centro Evaluador únicamente.',
-    submit: 'Enviar comentario',
-    sending: 'Enviando...',
     required: 'Este campo es obligatorio',
     requiredTipos: 'Seleccione al menos un tipo de comentario',
     requiredOtro: 'Especifique el comentario',
     requiredDeclaracion: 'Debe confirmar la declaración para enviar',
+    invalidEmail: 'Ingrese un correo electrónico válido',
+    invalidPhone: 'Ingrese un teléfono válido',
     formErrors: 'Revise los campos marcados en rojo.',
     submitErrorTitle: 'No se pudo enviar',
     submitError:
       'Ocurrió un problema al enviar su comentario. Intente de nuevo en unos minutos.',
-    successTitle: '¡Gracias por sus comentarios!',
-    successText: 'Su comentario fue enviado correctamente.',
+    submit: 'Enviar comentario',
+    sending: 'Enviando...',
     another: 'Enviar otro comentario',
+    otherLanguage: 'English',
   },
   en: {
-    program: 'TOEIC® PROGRAM',
-    title: 'Candidate Comment Form',
-    subtitle: 'Formato de comentarios del examinado',
-    intro:
-      'Use this form to comment on test conditions (environment, audio, materials, procedures or staff).',
-    importantLabel: 'IMPORTANT:',
-    importantText:
-      'DO NOT write test questions, answers or test content. This form does not replace the Irregularity Report.',
-    s1: '1. Test and candidate information',
-    cliente: 'Client / Institution',
-    fecha: 'Date',
-    centro: 'Test center / Location',
-    tca: 'TCA / proctor name',
-    modalidad: 'Mode',
-    examen: 'Test',
-    nombre: 'Candidate name',
-    idAsiento: 'ID / seat',
-    s2: '2. Type of comment (check all that apply)',
     otroPlaceholder: 'Please specify',
-    cuando: 'When did it happen?',
-    s3: '3. Description',
-    s3Hint: 'Describe what happened, when and where.',
-    declaracion:
-      'I confirm that the information provided is true and that I did not include test questions, answers or test content.',
-    confidencial:
-      'CONFIDENTIAL: For internal use of the EPN/Test Center only.',
-    submit: 'Submit comment',
-    sending: 'Sending...',
     required: 'This field is required',
     requiredTipos: 'Select at least one comment type',
     requiredOtro: 'Please specify your comment',
     requiredDeclaracion: 'You must confirm the statement to submit',
+    invalidEmail: 'Enter a valid email address',
+    invalidPhone: 'Enter a valid phone number',
     formErrors: 'Please review the fields marked in red.',
     submitErrorTitle: 'Could not submit',
     submitError:
       'There was a problem submitting your comment. Please try again in a few minutes.',
-    successTitle: 'Thank you for your feedback!',
-    successText: 'Your comment was submitted successfully.',
+    submit: 'Submit comment',
+    sending: 'Sending...',
     another: 'Submit another comment',
+    otherLanguage: 'Español',
   },
 } as const;
 
@@ -125,6 +86,8 @@ const texts = {
 // ============================================================================
 
 const DESCRIPCION_MAX = 5000;
+const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+const PHONE_RE = /^[\d\s()+\-.]{7,30}$/;
 
 /** Fecha local 'YYYY-MM-DD' (toISOString daría la fecha UTC y puede adelantar un día) */
 const hoyLocal = (): string => {
@@ -149,6 +112,8 @@ interface FormState {
   examen: Examen | '';
   nombre_examinado: string;
   id_asiento: string;
+  telefono: string;
+  correo: string;
   tipos: TipoComentario[];
   otros: Record<OtroCampo, string>;
   momento: Momento | '';
@@ -166,6 +131,8 @@ const crearFormVacio = (): FormState => ({
   examen: '',
   nombre_examinado: '',
   id_asiento: '',
+  telefono: '',
+  correo: '',
   tipos: [],
   otros: { otro_ambiente: '', otro_audio: '', otro_procedimiento: '' },
   momento: '',
@@ -184,13 +151,15 @@ const Seccion = ({
   titulo,
   children,
 }: {
-  titulo: string;
+  titulo?: string;
   children: React.ReactNode;
 }) => (
   <section className="overflow-hidden rounded-lg border bg-card shadow-sm">
-    <h2 className="bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground sm:text-base">
-      {titulo}
-    </h2>
+    {titulo && (
+      <h2 className="bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground sm:text-base">
+        {titulo}
+      </h2>
+    )}
     <div className="space-y-4 p-4 sm:p-5">{children}</div>
   </section>
 );
@@ -225,13 +194,32 @@ const Campo = ({
 const ComentariosExaminado = () => {
   const { language } = useLanguage();
   const lang: Idioma = language === 'en' ? 'en' : 'es';
-  const tx = texts[lang];
+  const tx = ui[lang];
 
+  const location = useLocation();
+  const otherLang: Idioma = lang === 'es' ? 'en' : 'es';
+  const altPath = getAlternateLanguagePath(location.pathname, otherLang);
+
+  const [textos, setTextos] = useState<TextosFormulario | null>(null);
   const [form, setForm] = useState<FormState>(crearFormVacio);
   const [errors, setErrors] = useState<Errors>({});
   const [enviando, setEnviando] = useState(false);
   const [enviado, setEnviado] = useState(false);
   const [submitError, setSubmitError] = useState(false);
+
+  /** Texto editable en el idioma actual (cadena vacía = bloque oculto) */
+  const t = (clave: ClaveTexto): string => textos?.[clave][lang].trim() ?? '';
+
+  // Cargar textos editables (getTextosFormulario nunca lanza error)
+  useEffect(() => {
+    let cancelled = false;
+    getTextosFormulario().then((data) => {
+      if (!cancelled) setTextos(data);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // Página compartida solo por link/QR: que no se indexe
   useEffect(() => {
@@ -244,15 +232,18 @@ const ComentariosExaminado = () => {
     };
   }, []);
 
+  const quitarError = (key: string) => {
+    setErrors((prev) => {
+      if (!prev[key]) return prev;
+      const next = { ...prev };
+      delete next[key];
+      return next;
+    });
+  };
+
   const setCampo = <K extends keyof FormState>(key: K, value: FormState[K]) => {
     setForm((prev) => ({ ...prev, [key]: value }));
-    if (errors[key as string]) {
-      setErrors((prev) => {
-        const next = { ...prev };
-        delete next[key as string];
-        return next;
-      });
-    }
+    quitarError(key as string);
   };
 
   const toggleTipo = (tipo: TipoComentario, checked: boolean) => {
@@ -260,25 +251,18 @@ const ComentariosExaminado = () => {
       ...prev,
       tipos: checked
         ? [...prev.tipos, tipo]
-        : prev.tipos.filter((t) => t !== tipo),
+        : prev.tipos.filter((x) => x !== tipo),
     }));
-    setErrors((prev) => {
-      const next = { ...prev };
-      delete next.tipos;
-      return next;
-    });
+    quitarError('tipos');
   };
 
   const setOtro = (campo: OtroCampo, value: string) => {
     setForm((prev) => ({ ...prev, otros: { ...prev.otros, [campo]: value } }));
-    if (errors[campo]) {
-      setErrors((prev) => {
-        const next = { ...prev };
-        delete next[campo];
-        return next;
-      });
-    }
+    quitarError(campo);
   };
+
+  // La declaración solo se pide si su texto no está vacío
+  const mostrarDeclaracion = t('declaracion') !== '';
 
   // --------------------------------------------------------------------------
   // Validación
@@ -291,6 +275,14 @@ const ComentariosExaminado = () => {
     if (!form.modalidad) e.modalidad = tx.required;
     if (!form.examen) e.examen = tx.required;
     if (!form.nombre_examinado.trim()) e.nombre_examinado = tx.required;
+
+    if (form.telefono.trim() && !PHONE_RE.test(form.telefono.trim())) {
+      e.telefono = tx.invalidPhone;
+    }
+    if (form.correo.trim() && !EMAIL_RE.test(form.correo.trim())) {
+      e.correo = tx.invalidEmail;
+    }
+
     if (form.tipos.length === 0) e.tipos = tx.requiredTipos;
 
     GRUPOS_TIPO.forEach((g) => {
@@ -301,16 +293,19 @@ const ComentariosExaminado = () => {
 
     if (!form.momento) e.momento = tx.required;
     if (!form.descripcion.trim()) e.descripcion = tx.required;
-    if (!form.acepta) e.acepta = tx.requiredDeclaracion;
+    if (mostrarDeclaracion && !form.acepta) e.acepta = tx.requiredDeclaracion;
     return e;
   };
 
+  // Orden en que aparecen los campos (para llevar al primer error)
   const ORDEN_CAMPOS = [
     'fecha_examen',
     'centro_ubicacion',
     'modalidad',
     'examen',
     'nombre_examinado',
+    'telefono',
+    'correo',
     'tipos',
     'otro_ambiente',
     'otro_audio',
@@ -346,7 +341,7 @@ const ComentariosExaminado = () => {
       return;
     }
 
-    const tipos = TIPOS_COMENTARIO.filter((t) => form.tipos.includes(t));
+    const tipos = TIPOS_COMENTARIO.filter((x) => form.tipos.includes(x));
 
     const payload: ComentarioExaminadoInput = {
       cliente_institucion: limpio(form.cliente_institucion),
@@ -357,6 +352,8 @@ const ComentariosExaminado = () => {
       examen: form.examen as Examen,
       nombre_examinado: limpio(form.nombre_examinado),
       id_asiento: limpio(form.id_asiento),
+      telefono: limpio(form.telefono),
+      correo: limpio(form.correo),
       tipos_comentario: tipos,
       otro_ambiente: tipos.includes('ambiente_otro')
         ? limpio(form.otros.otro_ambiente)
@@ -369,7 +366,7 @@ const ComentariosExaminado = () => {
         : null,
       momento: form.momento as Momento,
       descripcion: form.descripcion.trim(),
-      acepta_declaracion: true,
+      acepta_declaracion: mostrarDeclaracion ? form.acepta : false,
       idioma: lang,
     };
 
@@ -394,6 +391,18 @@ const ComentariosExaminado = () => {
   };
 
   // --------------------------------------------------------------------------
+  // Render: cargando textos
+  // --------------------------------------------------------------------------
+
+  if (!textos) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-muted/30">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </main>
+    );
+  }
+
+  // --------------------------------------------------------------------------
   // Render: éxito
   // --------------------------------------------------------------------------
 
@@ -402,8 +411,14 @@ const ComentariosExaminado = () => {
       <main className="flex min-h-screen items-center justify-center bg-muted/30 px-4 py-10">
         <div className="w-full max-w-md rounded-lg border bg-card p-8 text-center shadow-sm">
           <CheckCircle2 className="mx-auto mb-4 h-14 w-14 text-green-600" />
-          <h1 className="mb-2 text-2xl font-bold">{tx.successTitle}</h1>
-          <p className="mb-6 text-muted-foreground">{tx.successText}</p>
+          {t('exito_titulo') && (
+            <h1 className="mb-2 text-2xl font-bold">{t('exito_titulo')}</h1>
+          )}
+          {t('exito_texto') && (
+            <p className="mb-6 whitespace-pre-line text-muted-foreground">
+              {t('exito_texto')}
+            </p>
+          )}
           <Button variant="outline" onClick={reiniciar}>
             {tx.another}
           </Button>
@@ -419,26 +434,50 @@ const ComentariosExaminado = () => {
   return (
     <main className="min-h-screen bg-muted/30 px-4 py-6 sm:py-10">
       <div className="mx-auto max-w-3xl space-y-5">
+        {/* Selector de idioma */}
+        <div className="flex justify-end">
+          <Link
+            to={altPath}
+            className="text-sm font-medium text-primary underline-offset-4 hover:underline"
+          >
+            {tx.otherLanguage}
+          </Link>
+        </div>
+
         {/* Encabezado */}
         <header className="text-center">
-          <p className="text-xs font-semibold tracking-widest text-muted-foreground">
-            {tx.program}
-          </p>
-          <h1 className="mt-1 text-2xl font-bold sm:text-3xl">{tx.title}</h1>
-          <p className="text-sm text-muted-foreground">{tx.subtitle}</p>
+          {t('programa') && (
+            <p className="text-xs font-semibold tracking-widest text-muted-foreground">
+              {t('programa')}
+            </p>
+          )}
+          {t('titulo') && (
+            <h1 className="mt-1 text-2xl font-bold sm:text-3xl">{t('titulo')}</h1>
+          )}
+          {t('subtitulo') && (
+            <p className="text-sm text-muted-foreground">{t('subtitulo')}</p>
+          )}
         </header>
 
         {/* Instrucciones */}
-        <Alert>
-          <ShieldAlert className="h-4 w-4" />
-          <AlertDescription className="space-y-1">
-            <p>{tx.intro}</p>
-            <p>
-              <strong>{tx.importantLabel}</strong>{' '}
-              <strong>{tx.importantText}</strong>
-            </p>
-          </AlertDescription>
-        </Alert>
+        {t('intro') && (
+          <Alert>
+            <Info className="h-4 w-4" />
+            <AlertDescription className="whitespace-pre-line">
+              {t('intro')}
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {/* Aviso importante */}
+        {t('aviso') && (
+          <Alert className="border-amber-300 bg-amber-50 text-amber-900">
+            <ShieldAlert className="h-4 w-4 !text-amber-700" />
+            <AlertDescription className="whitespace-pre-line font-medium">
+              {t('aviso')}
+            </AlertDescription>
+          </Alert>
+        )}
 
         <form onSubmit={handleSubmit} noValidate className="space-y-5">
           {/* Honeypot (oculto a humanos) */}
@@ -456,9 +495,9 @@ const ComentariosExaminado = () => {
           </div>
 
           {/* ============ 1. DATOS ============ */}
-          <Seccion titulo={tx.s1}>
+          <Seccion titulo={t('seccion1')}>
             <div className="grid gap-4 sm:grid-cols-2">
-              <Campo id="cliente_institucion" label={tx.cliente}>
+              <Campo id="cliente_institucion" label={CAMPO_LABELS.institucion[lang]}>
                 <Input
                   id="cliente_institucion"
                   maxLength={255}
@@ -467,7 +506,12 @@ const ComentariosExaminado = () => {
                 />
               </Campo>
 
-              <Campo id="fecha_examen" label={tx.fecha} required error={errors.fecha_examen}>
+              <Campo
+                id="fecha_examen"
+                label={CAMPO_LABELS.fecha[lang]}
+                required
+                error={errors.fecha_examen}
+              >
                 <Input
                   id="fecha_examen"
                   type="date"
@@ -477,7 +521,12 @@ const ComentariosExaminado = () => {
                 />
               </Campo>
 
-              <Campo id="centro_ubicacion" label={tx.centro} required error={errors.centro_ubicacion}>
+              <Campo
+                id="centro_ubicacion"
+                label={CAMPO_LABELS.ciudad[lang]}
+                required
+                error={errors.centro_ubicacion}
+              >
                 <Input
                   id="centro_ubicacion"
                   maxLength={255}
@@ -486,7 +535,7 @@ const ComentariosExaminado = () => {
                 />
               </Campo>
 
-              <Campo id="nombre_tca" label={tx.tca}>
+              <Campo id="nombre_tca" label={CAMPO_LABELS.aplicador[lang]}>
                 <Input
                   id="nombre_tca"
                   maxLength={255}
@@ -496,7 +545,12 @@ const ComentariosExaminado = () => {
               </Campo>
             </div>
 
-            <Campo id="modalidad" label={tx.modalidad} required error={errors.modalidad}>
+            <Campo
+              id="modalidad"
+              label={CAMPO_LABELS.modalidad[lang]}
+              required
+              error={errors.modalidad}
+            >
               <RadioGroup
                 value={form.modalidad}
                 onValueChange={(v) => setCampo('modalidad', v as Modalidad)}
@@ -513,7 +567,12 @@ const ComentariosExaminado = () => {
               </RadioGroup>
             </Campo>
 
-            <Campo id="examen" label={tx.examen} required error={errors.examen}>
+            <Campo
+              id="examen"
+              label={CAMPO_LABELS.examen[lang]}
+              required
+              error={errors.examen}
+            >
               <RadioGroup
                 value={form.examen}
                 onValueChange={(v) => setCampo('examen', v as Examen)}
@@ -531,7 +590,12 @@ const ComentariosExaminado = () => {
             </Campo>
 
             <div className="grid gap-4 sm:grid-cols-2">
-              <Campo id="nombre_examinado" label={tx.nombre} required error={errors.nombre_examinado}>
+              <Campo
+                id="nombre_examinado"
+                label={CAMPO_LABELS.nombre[lang]}
+                required
+                error={errors.nombre_examinado}
+              >
                 <Input
                   id="nombre_examinado"
                   maxLength={255}
@@ -541,7 +605,7 @@ const ComentariosExaminado = () => {
                 />
               </Campo>
 
-              <Campo id="id_asiento" label={tx.idAsiento}>
+              <Campo id="id_asiento" label={CAMPO_LABELS.idAsiento[lang]}>
                 <Input
                   id="id_asiento"
                   maxLength={50}
@@ -549,11 +613,35 @@ const ComentariosExaminado = () => {
                   onChange={(e) => setCampo('id_asiento', e.target.value)}
                 />
               </Campo>
+
+              <Campo id="telefono" label={CAMPO_LABELS.telefono[lang]} error={errors.telefono}>
+                <Input
+                  id="telefono"
+                  type="tel"
+                  inputMode="tel"
+                  autoComplete="tel"
+                  maxLength={30}
+                  value={form.telefono}
+                  onChange={(e) => setCampo('telefono', e.target.value)}
+                />
+              </Campo>
+
+              <Campo id="correo" label={CAMPO_LABELS.correo[lang]} error={errors.correo}>
+                <Input
+                  id="correo"
+                  type="email"
+                  inputMode="email"
+                  autoComplete="email"
+                  maxLength={255}
+                  value={form.correo}
+                  onChange={(e) => setCampo('correo', e.target.value)}
+                />
+              </Campo>
             </div>
           </Seccion>
 
-          {/* ============ 2. TIPO DE COMENTARIO ============ */}
-          <Seccion titulo={tx.s2}>
+          {/* ============ 2. PROBLEMÁTICA ============ */}
+          <Seccion titulo={t('seccion2')}>
             <div id="field-tipos" className="space-y-2">
               <div className="grid gap-4 md:grid-cols-3">
                 {GRUPOS_TIPO.map((g) => (
@@ -566,7 +654,11 @@ const ComentariosExaminado = () => {
                       const checked = form.tipos.includes(tipo);
                       const esOtro = tipo === g.otroTipo;
                       return (
-                        <div key={tipo} id={esOtro ? `field-${g.otroCampo}` : undefined} className="space-y-2">
+                        <div
+                          key={tipo}
+                          id={esOtro ? `field-${g.otroCampo}` : undefined}
+                          className="space-y-2"
+                        >
                           <div className="flex items-start gap-2">
                             <Checkbox
                               id={`tipo-${tipo}`}
@@ -607,7 +699,12 @@ const ComentariosExaminado = () => {
               {errors.tipos && <p className="text-sm text-destructive">{errors.tipos}</p>}
             </div>
 
-            <Campo id="momento" label={tx.cuando} required error={errors.momento}>
+            <Campo
+              id="momento"
+              label={CAMPO_LABELS.momento[lang]}
+              required
+              error={errors.momento}
+            >
               <RadioGroup
                 value={form.momento}
                 onValueChange={(v) => setCampo('momento', v as Momento)}
@@ -626,8 +723,13 @@ const ComentariosExaminado = () => {
           </Seccion>
 
           {/* ============ 3. DESCRIPCIÓN ============ */}
-          <Seccion titulo={tx.s3}>
-            <Campo id="descripcion" label={tx.s3Hint} required error={errors.descripcion}>
+          <Seccion titulo={t('seccion3')}>
+            <Campo
+              id="descripcion"
+              label={t('descripcion_ayuda') || CAMPO_LABELS.momento[lang]}
+              required
+              error={errors.descripcion}
+            >
               <Textarea
                 id="descripcion"
                 rows={8}
@@ -640,20 +742,25 @@ const ComentariosExaminado = () => {
               </p>
             </Campo>
 
-            <div id="field-acepta" className="space-y-1.5 rounded-md border bg-muted/30 p-3">
-              <div className="flex items-start gap-2">
-                <Checkbox
-                  id="acepta"
-                  checked={form.acepta}
-                  onCheckedChange={(c) => setCampo('acepta', c === true)}
-                  className="mt-0.5"
-                />
-                <Label htmlFor="acepta" className="cursor-pointer font-normal leading-snug">
-                  {tx.declaracion}
-                </Label>
+            {mostrarDeclaracion && (
+              <div id="field-acepta" className="space-y-1.5 rounded-md border bg-muted/30 p-3">
+                <div className="flex items-start gap-2">
+                  <Checkbox
+                    id="acepta"
+                    checked={form.acepta}
+                    onCheckedChange={(c) => setCampo('acepta', c === true)}
+                    className="mt-0.5"
+                  />
+                  <Label
+                    htmlFor="acepta"
+                    className="cursor-pointer whitespace-pre-line font-normal leading-snug"
+                  >
+                    {t('declaracion')}
+                  </Label>
+                </div>
+                {errors.acepta && <p className="text-sm text-destructive">{errors.acepta}</p>}
               </div>
-              {errors.acepta && <p className="text-sm text-destructive">{errors.acepta}</p>}
-            </div>
+            )}
           </Seccion>
 
           {/* Errores globales */}
@@ -683,7 +790,11 @@ const ComentariosExaminado = () => {
             )}
           </Button>
 
-          <p className="pb-4 text-center text-xs text-muted-foreground">{tx.confidencial}</p>
+          {t('confidencial') && (
+            <p className="whitespace-pre-line pb-4 text-center text-xs text-muted-foreground">
+              {t('confidencial')}
+            </p>
+          )}
         </form>
       </div>
     </main>
